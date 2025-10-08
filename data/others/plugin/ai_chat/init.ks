@@ -5,6 +5,8 @@
 
     ; 1. 必要なCSSを読み込む
     [loadcss file="./data/others/plugin/ai_chat/ai_chat.css"]
+    [loadjs storage="./data/others/js/marked.min.js"] 
+    [loadjs storage="./data/others/js/purify.min.js"] 
 
     ; 2. [html]タグでUIの骨格を生成する
     ; この時点では通常レイヤーに一時的に配置される
@@ -20,7 +22,7 @@
             </div>
         </div>
         <div class="ai-chat-form">
-            <input type="text" class="ai-chat-input" placeholder="メッセージを入力...">
+            <textarea class="ai-chat-input" placeholder="メッセージを入力..." rows="1"></textarea>
             <button class="ai-chat-send-button">送信</button>
         </div>
     </div>
@@ -38,17 +40,17 @@
         const scHeight = parseInt(TYRANO.kag.config.scHeight); 
 
         const chatWidth = scWidth * 0.45;
-        const marginRight = scWidth * 0.01;
+        const marginRight = scWidth * 0.036;
         const leftPosition = scWidth - chatWidth - marginRight;
         
-        const chatHeight = scHeight * 0.96; 
+        const chatHeight = scHeight * 0.97; 
 
         chat_container.css({
             "position": "absolute",
             "top": "2%",
             "left": leftPosition + "px",
             "width": chatWidth + "px",
-            "height": chatHeight + "px", // ← ★★★ 3. "96%" から `chatHeight + "px"` に修正 ★★★
+            "height": chatHeight + "px",
             "z-index": "200"
         });
 
@@ -63,19 +65,18 @@
 
         chat_container.show();
 
-        const inputField = $(".ai-chat-input");
+         const inputField = $(".ai-chat-input");
         const sendButton = $(".ai-chat-send-button"); // ボタン要素を取得
         const messagesContainer = $(".ai-chat-messages");
         
-        // (addMessage関数は変更なし)
         function addMessage(sender, text, avatar) {
-            const escapedText = $('<div>').text(text).html().replace(/\n/g, '<br>');
+            const cleanHtml = DOMPurify.sanitize(marked.parse(text));
             const messageHTML = `
                 <div class="ai-chat-message">
                     <img src="${avatar}" class="avatar">
                     <div class="message-content">
                         <span class="username">${sender}</span>
-                        <span>${escapedText}</span>
+                        <span>${cleanHtml}</span>
                     </div>
                 </div>`;
             messagesContainer.append(messageHTML);
@@ -117,13 +118,18 @@
         }
 
         // イベントリスナーを設定
-        sendButton.on("click", sendMessage); // ボタンクリックで送信
+        sendButton.on("click", sendMessage); 
         inputField.on("keydown", function(e) {
-            if (e.key === "Enter") {
-                sendMessage(); // Enterキーで送信
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); 
+                sendMessage();
             }
         });
 
+        inputField.on('input', function() {
+            this.style.height = 'auto'; // 高さを一旦リセット
+            this.style.height = (this.scrollHeight) + 'px'; // 内容の高さに合わせて自身の高さを変更
+        });
     [endscript]
 
 [endmacro]

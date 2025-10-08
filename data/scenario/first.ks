@@ -8,6 +8,7 @@
 [plugin name="ai_chat"]
 
 ; AIチャットUIを初期化して表示
+[stop_keyconfig]
 [ai_chat_show]
 
 ; 実行ボタンglinkのデザイン用マクロ
@@ -67,12 +68,15 @@ fetch('http://localhost:8088/execute', {
     return response.json();
 })
 .then(data => {
-    data.result = data.result.replace(/(.{60})/g, '$1<br>');
-    f.execution_result = data.result;
+    const lines = data.result.split('\n');
+    const wrappedLines = lines.map(line => line.replace(/(.{60})/g, '$1<br>'));
+    const finalResult = wrappedLines.join('<br>');
+    f.execution_result = finalResult;
     TYRANO.kag.ftag.startTag('jump', { storage: "first.ks", target: '*display_and_return' });
 })
 .catch(error => {
-    f.execution_result = "エラー:\n" + error.message;
+    const formattedError = error.message.replace(/\n/g, '<br>').replace(/(.{60})/g, '$1<br>');
+    f.execution_result = "エラー:<br>" + formattedError;
     TYRANO.kag.ftag.startTag('jump', { storage: "first.ks", target: '*display_and_return' });
 });
 [endscript]
