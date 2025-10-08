@@ -1,0 +1,26 @@
+.result_area_style {
+    position: absolute;
+    left: 10px;
+    top: 490px;
+    width: 645px;
+    height: 230px;
+    background-image: url('../../fgimage/result_box.png'); /* 背景画像を指定 */
+    background-size: 100% 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    z-index: 100;
+
+    /* テキスト選択を可能にする */
+    user-select: text;
+    -webkit-user-select: text; /* Safari/Chrome用 */
+
+    /* 内容がはみ出たらスクロールバーを表示 */
+    overflow-y: auto;
+    
+}
+
+#result_text_content {
+    font-size: 18px;
+    color: white;
+    pointer-events: auto;
+}

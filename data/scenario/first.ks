@@ -41,8 +41,23 @@ $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
 [endscript]
 
 ; --- 結果表示用のptextを、名前をつけてfixレイヤーに配置 ---
-@image layer="fix" name="result_box"  storage="result_box.png" x=10 y=490 time="0" width=645 height=230
-@ptext layer="fix" name="result_text" text="実行結果" x=40 y=510 size=18
+;@image layer="fix" name="result_box"  storage="result_box.png" x=10 y=490 time="0" width=645 height=230
+;@ptext layer="fix" name="result_text" text="実行結果" x=40 y=510 size=18
+
+[html]
+<div id="result_area" class="result_area_style">
+    <div id="result_text_content">実行結果</div>
+</div>
+[endhtml]
+
+[loadcss file="./data/others/css/result_area.css"]
+
+; fixレイヤーに移動させる
+[iscript]
+    var result_area = $("#result_area");
+    var fix_layer = $(".fixlayer").first();
+    fix_layer.append(result_area);
+[endscript]
 
 [execute_button color="btn_01_green" text="コードを実行" target="*execute_code" x="10" y="447"]
 
@@ -53,7 +68,10 @@ $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
 
 *execute_code
 ; ptextの内容を「実行中...」に上書きする
-@ptext name="result_text" text="実行中..." x=40 y=510 size=18 overwrite="true" layer="fix"
+[iscript]
+    $("#result_text_content").html("実行中...");
+[endscript]
+
 
 ; サーバーにコードを送信
 [iscript]
@@ -68,15 +86,11 @@ fetch('http://localhost:8088/execute', {
     return response.json();
 })
 .then(data => {
-    const lines = data.result.split('\n');
-    const wrappedLines = lines.map(line => line.replace(/(.{60})/g, '$1<br>'));
-    const finalResult = wrappedLines.join('<br>');
-    f.execution_result = finalResult;
+    f.execution_result = "実行結果:<br>" + data.result.replace(/\n/g, '<br>');
     TYRANO.kag.ftag.startTag('jump', { storage: "first.ks", target: '*display_and_return' });
 })
 .catch(error => {
-    const formattedError = error.message.replace(/\n/g, '<br>').replace(/(.{60})/g, '$1<br>');
-    f.execution_result = "エラー:<br>" + formattedError;
+    f.execution_result = "エラー:<br>" + error.message.replace(/\n/g, '<br>');
     TYRANO.kag.ftag.startTag('jump', { storage: "first.ks", target: '*display_and_return' });
 });
 [endscript]
@@ -85,9 +99,10 @@ fetch('http://localhost:8088/execute', {
 *display_and_return
 ; ptextの内容を実行結果に上書きする
 [iscript]
-tf.result_text_with_header = '実行結果：<br>' + f.execution_result;
+    // 実行結果のヘッダーはCSSで表現するので不要に
+    // tf.result_text_with_header = '実行結果：<br>' + f.execution_result;
+    $("#result_text_content").html(f.execution_result);
 [endscript]
-@ptext name="result_text" text="&tf.result_text_with_header" x=40 y=510 size=18 overwrite="true" layer="fix"
 
 ; サブルーチンを終了し、*startの[s]の位置に戻る
 [return]
