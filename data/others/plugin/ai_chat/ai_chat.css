@@ -1,10 +1,17 @@
 /* AIチャットウィンドウ全体 */
 .ai-chat-container {
-    position: relative;
-    background-color: #36393f;
+    position: absolute;
+    margin-top: 10px;
+    top: 2%;
+    right: 1%;
+    width: 45%;
+    height: 96%;
+    background-color: #36393f; /* Discord風の背景色 */
     border-radius: 8px;
+    display: flex;
+    flex-direction: column;
     font-family: 'Helvetica', 'Arial', sans-serif;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    z-index: 101; /* Monaco Editorより手前に表示 */
 }
 
 /* 各メッセージ（吹き出し） */
@@ -19,21 +26,7 @@
     border-radius: 50%;
     margin-right: 15px;
 }
-/* (以下、前回のCSSと同じ内容) */
-/* AIチャットウィンドウ全体 */
-.ai-chat-container {
-    position: absolute;
-    top: 2%;
-    right: 1%;
-    width: 45%;
-    height: 96%;
-    background-color: #36393f; /* Discord風の背景色 */
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    font-family: 'Helvetica', 'Arial', sans-serif;
-    z-index: 101; /* Monaco Editorより手前に表示 */
-}
+
 
 /* 会話ログエリア */
 .ai-chat-messages {
