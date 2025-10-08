@@ -13,10 +13,11 @@
     /* テキスト選択を可能にする */
     user-select: text;
     -webkit-user-select: text; /* Safari/Chrome用 */
-
     /* 内容がはみ出たらスクロールバーを表示 */
     overflow-y: auto;
-    
+
+    white-space: pre-wrap;  /* \n などの改行コードを維持しつつ、自動で折り返す */
+    word-wrap: break-word;
 }
 
 #result_text_content {

@@ -34,6 +34,10 @@
         var fix_layer = $(".fixlayer").first();
         fix_layer.append(chat_container); 
 
+        chat_container.on("mousedown", function(e) {
+            e.stopPropagation();
+        });
+
         // JavaScriptでUIの位置とサイズを「ピクセル単位」で明示的に設定する
 
         const scWidth = parseInt(TYRANO.kag.config.scWidth);

@@ -57,6 +57,9 @@ $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
     var result_area = $("#result_area");
     var fix_layer = $(".fixlayer").first();
     fix_layer.append(result_area);
+    result_area.on("mousedown", function(e) {
+        e.stopPropagation();
+    });
 [endscript]
 
 [execute_button color="btn_01_green" text="コードを実行" target="*execute_code" x="10" y="447"]
