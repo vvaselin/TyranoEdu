@@ -2,15 +2,19 @@
 [bg storage="room.jpg" time="0"]
 @layopt layer="message0" visible=false
 
-; 実行ボタンglinkのデザイン用マクロ
-[loadcss file="./data/others/css/glink.css"]
-[macro name="glink_sample"]
-[glink fix="true" color=%color storage="first.ks" target=%target text=%text width="640" size="20" x=%x y=%y]
-[endmacro]
-
 ; プラグインを読み込む
 [plugin name="monaco_editor"]
 [plugin name="glink_ex"]
+[plugin name="ai_chat"]
+
+; AIチャットUIを初期化して表示
+[ai_chat_show]
+
+; 実行ボタンglinkのデザイン用マクロ
+[loadcss file="./data/others/css/glink.css"]
+[macro name="execute_button"]
+[glink fix="true" color=%color storage="first.ks" target=%target text=%text width="640" size="20" x=%x y=%y]
+[endmacro]
 
 ; ■■■ 初期設定（UIをfixレイヤーに一度だけ配置） ■■■
 
@@ -36,14 +40,13 @@ $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
 [endscript]
 
 ; --- 結果表示用のptextを、名前をつけてfixレイヤーに配置 ---
-@image storage="result_box.png" layer="fix" x=10 y=490 time="0" width=645 height=230
+@image layer="fix" name="result_box"  storage="result_box.png" x=10 y=490 time="0" width=645 height=230
 @ptext layer="fix" name="result_text" text="実行結果" x=40 y=510 size=18
 
-[glink_sample color="btn_01_green" text="コードを実行" target="*execute_code" x="10" y="447"]
+[execute_button color="btn_01_green" text="コードを実行" target="*execute_code" x="10" y="447"]
 
 ; すべてのUI配置が終わったので、進行を停止してボタンクリックを待つ
 [s]
-
 
 ; ■■■ 実行処理（サブルーチン） ■■■
 
