@@ -34,7 +34,7 @@
         var fix_layer = $(".fixlayer").first();
         fix_layer.append(chat_container); 
 
-        chat_container.on("mousedown", function(e) {
+        chat_container.on("mousedown mouseup mousemove", function(e) {
             e.stopPropagation();
         });
 

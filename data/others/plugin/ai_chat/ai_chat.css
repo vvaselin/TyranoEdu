@@ -67,6 +67,7 @@
     user-select: all;
     -webkit-user-select: all;
     pointer-events: auto;
+    user-select: text !important;
 }
 
 .ai-chat-message pre {
@@ -77,6 +78,8 @@
     word-wrap: break-word;
     user-select: all; 
     -webkit-user-select: all;
+    pointer-events: auto;
+    user-select: text !important;
 }
 
 .ai-chat-message pre code {

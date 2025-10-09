@@ -11,8 +11,8 @@
     z-index: 100;
 
     /* テキスト選択を可能にする */
-    user-select: text;
-    -webkit-user-select: text; /* Safari/Chrome用 */
+    user-select: text!important;
+    -webkit-user-select: text;
     /* 内容がはみ出たらスクロールバーを表示 */
     overflow-y: auto;
 
@@ -24,4 +24,5 @@
     font-size: 18px;
     color: white;
     pointer-events: auto;
+    user-select: all !important;
 }

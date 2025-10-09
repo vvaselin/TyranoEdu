@@ -57,7 +57,8 @@ $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
     var result_area = $("#result_area");
     var fix_layer = $(".fixlayer").first();
     fix_layer.append(result_area);
-    result_area.on("mousedown", function(e) {
+    
+    result_area.on("mousedown mouseup mousemove", function(e) {
         e.stopPropagation();
     });
 [endscript]
@@ -89,11 +90,11 @@ fetch('http://localhost:8088/execute', {
     return response.json();
 })
 .then(data => {
-    f.execution_result = "実行結果:<br>" + data.result.replace(/\n/g, '<br>');
+    f.execution_result = "実行結果:\n" + data.result;
     TYRANO.kag.ftag.startTag('jump', { storage: "first.ks", target: '*display_and_return' });
 })
 .catch(error => {
-    f.execution_result = "エラー:<br>" + error.message.replace(/\n/g, '<br>');
+    f.execution_result = "エラー:\n" + error.message;
     TYRANO.kag.ftag.startTag('jump', { storage: "first.ks", target: '*display_and_return' });
 });
 [endscript]
@@ -102,9 +103,7 @@ fetch('http://localhost:8088/execute', {
 *display_and_return
 ; ptextの内容を実行結果に上書きする
 [iscript]
-    // 実行結果のヘッダーはCSSで表現するので不要に
-    // tf.result_text_with_header = '実行結果：<br>' + f.execution_result;
-    $("#result_text_content").html(f.execution_result);
+    $("#result_text_content").text(f.execution_result);
 [endscript]
 
 ; サブルーチンを終了し、*startの[s]の位置に戻る
