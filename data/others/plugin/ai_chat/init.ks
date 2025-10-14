@@ -16,8 +16,8 @@
             <div class="ai-chat-message">
                 <img src="./data/fgimage/chat/akane/egao.png" class="avatar">
                 <div class="message-content">
-                    <span class="username">C++アシスタント</span>
-                    <span>こんにちは！ 何かお手伝いできることはありますか？</span>
+                    <span class="username">あかね</span>
+                    <span>何が聞きたいの？</span>
                 </div>
             </div>
         </div>
@@ -108,7 +108,7 @@
             })
             .then(response => response.ok ? response.json() : response.text().then(text => { throw new Error(text) }))
             .then(data => {
-                addMessage("C++アシスタント", data.text, "./data/fgimage/chat/akane/hirameki.png");
+                addMessage("あかね", data.text, "./data/fgimage/chat/akane/hirameki.png");
             })
             .catch(error => {
                 console.error("AIチャットエラー:", error);

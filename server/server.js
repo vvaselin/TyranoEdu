@@ -1,6 +1,11 @@
 import express from "express";
 import fetch from "node-fetch";
 import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { text } from "stream/consumers";
+
 dotenv.config();
 
 const app = express();
@@ -8,9 +13,29 @@ app.use(express.json());
 
 // ← ルート階層ごと配信（index.html, tyrano/, data/ 全部アクセス可能）
 app.use(express.static("../"));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const promptPath = path.join(__dirname, 'prompt.txt');
+let system_prompt = 'あなたは親切なAIアシスタントです。'; // デフォルトプロンプト
+try {
+  system_prompt = fs.readFileSync(promptPath, 'utf8');
+} catch (error) {
+  console.error('prompt.txtの読み込みに失敗しました。デフォルトのプロンプトを使用します。', error);
+}
+
 
 app.post("/api/chat", async (req, res) => {
-  const { message } = req.body;
+  const { message, history } = req.body;
+
+  // 過去の会話履歴をAPIのリクエスト形式に変換
+  const messages = (history || []).map(item => ({
+      role: item.role,
+      content: item.content
+  }));
+
+  messages.unshift({ role: "system", content: system_prompt }); 
+  messages.push({ role: "user", content: message });
+
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -20,10 +45,7 @@ app.post("/api/chat", async (req, res) => {
     },
     body: JSON.stringify({
       model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: "あなたはC++講師です。" },
-        { role: "user", content: message }
-      ]
+      messages: messages // 形式を合わせたmessagesを渡す
     })
   });
 
