@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { text } from "stream/consumers";
 
 dotenv.config();
 
@@ -25,17 +24,7 @@ try {
 
 
 app.post("/api/chat", async (req, res) => {
-  const { message, history } = req.body;
-
-  // 過去の会話履歴をAPIのリクエスト形式に変換
-  const messages = (history || []).map(item => ({
-      role: item.role,
-      content: item.content
-  }));
-
-  messages.unshift({ role: "system", content: system_prompt }); 
-  messages.push({ role: "user", content: message });
-
+  const { message } = req.body; 
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -45,7 +34,11 @@ app.post("/api/chat", async (req, res) => {
     },
     body: JSON.stringify({
       model: "gpt-4o-mini",
-      messages: messages // 形式を合わせたmessagesを渡す
+      
+      messages: [
+        { role: "system", content: system_prompt },
+        { role: "user", content: message }
+      ]
     })
   });
 
