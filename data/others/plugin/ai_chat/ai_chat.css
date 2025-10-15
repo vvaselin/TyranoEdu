@@ -71,6 +71,7 @@
 }
 
 .ai-chat-message pre {
+    position: relative;
     background-color: #202225;
     padding: 10px;
     border-radius: 5px;
@@ -138,4 +139,25 @@
 
 .ai-chat-send-button:hover {
     background-color: #4752c4; /* マウスオーバー時の色 */
+}
+
+.copy-code-button {
+  position: absolute;         /* 親要素(pre)を基準に位置を決めます */
+  top: 8px;
+  right: 8px;
+  z-index: 10;                /* 他の要素より手前に表示します */
+  background-color: #555;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0;                 /* 通常は見えないようにしておく */
+  transition: opacity 0.2s;   /* ホバー時のアニメーション */
+}
+
+/* preタグにマウスが乗った時だけ、ボタンを浮かび上がらせる */
+.ai-chat-message pre:hover .copy-code-button {
+  opacity: 1;
 }

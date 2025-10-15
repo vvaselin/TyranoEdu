@@ -83,7 +83,42 @@
                         <span>${cleanHtml}</span>
                     </div>
                 </div>`;
-            messagesContainer.append(messageHTML);
+                
+            const messageElement = $(messageHTML);
+
+            messageElement.find("pre").each(function () {
+                const preBlock = $(this);
+                
+                // コピーボタンのHTML要素を作成します
+                const copyButton = $('<button class="copy-code-button">コピー</button>');
+                
+                // ボタンを<pre>タグの「中」に追加します
+                preBlock.append(copyButton);
+
+                // 作成したボタンにだけ、クリックイベントを設定します
+                copyButton.on("click", function (e) {
+                    // ティラノスクリプトへのクリックイベント伝播を、必ず止めます
+                    e.stopPropagation();
+                    
+                    // コピー処理：ボタン自身のテキストを含めないように、
+                    // pre要素を複製して、そこからボタンを削除したもののテキストを取得します。
+                    const preClone = preBlock.clone();
+                    preClone.find('.copy-code-button').remove();
+                    const codeText = preClone.text();
+                    
+                    navigator.clipboard.writeText(codeText).then(
+                        () => {
+                            alertify.success("コードをコピーしました！");
+                        },
+                        (err) => {
+                            console.error("クリップボードへのコピーに失敗しました:", err);
+                            alertify.error("コピーに失敗しました");
+                        }
+                    );
+                });
+            });
+            
+            messagesContainer.append(messageElement);
             messagesContainer.scrollTop(messagesContainer[0].scrollHeight);
         }
 

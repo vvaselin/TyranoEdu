@@ -40,28 +40,7 @@ console.log("ai_chat.js が読み込まれました！");
             
             // 前景レイヤーからfixレイヤーに移動
             fix_layer.append(chat_container);
-            
-            // CSSで絶対配置にしているので、移動後も表示位置は変わらない
-            
-            // --- 3. メッセージ追加用の関数を定義 ---
-            function addMessage(sender, text, avatar) {
-                const messagesContainer = $(".ai-chat-messages");
-                // HTMLエンティティをエスケープして安全に表示
-                const escapedText = $('<div>').text(text).html();
-                const messageHTML = `
-                    <div class="ai-chat-message">
-                        <img src="${avatar}" class="avatar">
-                        <div class="message-content">
-                            <span class="username">${sender}</span>
-                            <span>${escapedText.replace(/\n/g, '<br>')}</span>
-                        </div>
-                    </div>
-                `;
-                messagesContainer.append(messageHTML);
-                messagesContainer.scrollTop(messagesContainer[0].scrollHeight);
-            }
 
-            // --- 4. サーバー通信とイベントハンドラの設定 ---
             const inputField = $(".ai-chat-input");
             
             // 以前のイベントハンドラが残っている可能性を考慮して一旦offにする
