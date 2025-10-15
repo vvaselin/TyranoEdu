@@ -6,6 +6,7 @@
 [plugin name="monaco_editor"]
 [plugin name="glink_ex"]
 [plugin name="ai_chat"]
+[plugin name=dtmng]
 
 ; AIチャットUIを初期化して表示
 [stop_keyconfig]
@@ -24,7 +25,7 @@ f.my_code = [
     '#include <iostream>',
     '',
     'int main() {',
-    '    std::cout << "Hello, C++ from Tyrano!" << std::endl;',
+    '    std::cout << "Hello World!" << std::endl;',
     '    return 0;',
     '}'
 ].join('\n');
@@ -41,8 +42,6 @@ $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
 [endscript]
 
 ; --- 結果表示用のptextを、名前をつけてfixレイヤーに配置 ---
-;@image layer="fix" name="result_box"  storage="result_box.png" x=10 y=490 time="0" width=645 height=230
-;@ptext layer="fix" name="result_text" text="実行結果" x=40 y=510 size=18
 
 [html]
 <div id="result_area" class="result_area_style">
@@ -74,6 +73,7 @@ $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
 ; ptextの内容を「実行中...」に上書きする
 [iscript]
     $("#result_text_content").html("実行中...");
+    f.starttime = performance.now();
 [endscript]
 
 
@@ -92,6 +92,8 @@ fetch('http://localhost:8088/execute', {
 .then(data => {
     f.execution_result = "実行結果:\n" + data.result;
     TYRANO.kag.ftag.startTag('jump', { storage: "first.ks", target: '*display_and_return' });
+    f.endtime = performance.now();
+    console.log(`コード実行時間: ${f.endtime - f.starttime} ミリ秒`);
 })
 .catch(error => {
     f.execution_result = "エラー:\n" + error.message;
