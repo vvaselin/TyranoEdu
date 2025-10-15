@@ -6,7 +6,6 @@
 [plugin name="monaco_editor"]
 [plugin name="glink_ex"]
 [plugin name="ai_chat"]
-[plugin name=dtmng]
 
 ; AIチャットUIを初期化して表示
 [stop_keyconfig]

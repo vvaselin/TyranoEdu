@@ -46,4 +46,5 @@ app.post("/api/chat", async (req, res) => {
   res.json({ text: data.choices?.[0]?.message?.content || "（応答なし）" });
 });
 
+
 app.listen(8080, () => console.log("Server running → http://localhost:8080"));
