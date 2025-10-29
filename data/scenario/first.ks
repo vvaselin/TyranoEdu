@@ -17,6 +17,8 @@
 [glink fix="true" color=%color storage="first.ks" target=%target text=%text width="640" size="20" x=%x y=%y]
 [endmacro]
 
+; ■■■ 結果表示エリア用マクロ ■■■
+
 ; ■■■ 初期設定（UIをfixレイヤーに一度だけ配置） ■■■
 
 [iscript]
@@ -44,7 +46,8 @@ $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
 
 [html]
 <div id="result_area" class="result_area_style">
-    <div id="result_text_content">実行結果</div>
+    <pre id="result_text_content">実行結果</pre>
+    <button class="copy-result-button" id="result_copy_btn" style="display:none;">コピー</button>
 </div>
 [endhtml]
 
@@ -61,6 +64,40 @@ $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
     });
 [endscript]
 
+; --- コピーボタンにクリックイベントを設定 ---
+[iscript]
+(function() {
+    var $button = $("#result_copy_btn");
+    
+    $button.on("click", function (e) {
+        // ティラノスクリプト本体へのクリック伝播を停止
+        e.stopPropagation();
+        
+        // コピー対象のテキストを取得
+        var textToCopy = $("#result_text_content").text();
+
+        // "実行結果:\n" または "エラー:\n" というプレフィックスを削除
+        if (textToCopy.startsWith("実行結果:\n")) {
+            textToCopy = textToCopy.substring("実行結果:\n".length);
+        } else if (textToCopy.startsWith("エラー:\n")) {
+            textToCopy = textToCopy.substring("エラー:\n".length);
+        }
+
+        // クリップボードにコピー
+        navigator.clipboard.writeText(textToCopy).then(
+            () => {
+                // ティラノ標準のalertifyで通知
+                alertify.success("コピーしました！");
+            },
+            (err) => {
+                console.error("クリップボードへのコピーに失敗しました:", err);
+                alertify.error("コピーに失敗しました");
+            }
+        );
+    });
+})();
+[endscript]
+
 [execute_button color="btn_01_green" text="コードを実行" target="*execute_code" x="10" y="447"]
 
 ; すべてのUI配置が終わったので、進行を停止してボタンクリックを待つ
@@ -71,7 +108,8 @@ $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
 *execute_code
 ; ptextの内容を「実行中...」に上書きする
 [iscript]
-    $("#result_text_content").html("実行中...");
+    $("#result_text_content").text("実行中...");
+    $("#result_copy_btn").hide(); // ボタンを隠す
     f.starttime = performance.now();
 [endscript]
 
@@ -105,6 +143,7 @@ fetch('http://localhost:8088/execute', {
 ; ptextの内容を実行結果に上書きする
 [iscript]
     $("#result_text_content").text(f.execution_result);
+    $("#result_copy_btn").show(); // ボタンを表示
 [endscript]
 
 ; サブルーチンを終了し、*startの[s]の位置に戻る

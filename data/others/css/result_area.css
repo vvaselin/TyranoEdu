@@ -26,3 +26,23 @@
     pointer-events: auto;
     user-select: all !important;
 }
+
+.copy-result-button {
+    position: absolute;
+    top: 15px;  /* 上からの位置（背景画像の枠内に収まるよう調整） */
+    right: 15px; /* 右からの位置 */
+    z-index: 110; /* result_area_style(100) より手前に */
+    background-color: #555;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.copy-result-button:hover {
+    opacity: 1;
+}
