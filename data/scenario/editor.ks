@@ -5,8 +5,6 @@
 [bg storage="room.jpg" time="0"]
 @layopt layer="message0" visible=false
 
-
-
 ; AIチャットUIを初期化して表示
 [stop_keyconfig]
 [ai_chat_show]
@@ -18,8 +16,6 @@
 [macro name="execute_button"]
 [glink fix="true" color=%color storage="editor.ks" target=%target text=%text width="640" size="20" x=%x y=%y]
 [endmacro]
-
-; ■■■ 結果表示エリア用マクロ ■■■
 
 ; ■■■ 初期設定（UIをfixレイヤーに一度だけ配置） ■■■
 
@@ -40,7 +36,7 @@ f.my_code = [
 var editor_wrapper = $("#monaco-iframe").parent();
 var fix_layer = $(".fixlayer").first();
 fix_layer.append(editor_wrapper);
-editor_wrapper.css({ "position": "absolute", "left": "1%", "top": "2%", "width": "50%", "height": "60%", "z-index": "100" });
+editor_wrapper.css({ "position": "absolute", "left": "1%", "top": "2%", "width": "50%", "height": "67%", "z-index": "100" });
 $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
 [endscript]
 
@@ -100,7 +96,7 @@ $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
 })();
 [endscript]
 
-[execute_button color="btn_01_green" text="コードを実行" target="*execute_code" x="10" y="447"]
+[execute_button color="btn_01_green" text="コードを実行" target="*execute_code" x="10" y="500"]
 
 ; すべてのUI配置が終わったので、進行を停止してボタンクリックを待つ
 [s]

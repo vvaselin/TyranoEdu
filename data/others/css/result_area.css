@@ -1,9 +1,9 @@
 .result_area_style {
     position: absolute;
     left: 10px;
-    top: 490px;
+    top: 545px;
     width: 645px;
-    height: 230px;
+    height: 180px;
     background-image: url('../../fgimage/result_box.png'); /* 背景画像を指定 */
     background-size: 100% 100%;
     padding: 20px;
