@@ -115,7 +115,7 @@ $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
 ; サーバーにコードを送信
 [iscript]
 var cpp_code = f.my_code; 
-fetch('http://localhost:8088/execute', {
+fetch('/execute', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ code: cpp_code }),
