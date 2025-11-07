@@ -152,10 +152,8 @@ $("#modal_copy_button_id").button("disable");
     // コピーボタン有効化
     $("#modal_copy_button_id").button("enable");
     
-    // 実行時間を計算
-    var endtime = performance.now();
-    var time_taken = (endtime - f.starttime) / 1000;
-    f.execution_time = time_taken.toFixed(2);
+    // 実行時間
+    console.error("実行時間：", (performance.now() - f.starttime), "ms");
 [endscript]
 
 ; sのとこに戻る
