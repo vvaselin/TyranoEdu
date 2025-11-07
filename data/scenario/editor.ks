@@ -117,6 +117,9 @@ $("#modal_copy_button_id").button("disable");
     if (!$dialog.dialog("isOpen")) {
         $dialog.dialog("open");
     }
+    else {
+        $dialog.dialog("close");
+    }
 [endscript]
 [return]
 
