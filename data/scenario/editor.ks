@@ -36,12 +36,10 @@ editor_wrapper.css({
 $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
 [endscript]
 
-; --- 結果表示用のptextを、名前をつけてfixレイヤーに配置 ---
-
-
+; --- 結果表示用モーダル---
 [loadcss file="./tyrano/libs/jquery-ui/jquery-ui.css"]
+[loadcss file="./data/others/css/modal_dark_theme.css"]
 
-; fixレイヤーに移動させる
 [iscript]
 // ティラノの変数 f を参照
 var f = TYRANO.kag.stat.f;
@@ -51,7 +49,7 @@ var fix_layer = $(".fixlayer").first();
 // --- モーダルウィンドウのHTMLを定義 ---
 var modal_html = `
 <div id="result_modal" title="実行結果">
-    <pre id="result_modal_content" style="white-space: pre-wrap; word-wrap: break-word; height: 95%; overflow-y: auto; background: #f5f5f5; border: 1px solid #ccc; padding: 5px;">
+    <pre id="result_modal_content">
         実行ボタンを押してね
     </pre>
 </div>
@@ -70,7 +68,7 @@ $modal.dialog({
     minWidth: 200,
     minHeight: 150,
     position: { my: "center", at: "center", of: window },
-    
+    dialogClass: "dialog-dark",
     buttons: [
         {
             text: "コピー",
@@ -109,7 +107,6 @@ $("#modal_copy_button_id").button("disable");
 [s]
 
 ; ■■■ 実行処理（サブルーチン） ■■■
-
 *open_result_window
 ; モーダルウィンドウを（中身はそのまま）開く
 [iscript]
