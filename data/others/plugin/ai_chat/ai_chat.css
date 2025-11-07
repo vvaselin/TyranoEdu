@@ -47,9 +47,6 @@
     color: #ffffff;
     display: flex;
     flex-direction: column;
-    user-select: text;
-    -webkit-user-select: text;
-    pointer-events: auto;
 }
 
 .ai-chat-message .username {
@@ -64,10 +61,6 @@
     border-radius: 4px;
     font-family: 'Courier New', Courier, monospace;
     font-size: 0.9em;
-    user-select: all;
-    -webkit-user-select: all;
-    pointer-events: auto;
-    user-select: text !important;
 }
 
 .ai-chat-message pre {
@@ -77,10 +70,6 @@
     border-radius: 5px;
     white-space: pre-wrap; /* コードがはみ出ないように折り返す */
     word-wrap: break-word;
-    user-select: all; 
-    -webkit-user-select: all;
-    pointer-events: auto;
-    user-select: text !important;
 }
 
 .ai-chat-message pre code {

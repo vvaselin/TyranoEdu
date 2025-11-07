@@ -65,10 +65,13 @@ $modal.dialog({
     modal: false,
     width: 400,
     height: 300,
-    minWidth: 200,
-    minHeight: 150,
+    minWidth: 300,
+    maxWidth: 800,
+    minHeight: 200,
+    maxHeight: 600,
     position: { my: "center", at: "center", of: window },
     dialogClass: "dialog-dark",
+    helper: "ui-resizable-helper",
     buttons: [
         {
             text: "コピー",
@@ -92,6 +95,17 @@ $modal.dialog({
     open: function(event, ui) {
         $(this).css('font-size', '14px');
         $(this).parent().css('z-index', '10002'); 
+    },
+    // リサイズの負荷軽減
+    resizeStart: function(event, ui) {
+        $("#monaco-iframe").css('pointer-events', 'none');
+        $("#ai-chat-container").css('visibility', 'hidden');
+        $(this).find("#result_modal_content").css('visibility', 'hidden');
+    },
+    resizeStop: function(event, ui) {
+        $("#monaco-iframe").css('pointer-events', 'auto');
+        $("#ai-chat-container").css('visibility', 'visible');
+        $(this).find("#result_modal_content").css('visibility', 'visible');
     }
 });
 // コピーボタン無効化

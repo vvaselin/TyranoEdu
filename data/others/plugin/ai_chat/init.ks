@@ -34,10 +34,6 @@
         var fix_layer = $(".fixlayer").first();
         fix_layer.append(chat_container); 
 
-        chat_container.on("mousedown mouseup mousemove", function(e) {
-            e.stopPropagation();
-        });
-
         // JavaScriptでUIの位置とサイズを「ピクセル単位」で明示的に設定する
 
         const scWidth = parseInt(TYRANO.kag.config.scWidth);
@@ -69,7 +65,7 @@
 
         chat_container.show();
 
-         const inputField = $(".ai-chat-input");
+        const inputField = $(".ai-chat-input");
         const sendButton = $(".ai-chat-send-button"); // ボタン要素を取得
         const messagesContainer = $(".ai-chat-messages");
         
