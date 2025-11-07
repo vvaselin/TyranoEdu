@@ -1,7 +1,5 @@
 *start
 [clearfix]
-[wait time=10]
-
 [bg storage="room.jpg" time="0"]
 @layopt layer="message0" visible=false
 
@@ -107,7 +105,7 @@ $("#modal_copy_button_id").button("disable");
 ; 実行ボタン
 [glink fix="true" color="btn_01_green" storage="editor.ks" text="コードを実行" target="*execute_code" width="485" size="20" x="10" y="650"]
 ; 実行結果モーダル表示ボタン
-[glink fix="true" color="btn_01_blue" storage="editor.ks" text="実行画面を開く" target="*open_result_window" width="160" size="20" x="490" y="650"]
+[glink fix="true" color="btn_01_blue" storage="editor.ks" text="実行画面" target="*open_result_window" width="160" size="20" x="490" y="650"]
 
 ; すべてのUI配置が終わったので、進行を停止してボタンクリックを待つ
 [s]
