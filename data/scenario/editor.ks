@@ -113,36 +113,21 @@ $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
 
 
 ; サーバーにコードを送信
+[execute_cpp code=&f.my_code]
 [iscript]
-var cpp_code = f.my_code; 
-fetch('/execute', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code: cpp_code }),
-})
-.then(response => {
-    if (!response.ok) { return response.text().then(text => { throw new Error(text) }); }
-    return response.json();
-})
-.then(data => {
-    f.execution_result = "実行結果:\n" + data.result;
-    TYRANO.kag.ftag.startTag('jump', { storage: "editor.ks", target: '*display_and_return' });
-    f.endtime = performance.now();
-    console.log(`コード実行時間: ${f.endtime - f.starttime} ミリ秒`);
-})
-.catch(error => {
-    f.execution_result = "エラー:\n" + error.message;
-    TYRANO.kag.ftag.startTag('jump', { storage: "editor.ks", target: '*display_and_return' });
-});
-[endscript]
-[s]
+    // 実行結果をptextに反映
+    var result_text = f.execution_result || "（不明なエラー）";
+    $("#result_text_content").text(result_text);
+    
+    // コピーボタンを再表示
+    $("#result_copy_btn").show();
 
-*display_and_return
-; ptextの内容を実行結果に上書きする
-[iscript]
-    $("#result_text_content").text(f.execution_result);
-    $("#result_copy_btn").show(); // ボタンを表示
+    // 実行時間を計算して変数に格納
+    var endtime = performance.now();
+    var time_taken = (endtime - f.starttime) / 1000; // ミリ秒を秒に
+    f.execution_time = time_taken.toFixed(2); // 小数点以下2桁
+    console.error("コード実行時間: " + f.execution_time + " 秒");
 [endscript]
 
-; サブルーチンを終了し、*startの[s]の位置に戻る
+; sのとこに戻る
 [return]
