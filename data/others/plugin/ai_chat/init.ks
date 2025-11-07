@@ -108,10 +108,9 @@
                     
                     navigator.clipboard.writeText(codeText).then(
                         () => {
-                            alertify.success("コードをコピーしました！");
+                            alertify.success("チャットのコードをコピー");
                         },
                         (err) => {
-                            console.error("クリップボードへのコピーに失敗しました:", err);
                             alertify.error("コピーに失敗しました");
                         }
                     );

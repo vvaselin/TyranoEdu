@@ -80,7 +80,7 @@ $modal.dialog({
                 console.log("コピーボタンクリック: ", textToCopy);
                 navigator.clipboard.writeText(textToCopy).then(
                     () => {
-                        alertify.success("コピーしました！");
+                        alertify.success("実行結果をコピー");
                     },
                     (err) => {
                         alert("コピーに失敗しました。");
@@ -108,7 +108,7 @@ $("#modal_copy_button_id").button("disable");
 
 ; ■■■ 実行処理（サブルーチン） ■■■
 *open_result_window
-; モーダルウィンドウを（中身はそのまま）開く
+; モーダルウィンドウを開く
 [iscript]
     var $dialog = $("#result_modal");
     if (!$dialog.dialog("isOpen")) {
@@ -121,7 +121,7 @@ $("#modal_copy_button_id").button("disable");
 [return]
 
 *execute_code
-; モーダルウィンドウに「実行中...」と表示し、開く
+; モーダルウィンドウに「実行中...」と表示
 [iscript]
     var $dialog = $("#result_modal");
     // コピーボタン無効化
