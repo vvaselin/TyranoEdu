@@ -122,11 +122,8 @@ $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
     // コピーボタンを再表示
     $("#result_copy_btn").show();
 
-    // 実行時間を計算して変数に格納
-    var endtime = performance.now();
-    var time_taken = (endtime - f.starttime) / 1000; // ミリ秒を秒に
-    f.execution_time = time_taken.toFixed(2); // 小数点以下2桁
-    console.error("コード実行時間: " + f.execution_time + " 秒");
+    // 実行時間
+    console.error("コード実行時間: " + (performance.now() - f.starttime) + " ミリ秒");
 [endscript]
 
 ; sのとこに戻る
