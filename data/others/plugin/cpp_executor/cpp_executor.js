@@ -40,11 +40,11 @@
             })
             .then(data => {
                 // 成功した結果を変数に格納
-                f.execution_result = "実行結果:\n" + data.result;
+                f.execution_result = data.result;
             })
             .catch(error => {
                 // 失敗した結果を変数に格納
-                f.execution_result = "実行エラー:\n" + error.message;
+                f.execution_result = "エラー:\n" + error.message;
             })
             .finally(() => {
                 // API通信が完了したら、ティラノスクリプトの次のタグに進ませる

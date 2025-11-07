@@ -42,58 +42,64 @@ $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
 
 ; --- 結果表示用のptextを、名前をつけてfixレイヤーに配置 ---
 
-[html]
-<div id="result_area" class="result_area_style">
-    <pre id="result_text_content">実行結果</pre>
-    <button class="copy-result-button" id="result_copy_btn" style="display:none;">コピー</button>
-</div>
-[endhtml]
 
-[loadcss file="./data/others/css/result_area.css"]
+[loadcss file="./tyrano/libs/jquery-ui/jquery-ui.css"]
 
 ; fixレイヤーに移動させる
 [iscript]
-    var result_area = $("#result_area");
-    var fix_layer = $(".fixlayer").first();
-    fix_layer.append(result_area);
+// ティラノの変数 f を参照
+var f = TYRANO.kag.stat.f;
+// fixレイヤーを取得
+var fix_layer = $(".fixlayer").first();
+
+// --- モーダルウィンドウのHTMLを定義 ---
+var modal_html = `
+<div id="result_modal" title="実行結果">
+    <pre id="result_modal_content" style="white-space: pre-wrap; word-wrap: break-word; height: 95%; overflow-y: auto; background: #f5f5f5; border: 1px solid #ccc; padding: 5px;">
+        実行ボタンを押してね
+    </pre>
+</div>
+`;
+
+// --- HTMLをfixレイヤーに追加し、非表示にする ---
+var $modal = $(modal_html);
+fix_layer.append($modal);
+
+// --- jQuery UI Dialog として初期化 ---
+$modal.dialog({
+    autoOpen: false,
+    modal: false,
+    width: 400,
+    height: 300,
+    minWidth: 200,
+    minHeight: 150,
+    position: { my: "center", at: "center", of: window },
     
-    result_area.on("mousedown mouseup mousemove", function(e) {
-        e.stopPropagation();
-    });
-[endscript]
-
-; --- コピーボタンにクリックイベントを設定 ---
-[iscript]
-(function() {
-    var $button = $("#result_copy_btn");
-    
-    $button.on("click", function (e) {
-        // ティラノスクリプト本体へのクリック伝播を停止
-        e.stopPropagation();
-        
-        // コピー対象のテキストを取得
-        var textToCopy = $("#result_text_content").text();
-
-        // "実行結果:\n" または "エラー:\n" というプレフィックスを削除
-        if (textToCopy.startsWith("実行結果:\n")) {
-            textToCopy = textToCopy.substring("実行結果:\n".length);
-        } else if (textToCopy.startsWith("エラー:\n")) {
-            textToCopy = textToCopy.substring("エラー:\n".length);
-        }
-
-        // クリップボードにコピー
-        navigator.clipboard.writeText(textToCopy).then(
-            () => {
-                // ティラノ標準のalertifyで通知
-                alertify.success("コピーしました！");
-            },
-            (err) => {
-                console.error("クリップボードへのコピーに失敗しました:", err);
-                alertify.error("コピーに失敗しました");
+    buttons: [
+        {
+            text: "コピー",
+            id: "modal_copy_button_id",
+            click: function() {
+                var $dialog_content = $(this).find("#result_modal_content");
+                var textToCopy = $dialog_content.text();
+                
+                console.log("コピーボタンクリック: ", textToCopy);
+                navigator.clipboard.writeText(textToCopy).then(
+                    () => {
+                        alertify.success("コピーしました！");
+                    },
+                    (err) => {
+                        alert("コピーに失敗しました。");
+                    }
+                );
             }
-        );
-    });
-})();
+        }
+    ],
+    open: function(event, ui) {
+        $(this).css('font-size', '14px');
+        $(this).parent().css('z-index', '10002'); 
+    }
+});
 [endscript]
 
 [execute_button color="btn_01_green" text="コードを実行" target="*execute_code" x="10" y="500"]
@@ -104,26 +110,40 @@ $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
 ; ■■■ 実行処理（サブルーチン） ■■■
 
 *execute_code
-; ptextの内容を「実行中...」に上書きする
+; モーダルウィンドウに「実行中...」と表示し、開く
 [iscript]
-    $("#result_text_content").text("実行中...");
-    $("#result_copy_btn").hide(); // ボタンを隠す
+    var $dialog = $("#result_modal");
+    $("#modal_copy_button_id").button("disable");
+    
+    // 中身を更新
+    $("#result_modal_content").text("実行中...");
+    
+    // ダイアログが閉じていたら開く
+    if (!$dialog.dialog("isOpen")) {
+        $dialog.dialog("open");
+    }
+    
+    // 時間計測開始
     f.starttime = performance.now();
 [endscript]
 
-
-; サーバーにコードを送信
+; サーバーにコードを送信 (プラグインが完了するまで待機)
 [execute_cpp code=&f.my_code]
-[iscript]
-    // 実行結果をptextに反映
-    var result_text = f.execution_result || "（不明なエラー）";
-    $("#result_text_content").text(result_text);
-    
-    // コピーボタンを再表示
-    $("#result_copy_btn").show();
 
-    // 実行時間
-    console.error("コード実行時間: " + (performance.now() - f.starttime) + " ミリ秒");
+; 完了後、モーダルウィンドウの結果を上書きする
+[iscript]
+    // 実行結果を変数から取得
+    var result_text = f.execution_result || "（不明なエラー）";
+    
+    // モーダルの中身を更新
+    $("#result_modal_content").text(result_text);
+
+    $("#modal_copy_button_id").button("enable");
+    
+    // 実行時間を計算
+    var endtime = performance.now();
+    var time_taken = (endtime - f.starttime) / 1000;
+    f.execution_time = time_taken.toFixed(2);
 [endscript]
 
 ; sのとこに戻る
