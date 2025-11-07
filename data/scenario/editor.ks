@@ -11,12 +11,6 @@
 
 [wait time=10]
 
-; 実行ボタンglinkのデザイン用マクロ
-[loadcss file="./data/others/css/glink.css"]
-[macro name="execute_button"]
-[glink fix="true" color=%color storage="editor.ks" target=%target text=%text width="640" size="20" x=%x y=%y]
-[endmacro]
-
 ; ■■■ 初期設定（UIをfixレイヤーに一度だけ配置） ■■■
 
 [iscript]
@@ -36,7 +30,13 @@ f.my_code = [
 var editor_wrapper = $("#monaco-iframe").parent();
 var fix_layer = $(".fixlayer").first();
 fix_layer.append(editor_wrapper);
-editor_wrapper.css({ "position": "absolute", "left": "1%", "top": "2%", "width": "50%", "height": "67%", "z-index": "100" });
+editor_wrapper.css({ 
+    "position": "absolute", 
+    "left": "1%", "top": "2%", 
+    "width": "50%", 
+    "height": "88%", 
+    "z-index": "100" 
+});
 $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
 [endscript]
 
@@ -100,14 +100,29 @@ $modal.dialog({
         $(this).parent().css('z-index', '10002'); 
     }
 });
+
+$("#modal_copy_button_id").button("disable");
 [endscript]
 
-[execute_button color="btn_01_green" text="コードを実行" target="*execute_code" x="10" y="500"]
+; 実行ボタン
+[glink fix="true" color="btn_01_green" storage="editor.ks" text="コードを実行" target="*execute_code" width="485" size="20" x="10" y="650"]
+; 実行結果モーダル表示ボタン
+[glink fix="true" color="btn_01_blue" storage="editor.ks" text="実行画面を開く" target="*open_result_window" width="160" size="20" x="490" y="650"]
 
 ; すべてのUI配置が終わったので、進行を停止してボタンクリックを待つ
 [s]
 
 ; ■■■ 実行処理（サブルーチン） ■■■
+
+*open_result_window
+; モーダルウィンドウを（中身はそのまま）開く
+[iscript]
+    var $dialog = $("#result_modal");
+    if (!$dialog.dialog("isOpen")) {
+        $dialog.dialog("open");
+    }
+[endscript]
+[return]
 
 *execute_code
 ; モーダルウィンドウに「実行中...」と表示し、開く
