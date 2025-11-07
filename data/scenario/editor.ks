@@ -99,12 +99,10 @@ $modal.dialog({
     // リサイズの負荷軽減
     resizeStart: function(event, ui) {
         $("#monaco-iframe").css('pointer-events', 'none');
-        $("#ai-chat-container").css('visibility', 'hidden');
         $(this).find("#result_modal_content").css('visibility', 'hidden');
     },
     resizeStop: function(event, ui) {
         $("#monaco-iframe").css('pointer-events', 'auto');
-        $("#ai-chat-container").css('visibility', 'visible');
         $(this).find("#result_modal_content").css('visibility', 'visible');
     }
 });
