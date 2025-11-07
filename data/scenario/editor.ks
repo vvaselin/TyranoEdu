@@ -7,8 +7,6 @@
 [stop_keyconfig]
 [ai_chat_show]
 
-[wait time=10]
-
 ; ■■■ 初期設定（UIをfixレイヤーに一度だけ配置） ■■■
 
 [iscript]
