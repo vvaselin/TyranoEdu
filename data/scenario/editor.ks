@@ -100,7 +100,7 @@ $modal.dialog({
         $(this).parent().css('z-index', '10002'); 
     }
 });
-
+// コピーボタン無効化
 $("#modal_copy_button_id").button("disable");
 [endscript]
 
@@ -128,6 +128,7 @@ $("#modal_copy_button_id").button("disable");
 ; モーダルウィンドウに「実行中...」と表示し、開く
 [iscript]
     var $dialog = $("#result_modal");
+    // コピーボタン無効化
     $("#modal_copy_button_id").button("disable");
     
     // 中身を更新
@@ -152,7 +153,7 @@ $("#modal_copy_button_id").button("disable");
     
     // モーダルの中身を更新
     $("#result_modal_content").text(result_text);
-
+    // コピーボタン有効化
     $("#modal_copy_button_id").button("enable");
     
     // 実行時間を計算
