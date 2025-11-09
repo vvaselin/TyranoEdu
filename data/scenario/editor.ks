@@ -28,9 +28,10 @@ var fix_layer = $(".fixlayer").first();
 fix_layer.append(editor_wrapper);
 editor_wrapper.css({ 
     "position": "absolute", 
-    "left": "1%", "top": "2%", 
-    "width": "50%", 
-    "height": "88%", 
+    "left": "18.5%", 
+    "top": "2.5%", 
+    "width": "45%", 
+    "height": "87%", 
     "z-index": "100" 
 });
 $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
@@ -48,7 +49,7 @@ var fix_layer = $(".fixlayer").first();
 
 // --- モーダルウィンドウのHTMLを定義 ---
 var modal_html = `
-<div id="result_modal" title="実行結果">
+<div id="result_modal" title="コンソール">
     <pre id="result_modal_content">
         実行ボタンを押してね
     </pre>
@@ -111,9 +112,9 @@ $("#modal_copy_button_id").button("disable");
 [endscript]
 
 ; 実行ボタン
-[glink fix="true" color="btn_01_green" storage="editor.ks" text="コードを実行" target="*execute_code" width="485" size="20" x="10" y="650"]
+[glink fix="true" color="btn_01_green" storage="editor.ks" text="コードを実行" target="*execute_code" width="410" size="20" x="240" y="650"]
 ; 実行結果モーダル表示ボタン
-[glink fix="true" color="btn_01_blue" storage="editor.ks" text="実行画面" target="*open_result_window" width="160" size="20" x="490" y="650"]
+[glink fix="true" color="btn_01_blue" storage="editor.ks" text="コンソール" target="*open_result_window" width="150" size="20" x="655" y="650"]
 
 ; すべてのUI配置が終わったので、進行を停止してボタンクリックを待つ
 [s]
