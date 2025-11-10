@@ -40,6 +40,15 @@
                     });
                 });
             }
+
+            else if (command === 'get_value') {
+                if (editor) {
+                    parent.postMessage({
+                        command: 'return_value', // 応答であることを示す
+                        data: { current_code: editor.getValue() }
+                    }, '*');
+                }
+            }
         });
     </script>
 </body>

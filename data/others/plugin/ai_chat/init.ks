@@ -30,6 +30,11 @@
 
     ; 3. [iscript]でUIをfixレイヤーに移動し、イベントを設定する
     [iscript]
+        if (typeof TYRANO.kag.plugin === 'undefined') {
+            TYRANO.kag.plugin = {};
+        }
+        TYRANO.kag.plugin.ai_chat = {};
+
         var chat_container = $(".ai-chat-container");
         var fix_layer = $(".fixlayer").first();
         fix_layer.append(chat_container); 
@@ -115,6 +120,11 @@
             
             messagesContainer.append(messageElement);
             messagesContainer.scrollTop(messagesContainer[0].scrollHeight);
+
+            TYRANO.kag.plugin.ai_chat.addMessage = addMessage;
+            TYRANO.kag.plugin.ai_chat.addErrorMessage = function(text) {
+             addMessage("エラー", text, "./data/fgimage/chat/akane/naki.png");
+        };
         }
 
         // メッセージ送信処理を関数にまとめる
@@ -129,6 +139,16 @@
             inputField.val("");
             inputField.prop("disabled", true).attr("placeholder", "AIの応答を待っています...");
             sendButton.prop("disabled", true);
+
+            if (typeof TYRANO.kag.stat.tf === 'undefined') {
+                TYRANO.kag.stat.tf = {};
+            }
+
+            TYRANO.kag.stat.tf.chat_message = userMessage;
+            TYRANO.kag.ftag.startTag("call", {
+                storage: "editor.ks", // 呼び出し先シナリオ
+                target: "*send_chat_context"  // 呼び出し先ラベル
+            });
 
             // AIサーバーとの通信処理
             fetch('/api/chat', {

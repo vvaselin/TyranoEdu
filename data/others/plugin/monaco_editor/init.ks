@@ -63,4 +63,58 @@
     [endscript]
 [endmacro]
 
+[macro name="monaco_editor_get_value"]
+
+    ; [iscript] で Iframe に 'get_value' を命令
+    [iscript]
+        // 1. Iframe要素を取得
+        var iframe = document.getElementById('monaco-iframe');
+        if (!iframe) {
+            console.error("Monaco Editor (Iframe) が見つかりません。");
+            TYRANO.kag.ftag.nextOrder();
+        }else {
+            // 2. メッセージリスナーを「一時的」に設定
+            //    'return_value' を受け取ったら、変数をセットしてリスナーを解除し、[commit] を実行する
+            var listener = function(event) {
+                
+                // 安全チェック (送信元がIframeか、など)
+                if (event.source !== iframe.contentWindow || !event.data.command) {
+                    return;
+                }
+
+                if (event.data.command === 'return_value') {
+                    // (1) 変数に格納
+                    //     タグのパラメータ (mp.variable) を参照
+                    var var_name = TYRANO.kag.stat.mp.variable;
+                    if (var_name) {
+                        var code = event.data.data.current_code;
+                        // 変数名 (tf.current_code など) を解析して値をセット
+                        TYRANO.kag.hbs.eval(var_name + " = '" + TYRANO.kag.hbs.escape_str(code) + "'");
+                    }
+                    
+                    // (2) リスナーを解除
+                    window.removeEventListener('message', listener);
+                    
+                    // (3) [commit]タグ（[s]の代わり）を実行して、次の処理へ進む
+                    console.log("Monaco Editor: コード取得完了");
+                    TYRANO.kag.ftag.startTag("commit");
+                }
+            };
+            
+            // 3. メッセージリスナーを登録
+            window.addEventListener('message', listener);
+
+            // 4. Iframe に 'get_value' コマンドを送信
+            iframe.contentWindow.postMessage({
+                command: 'get_value'
+            }, '*');
+        }
+        
+
+        
+    [endscript]
+
+    [s]
+[endmacro]
+
 [return]

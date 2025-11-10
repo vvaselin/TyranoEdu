@@ -3,6 +3,36 @@
 [bg storage="room.jpg" time="0"]
 @layopt layer="message0" visible=false
 
+; 課題データの読み込み
+[iscript]
+// 読み込む JSON ファイルのパス
+var json_path = "./data/others/tasks.json";
+
+$.ajax({
+    url: json_path,
+    type: 'GET',
+    dataType: 'json',
+    async: false,
+    
+    success: function(data) {
+        TYRANO.kag.stat.f.all_tasks = data;
+        console.log("tasks.json 読み込み成功:", TYRANO.kag.stat.f.all_tasks);
+    },
+    
+    error: function(xhr, status, error) {
+        console.error("tasks.json 読み込み失敗:", json_path, error);
+        
+        TYRANO.kag.stat.f.all_tasks = { 
+            "error_task": { 
+                "title": "読込失敗", 
+                "description": "tasks.json が見つかりません。\nパスを確認してください。" 
+            }
+        };
+        TYRANO.kag.stat.f.current_task_id = "error_task";
+    }
+});
+[endscript]
+
 ; AIチャットUIを初期化して表示
 [stop_keyconfig]
 [ai_chat_show]
@@ -111,6 +141,49 @@ $modal.dialog({
 $("#modal_copy_button_id").button("disable");
 [endscript]
 
+; 課題表示UI
+[eval exp="f.current_task_id = sf.current_task_id || 'task1'"]
+[layopt layer=fix visible=true page=fore]
+[html]
+<div id="task-box" style="
+    position:absolute;
+    left:5px; 
+    top:15px;
+    width:230px; 
+    height:650px;
+    background-color:rgba(56, 56, 56, 1);
+    color:rgb(255, 255, 255);
+    border-radius:10px;
+    padding:15px;
+    overflow:auto;
+    box-sizing: border-box;
+">
+    <h3 id="task-title" style="margin-bottom: 10px;">課題</h3>
+  <p id="task-content" style="white-space: pre-wrap;"></p>
+</div>
+[endhtml]
+
+[iscript]
+var tasks = TYRANO.kag.stat.f.all_tasks;
+var current_id = TYRANO.kag.stat.f.current_task_id;
+
+var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
+
+if (task_data) {
+    // 成功: データをUIにセット
+    $("#task-title").text(task_data.title);
+    $("#task-content").text(task_data.description);
+} else {
+    // 失敗: 課題IDが見つからない
+    $("#task-title").text("エラー");
+    var error_msg = "課題ID「" + current_id + "」が見つかりません。";
+    if (!tasks) {
+        error_msg += " (tasks.json が未ロード)";
+    }
+    $("#task-content").text(error_msg);
+}
+[endscript]
+
 ; 実行ボタン
 [glink fix="true" color="btn_01_green" storage="editor.ks" text="コードを実行" target="*execute_code" width="410" size="20" x="240" y="650"]
 ; 実行結果モーダル表示ボタン
@@ -170,4 +243,52 @@ $("#modal_copy_button_id").button("disable");
 [endscript]
 
 ; sのとこに戻る
+[return]
+
+*send_chat_context
+[monaco_editor_get_value variable="tf.current_code"]
+[commit]
+[iscript]
+    // 必要な変数をJS側で取得
+    var user_message = TYRANO.kag.stat.tf.chat_message || "";
+    var code_content = TYRANO.kag.stat.tf.current_code || "（コードなし）";
+    
+    // 課題内容を取得
+    var tasks = TYRANO.kag.stat.f.all_tasks;
+    var current_id = TYRANO.kag.stat.f.current_task_id;
+    var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
+    var task_description = task_data ? task_data.description : "（課題なし）";
+
+    // サーバーに渡す新しいペイロード
+    var payload = {
+        message: user_message,
+        code: code_content,
+        task: task_description
+    };
+
+    // AIサーバー（main.go）へ送信
+    fetch('http://localhost:8080/api/chat', { // main.go のアドレス
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+    })
+    .then(response => response.ok ? response.json() : response.text().then(text => { throw new Error(text) }))
+    .then(data => {
+        // 成功時: グローバル化した addMessage で応答をチャット欄に追加
+        // (アバター画像は適宜変更してください)
+        TYRANO.kag.plugin.ai_chat.addMessage("あかね", data.text, "./data/fgimage/chat/akane/hirameki.png");
+    })
+    .catch(error => {
+        console.error("AIチャットエラー:", error);
+        // 失敗時: グローバル化した addErrorMessage でエラーを表示
+        TYRANO.kag.plugin.ai_chat.addErrorMessage("AIとの通信に失敗しました。詳細: " + error.message);
+    })
+    .finally(() => {
+        // 入力欄とボタンを元に戻す (jQueryで要素を直接指定)
+        $(".ai-chat-input").prop("disabled", false).attr("placeholder", "メッセージを入力...").focus();
+        $(".ai-chat-send-button").prop("disabled", false);
+    });
+[endscript]
+
+; サブルーチンから戻る
 [return]
