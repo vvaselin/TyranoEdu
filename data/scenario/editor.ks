@@ -246,9 +246,20 @@ if (task_data) {
 [return]
 
 *send_chat_context
-[monaco_editor_get_value variable="tf.current_code"]
-[commit]
 [iscript]
+// デバッグログ 1
+console.log("デバッグ: *send_chat_context が呼び出されました。");
+[endscript]
+
+; 1. Monaco Editor から現在のコードを取得
+[monaco_editor_get_value variable="tf.current_code"]
+[commit] ; 取得完了を待つ
+
+; 2. [iscript] でプロンプトを組み立ててサーバーに送信
+[iscript]
+    // デバッグログ 2
+    console.log("デバッグ: [monaco_editor_get_value] を通過。fetch処理を開始します。");
+
     // 必要な変数をJS側で取得
     var user_message = TYRANO.kag.stat.tf.chat_message || "";
     var code_content = TYRANO.kag.stat.tf.current_code || "（コードなし）";
@@ -265,26 +276,51 @@ if (task_data) {
         code: code_content,
         task: task_description
     };
+    
+    // デバッグログ 3
+    console.log("デバッグ: サーバーに送信するペイロード", payload);
 
-    // AIサーバー（main.go）へ送信
-    fetch('http://localhost:8080/api/chat', { // main.go のアドレス
+    // AIサーバー（main.go）へ送信 (相対パス)
+    fetch('/api/chat', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
     })
-    .then(response => response.ok ? response.json() : response.text().then(text => { throw new Error(text) }))
+    .then(response => {
+        // デバッグログ 4
+        console.log("デバッグ: サーバーから応答あり (status: " + response.status + ")");
+        if (!response.ok) {
+            // サーバーがエラーを返した場合 (例: 500 Internal Server Error)
+            return response.text().then(text => { 
+                throw new Error("サーバーエラー (Status " + response.status + "): " + (text || response.statusText)); 
+            });
+        }
+        return response.json(); // 正常なJSONレスポンスを次に渡す
+    })
     .then(data => {
+        // デバッグログ 5
+        console.log("デバッグ: 応答データをチャット欄に表示します。");
+        
         // 成功時: グローバル化した addMessage で応答をチャット欄に追加
-        // (アバター画像は適宜変更してください)
         TYRANO.kag.plugin.ai_chat.addMessage("あかね", data.text, "./data/fgimage/chat/akane/hirameki.png");
     })
     .catch(error => {
-        console.error("AIチャットエラー:", error);
-        // 失敗時: グローバル化した addErrorMessage でエラーを表示
-        TYRANO.kag.plugin.ai_chat.addErrorMessage("AIとの通信に失敗しました。詳細: " + error.message);
+        // デバッグログ 6 (エラー発生時)
+        console.error("AIチャットfetchエラー:", error);
+        
+        // ★★★ エラー内容をチャット欄に表示する ★★★
+        // (ネットワークエラー、タイムアウト、JSONパースエラーなど)
+        TYRANO.kag.plugin.ai_chat.addErrorMessage(
+            "AIとの通信に失敗しました。\n" + 
+            "（コンソールで詳細を確認してください）\n" +
+            "エラー: " + error.message
+        );
     })
     .finally(() => {
-        // 入力欄とボタンを元に戻す (jQueryで要素を直接指定)
+        // デバッグログ 7
+        console.log("デバッグ: .finally ブロック実行。UIを有効に戻します。");
+        
+        // ★★★ 成功・失敗に関わらず、必ずUIを元に戻す ★★★
         $(".ai-chat-input").prop("disabled", false).attr("placeholder", "メッセージを入力...").focus();
         $(".ai-chat-send-button").prop("disabled", false);
     });

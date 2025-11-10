@@ -33,7 +33,9 @@
         if (typeof TYRANO.kag.plugin === 'undefined') {
             TYRANO.kag.plugin = {};
         }
-        TYRANO.kag.plugin.ai_chat = {};
+        if (typeof TYRANO.kag.plugin.ai_chat === 'undefined') {
+            TYRANO.kag.plugin.ai_chat = {};
+        }
 
         var chat_container = $(".ai-chat-container");
         var fix_layer = $(".fixlayer").first();
@@ -129,15 +131,12 @@
 
         // メッセージ送信処理を関数にまとめる
         function sendMessage() {
-            const userMessage = inputField.val().trim();
-            if (userMessage === "") {
-                return; // 空の場合は何もしない
-            }
+            var userMessage = inputField.val().trim();
+            if (userMessage === "") return;
 
-            // ユーザーのメッセージを表示
-            addMessage("あなた", userMessage, "./data/fgimage/chat/akane/normal.png");
-            inputField.val("");
-            inputField.prop("disabled", true).attr("placeholder", "AIの応答を待っています...");
+            addMessage("ユーザー", userMessage, "./data/fgimage/chat/akane/normal.png"); 
+            
+            inputField.val("").prop("disabled", true).attr("placeholder", "AIの応答を待っています...").css("height", "auto");
             sendButton.prop("disabled", true);
 
             if (typeof TYRANO.kag.stat.tf === 'undefined') {
@@ -146,28 +145,8 @@
 
             TYRANO.kag.stat.tf.chat_message = userMessage;
             TYRANO.kag.ftag.startTag("call", {
-                storage: "editor.ks", // 呼び出し先シナリオ
-                target: "*send_chat_context"  // 呼び出し先ラベル
-            });
-
-            // AIサーバーとの通信処理
-            fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: userMessage }),
-            })
-            .then(response => response.ok ? response.json() : response.text().then(text => { throw new Error(text) }))
-            .then(data => {
-                addMessage("あかね", data.text, "./data/fgimage/chat/akane/hirameki.png");
-            })
-            .catch(error => {
-                console.error("AIチャットエラー:", error);
-                addMessage("エラー", "AIとの通信に失敗しました。", "./data/fgimage/chat/akane/naki.png");
-            })
-            .finally(() => {
-                // 入力欄とボタンを元に戻す
-                inputField.prop("disabled", false).attr("placeholder", "メッセージを入力...").focus();
-                sendButton.prop("disabled", false);
+                storage: "editor.ks",
+                target: "*send_chat_context" 
             });
         }
 

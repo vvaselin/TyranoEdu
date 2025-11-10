@@ -52,7 +52,7 @@ console.log("ai_chat.js が読み込まれました！");
                     
                     inputField.val("").prop("disabled", true).attr("placeholder", "AIの応答を待っています...");
 
-                    fetch('http://localhost:8080/api/chat', {
+                    fetch('/api/chat', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ message: userMessage }),
