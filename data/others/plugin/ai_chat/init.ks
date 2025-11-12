@@ -30,13 +30,6 @@
 
     ; 3. [iscript]でUIをfixレイヤーに移動し、イベントを設定する
     [iscript]
-        if (typeof TYRANO.kag.plugin === 'undefined') {
-            TYRANO.kag.plugin = {};
-        }
-        if (typeof TYRANO.kag.plugin.ai_chat === 'undefined') {
-            TYRANO.kag.plugin.ai_chat = {};
-        }
-
         var chat_container = $(".ai-chat-container");
         var fix_layer = $(".fixlayer").first();
         fix_layer.append(chat_container); 
@@ -122,23 +115,22 @@
             
             messagesContainer.append(messageElement);
             messagesContainer.scrollTop(messagesContainer[0].scrollHeight);
-
-            TYRANO.kag.plugin.ai_chat.addMessage = addMessage;
-            TYRANO.kag.plugin.ai_chat.addErrorMessage = function(text) {
-             addMessage("エラー", text, "./data/fgimage/chat/akane/naki.png");
-        };
         }
 
         // メッセージ送信処理を関数にまとめる
         function sendMessage() {
-            var userMessage = inputField.val().trim();
-            if (userMessage === "") return;
+            const userMessage = inputField.val().trim();
+            if (userMessage === "") {
+                return; // 空の場合は何もしない
+            }
 
-            addMessage("ユーザー", userMessage, "./data/fgimage/chat/akane/normal.png"); 
-            
-            inputField.val("").prop("disabled", true).attr("placeholder", "AIの応答を待っています...").css("height", "auto");
+            // ユーザーのメッセージを表示
+            addMessage("あなた", userMessage, "./data/fgimage/chat/akane/normal.png");
+            inputField.val("");
+            inputField.prop("disabled", true).attr("placeholder", "AIの応答を待っています...");
             sendButton.prop("disabled", true);
-            console.error("コード:", TYRANO.kag.stat.f['my_code']);
+
+            const CodeContent = TYRANO.kag.stat.f['my_code'];
 
             // AIサーバーとの通信処理
             fetch('/api/chat', {
@@ -146,7 +138,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     message: userMessage,
-                    code: TYRANO.kag.stat.f['my_code'] || ""
+                    code: CodeContent,
                 }),
             })
             .then(response => response.ok ? response.json() : response.text().then(text => { throw new Error(text) }))
