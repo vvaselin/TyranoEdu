@@ -131,7 +131,6 @@
             sendButton.prop("disabled", true);
 
             const CodeContent = TYRANO.kag.stat.f['my_code'];
-            console.error(CodeContent);
 
             // AIサーバーとの通信処理
             fetch('/api/chat', {
