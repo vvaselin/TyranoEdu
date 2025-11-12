@@ -138,15 +138,29 @@
             
             inputField.val("").prop("disabled", true).attr("placeholder", "AIの応答を待っています...").css("height", "auto");
             sendButton.prop("disabled", true);
+            console.error("コード:", TYRANO.kag.stat.f['my_code']);
 
-            if (typeof TYRANO.kag.stat.tf === 'undefined') {
-                TYRANO.kag.stat.tf = {};
-            }
-
-            TYRANO.kag.stat.tf.chat_message = userMessage;
-            TYRANO.kag.ftag.startTag("call", {
-                storage: "editor.ks",
-                target: "*send_chat_context" 
+            // AIサーバーとの通信処理
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    message: userMessage,
+                    code: TYRANO.kag.stat.f['my_code'] || ""
+                }),
+            })
+            .then(response => response.ok ? response.json() : response.text().then(text => { throw new Error(text) }))
+            .then(data => {
+                addMessage("あかね", data.text, "./data/fgimage/chat/akane/hirameki.png");
+            })
+            .catch(error => {
+                console.error("AIチャットエラー:", error);
+                addMessage("エラー", "AIとの通信に失敗しました。", "./data/fgimage/chat/akane/naki.png");
+            })
+            .finally(() => {
+                // 入力欄とボタンを元に戻す
+                inputField.prop("disabled", false).attr("placeholder", "メッセージを入力...").focus();
+                sendButton.prop("disabled", false);
             });
         }
 

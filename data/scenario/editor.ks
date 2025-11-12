@@ -189,6 +189,26 @@ if (task_data) {
 ; 実行結果モーダル表示ボタン
 [glink fix="true" color="btn_01_blue" storage="editor.ks" text="コンソール" target="*open_result_window" width="150" size="20" x="655" y="650"]
 
+; 課題表示UI
+[layopt layer=fix visible=true page=fore]
+[html]
+<div id="task-box" style="
+  position:absolute;
+  left:5px;
+  top:15px;
+  width:200px;
+  height:650px;
+  background-color:rgba(56, 56, 56, 1);
+  color:rgb(255, 255, 255);
+  border-radius:10px;
+  padding:15px;
+  overflow:auto;
+">
+  <h3>課題</h3>
+  <p id="task-content">ここに課題文が入ります。</p>
+</div>
+[endhtml] 
+
 ; すべてのUI配置が終わったので、進行を停止してボタンクリックを待つ
 [s]
 
