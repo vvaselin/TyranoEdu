@@ -130,7 +130,8 @@
             inputField.prop("disabled", true).attr("placeholder", "AIの応答を待っています...");
             sendButton.prop("disabled", true);
 
-            console.error("コード:", TYRANO.kag.stat.f['my_code']);
+            const CodeContent = TYRANO.kag.stat.f['my_code'];
+            console.error(CodeContent);
 
             // AIサーバーとの通信処理
             fetch('/api/chat', {
@@ -138,7 +139,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     message: userMessage,
-                    code: TYRANO.kag.stat.f['my_code'] || ""
+                    code: CodeContent,
                 }),
             })
             .then(response => response.ok ? response.json() : response.text().then(text => { throw new Error(text) }))
