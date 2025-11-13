@@ -141,6 +141,11 @@ $modal.dialog({
 $("#modal_copy_button_id").button("disable");
 [endscript]
 
+; 実行ボタン
+[glink fix="true" color="btn_01_green" storage="editor.ks" text="コードを実行" target="*execute_code" width="410" size="20" x="240" y="650"]
+; 実行結果モーダル表示ボタン
+[glink fix="true" color="btn_01_blue" storage="editor.ks" text="コンソール" target="*open_result_window" width="150" size="20" x="655" y="650"]
+
 ; 課題表示UI
 [eval exp="f.current_task_id = sf.current_task_id || 'task1'"]
 [layopt layer=fix visible=true page=fore]
@@ -148,7 +153,7 @@ $("#modal_copy_button_id").button("disable");
 <div id="task-box" style="
     position:absolute;
     left:5px; 
-    top:15px;
+    top:18px;
     width:230px; 
     height:650px;
     background-color:rgba(56, 56, 56, 1);
@@ -184,32 +189,7 @@ if (task_data) {
 }
 [endscript]
 
-; 実行ボタン
-[glink fix="true" color="btn_01_green" storage="editor.ks" text="コードを実行" target="*execute_code" width="410" size="20" x="240" y="650"]
-; 実行結果モーダル表示ボタン
-[glink fix="true" color="btn_01_blue" storage="editor.ks" text="コンソール" target="*open_result_window" width="150" size="20" x="655" y="650"]
-
-; 課題表示UI
-[layopt layer=fix visible=true page=fore]
-[html]
-<div id="task-box" style="
-  position:absolute;
-  left:5px;
-  top:15px;
-  width:200px;
-  height:650px;
-  background-color:rgba(56, 56, 56, 1);
-  color:rgb(255, 255, 255);
-  border-radius:10px;
-  padding:15px;
-  overflow:auto;
-">
-  <h3>課題</h3>
-  <p id="task-content">ここに課題文が入ります。</p>
-</div>
-[endhtml] 
-
-; すべてのUI配置が終わったので、進行を停止してボタンクリックを待つ
+; すべてのUI配置が終わったので、進行を停止してボタンクリックを待つ、待機状態
 [s]
 
 ; ■■■ 実行処理（サブルーチン） ■■■
@@ -263,88 +243,4 @@ if (task_data) {
 [endscript]
 
 ; sのとこに戻る
-[return]
-
-*send_chat_context
-[iscript]
-// デバッグログ 1
-console.log("デバッグ: *send_chat_context が呼び出されました。");
-[endscript]
-
-; 1. Monaco Editor から現在のコードを取得
-[monaco_editor_get_value variable="tf.current_code"]
-[commit] ; 取得完了を待つ
-
-; 2. [iscript] でプロンプトを組み立ててサーバーに送信
-[iscript]
-    // デバッグログ 2
-    console.log("デバッグ: [monaco_editor_get_value] を通過。fetch処理を開始します。");
-
-    // 必要な変数をJS側で取得
-    var user_message = TYRANO.kag.stat.tf.chat_message || "";
-    var code_content = TYRANO.kag.stat.tf.current_code || "（コードなし）";
-    
-    // 課題内容を取得
-    var tasks = TYRANO.kag.stat.f.all_tasks;
-    var current_id = TYRANO.kag.stat.f.current_task_id;
-    var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
-    var task_description = task_data ? task_data.description : "（課題なし）";
-
-    // サーバーに渡す新しいペイロード
-    var payload = {
-        message: user_message,
-        code: code_content,
-        task: task_description
-    };
-    
-    // デバッグログ 3
-    console.log("デバッグ: サーバーに送信するペイロード", payload);
-
-    // AIサーバー（main.go）へ送信 (相対パス)
-    fetch('/api/chat', { 
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-    })
-    .then(response => {
-        // デバッグログ 4
-        console.log("デバッグ: サーバーから応答あり (status: " + response.status + ")");
-        if (!response.ok) {
-            // サーバーがエラーを返した場合 (例: 500 Internal Server Error)
-            return response.text().then(text => { 
-                throw new Error("サーバーエラー (Status " + response.status + "): " + (text || response.statusText)); 
-            });
-        }
-        return response.json(); // 正常なJSONレスポンスを次に渡す
-    })
-    .then(data => {
-        // デバッグログ 5
-        console.log("デバッグ: 応答データをチャット欄に表示します。");
-        
-        // 成功時: グローバル化した addMessage で応答をチャット欄に追加
-        TYRANO.kag.plugin.ai_chat.addMessage("あかね", data.text, "./data/fgimage/chat/akane/hirameki.png");
-    })
-    .catch(error => {
-        // デバッグログ 6 (エラー発生時)
-        console.error("AIチャットfetchエラー:", error);
-        
-        // ★★★ エラー内容をチャット欄に表示する ★★★
-        // (ネットワークエラー、タイムアウト、JSONパースエラーなど)
-        TYRANO.kag.plugin.ai_chat.addErrorMessage(
-            "AIとの通信に失敗しました。\n" + 
-            "（コンソールで詳細を確認してください）\n" +
-            "エラー: " + error.message
-        );
-    })
-    .finally(() => {
-        // デバッグログ 7
-        console.log("デバッグ: .finally ブロック実行。UIを有効に戻します。");
-        
-        // ★★★ 成功・失敗に関わらず、必ずUIを元に戻す ★★★
-        $(".ai-chat-input").prop("disabled", false).attr("placeholder", "メッセージを入力...").focus();
-        $(".ai-chat-send-button").prop("disabled", false);
-    });
-[endscript]
-
-; サブルーチンから戻る
 [return]
