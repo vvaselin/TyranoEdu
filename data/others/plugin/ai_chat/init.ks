@@ -132,6 +132,10 @@
 
             const CodeContent = TYRANO.kag.stat.f['my_code'];
 
+            var tasks = TYRANO.kag.stat.f.all_tasks;
+            var current_id = TYRANO.kag.stat.f.current_task_id;
+            var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
+
             // AIサーバーとの通信処理
             fetch('/api/chat', {
                 method: 'POST',
@@ -139,6 +143,7 @@
                 body: JSON.stringify({ 
                     message: userMessage,
                     code: CodeContent,
+                    task: task_data.description,
                 }),
             })
             .then(response => response.ok ? response.json() : response.text().then(text => { throw new Error(text) }))
