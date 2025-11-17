@@ -9,7 +9,6 @@
     [loadjs storage="./data/others/js/purify.min.js"] 
 
     ; 2. [html]タグでUIの骨格を生成する
-    ; ★★★ ご要望の「白背景・アイコンなし」UIレイアウト ★★★
     [html]
     <div class="mascot-chat-container" style="display:none;">
         
