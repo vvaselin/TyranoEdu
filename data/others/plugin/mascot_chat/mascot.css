@@ -264,14 +264,14 @@
     cursor: not-allowed;
 }
 .ai-chat-message-simple pre {
-    background-color: #2e3338; /* ai_chat のテーマ色 */
-    border: 1px solid #202225;
+    background-color: #f5f5ff;
+    border: 1px solid #ddd;
     border-radius: 4px;
     padding: 10px;
     margin: 5px 0;
     overflow-x: auto;
     display: block; 
-    color: #b9bbbe; /* コードの色 */
+    color: #333; /* コードの色 */
     position: relative; /* ★コピーボタン配置のため */
 }
 .ai-chat-message-simple code {
@@ -282,7 +282,6 @@
     padding: 0;
 }
 
-/* ★コピーボタン (ai_chat オリジナル) */
 .copy-code-button {
     position: absolute;
     top: 5px;

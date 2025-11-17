@@ -175,22 +175,16 @@
                     aiMessagesContainer.scrollTop(0);
                 }
                 
-                // ★修正点1: 履歴保存とボタン有効化ロジック
-                if (!is_history_load) {
+               if (!is_history_load) {
+                    navPrev.prop("disabled", false);
+
                     var history = getSfHistory(); 
-                    // sf が undefined でも history は [] になる
                     
                     if (typeof TYRANO.kag.stat.sf !== "undefined") {
-                        // sf が定義済みの場合のみ履歴に push
                         history.push({ username, message });
                         if (history.length > 50) {
                             history.shift();
                         }
-                    }
-                    
-                    // 履歴が 1 件以上あれば（=今プッシュした）、「前へ」ボタンを有効化
-                    if (history.length > 0) {
-                         navPrev.prop("disabled", false);
                     }
                 }
             }
