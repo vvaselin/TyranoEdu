@@ -112,6 +112,7 @@
                     TYRANO.kag.stat.sf.ai_chat_history = [];
                 }
                 return TYRANO.kag.stat.sf.ai_chat_history;
+                console.error(TYRANO.kag.stat.sf.ai_chat_history);
             }
             
             function getFLogIndex() {
@@ -124,9 +125,8 @@
                 return TYRANO.kag.stat.f.ai_chat_log_index;
             }
             
-            // --- 関数定義 (新レイアウト) ---
+            // --- 関数定義 (★ 2点修正) ---
             
-            // ★修正: addMessage (append ではなく html で上書き)
             function addMessage(username, message, is_history_load = false) {
                 var messageHtml = DOMPurify.sanitize(marked.parse(message));
                 var userNameColor = (username === "あなた") ? "#008800" : "#d9534f";
@@ -138,6 +138,34 @@
                     </div>
                 `);
 
+                // ★修正点2: コピーボタン機能を復活 (ai_chat より移植)
+                messageEl.find("pre code").each(function(i, block) {
+                    var $block = $(block);
+                    var $pre = $block.parent("pre");
+                    
+                    if ($pre.find('.copy-code-button').length > 0) {
+                        return; 
+                    }
+
+                    $pre.css("position", "relative"); 
+                    var copyButton = $('<button class="copy-code-button">コピー</button>');
+                    
+                    copyButton.on("click", function() {
+                        var codeText = $block.text();
+                        navigator.clipboard.writeText(codeText).then(() => {
+                            copyButton.text("コピー完了!");
+                            setTimeout(() => {
+                                copyButton.text("コピー");
+                            }, 2000);
+                        }, (err) => {
+                            console.error('クリップボードへのコピーに失敗しました', err);
+                            copyButton.text("失敗");
+                        });
+                    });
+                    $pre.append(copyButton);
+                });
+
+
                 // ライブ表示の際、AIとユーザーの枠を分けて更新
                 if (username === "あなた") {
                     userMessagesContainer.html(messageEl); // 上書き
@@ -147,18 +175,26 @@
                     aiMessagesContainer.scrollTop(0);
                 }
                 
-                // 履歴保存 (変更なし)
-                if (!is_history_load && typeof TYRANO.kag.stat.sf !== "undefined") {
+                // ★修正点1: 履歴保存とボタン有効化ロジック
+                if (!is_history_load) {
                     var history = getSfHistory(); 
-                    history.push({ username, message });
-                    if (history.length > 50) {
-                        history.shift();
+                    // sf が undefined でも history は [] になる
+                    
+                    if (typeof TYRANO.kag.stat.sf !== "undefined") {
+                        // sf が定義済みの場合のみ履歴に push
+                        history.push({ username, message });
+                        if (history.length > 50) {
+                            history.shift();
+                        }
                     }
-                    navPrev.prop("disabled", false);
+                    
+                    // 履歴が 1 件以上あれば（=今プッシュした）、「前へ」ボタンを有効化
+                    if (history.length > 0) {
+                         navPrev.prop("disabled", false);
+                    }
                 }
             }
 
-            // ★修正: showLogMessage (ログ枠に表示し、UIを切り替え)
             function showLogMessage(index) {
                 var history = getSfHistory(); 
                 if (!history[index]) return;
@@ -174,50 +210,66 @@
                     </div>
                 `);
                 
-                logMessagesContainer.html(messageEl); // ログ枠を上書き
+                // ログにもコピーボタン機能を追加
+                messageEl.find("pre code").each(function(i, block) {
+                    var $block = $(block);
+                    var $pre = $block.parent("pre");
+                    if ($pre.find('.copy-code-button').length > 0) return; 
+                    $pre.css("position", "relative"); 
+                    var copyButton = $('<button class="copy-code-button">コピー</button>');
+                    copyButton.on("click", function() {
+                        var codeText = $block.text();
+                        navigator.clipboard.writeText(codeText).then(() => {
+                            copyButton.text("コピー完了!");
+                            setTimeout(() => { copyButton.text("コピー"); }, 2000);
+                        }, (err) => {
+                            copyButton.text("失敗");
+                        });
+                    });
+                    $pre.append(copyButton);
+                });
+
+                logMessagesContainer.html(messageEl); 
                 
-                liveChatView.hide(); // ライブ表示を隠す
-                logView.show();      // ログ表示を見せる
-                container.find(".ai-chat-form").hide(); // 入力欄を隠す
+                liveChatView.hide(); 
+                logView.show();      
+                container.find(".ai-chat-form").hide(); 
                 
                 navPrev.prop("disabled", index === 0);
                 navNext.prop("disabled", false); 
             }
             
-            // ★修正: restoreLiveChatView (UIを戻し、最新の会話を再表示)
             function restoreLiveChatView() {
                 if (typeof TYRANO.kag.stat.f !== "undefined") {
                      TYRANO.kag.stat.f.ai_chat_log_index = -1;
                 }
                 
-                logView.hide();         // ログ表示を隠す
-                liveChatView.show();    // ライブ表示を見せる
+                logView.hide();         
+                liveChatView.show();    
                 container.find(".ai-chat-form").show(); 
                 
                 var history = getSfHistory();
                 
-                // 履歴から最後のAIのメッセージを検索
                 var lastAiMsg = history.findLast(item => item.username !== "あなた");
-                // 履歴から最後のユーザーのメッセージを検索
                 var lastUserMsg = history.findLast(item => item.username === "あなた");
 
                 if (lastAiMsg) {
                     addMessage(lastAiMsg.username, lastAiMsg.message, true);
                 } else {
-                    addMessage("あかね", "何が聞きたいの？", true); // デフォルト
+                    addMessage("あかね", "何が聞きたいの？", true); 
                 }
                 
                 if (lastUserMsg) {
                     addMessage(lastUserMsg.username, lastUserMsg.message, true);
                 } else {
-                    userMessagesContainer.html(""); // ユーザー枠は空にする
+                    userMessagesContainer.html(""); 
                 }
 
                 navPrev.prop("disabled", history.length === 0);
                 navNext.prop("disabled", true); 
             }
             
-            // --- 送信処理 (ユーザーが提供した最新版) ---
+            // --- 送信処理 (変更なし) ---
             function sendMessage() {
                 if (typeof TYRANO.kag.stat.f === "undefined") {
                     console.error("TYRANO.kag.stat.f が undefined です。");
@@ -250,7 +302,7 @@
                     body: JSON.stringify({ 
                         message: userMessage,
                         code: CodeContent,
-                        task: task_data ? task_data.description : "タスクがありません", // null回避
+                        task: task_data.description,
                     }),
                 })
                 .then(response => response.ok ? response.json() : response.text().then(text => { throw new Error(text) }))
@@ -268,7 +320,7 @@
                 });
             }
             
-            // --- イベントリスナー (ログ機能のロジック修正) ---
+            // --- イベントリスナー (変更なし) ---
             
             sendButton.on("click", sendMessage); 
             
@@ -284,7 +336,6 @@
                 this.style.height = (this.scrollHeight) + 'px'; 
             });
             
-            // ★修正: ログ「前へ」
             navPrev.on("click", function() {
                 if (typeof TYRANO.kag.stat.f === "undefined") return; 
                 
@@ -303,7 +354,6 @@
                 showLogMessage(currentLogIndex);
             });
             
-            // ★修正: ログ「次へ」
             navNext.on("click", function() {
                 if (typeof TYRANO.kag.stat.f === "undefined") return; 
                 
@@ -320,7 +370,6 @@
                 }
             });
             
-            // ★修正: 初期表示は restoreLiveChatView を呼ぶ
             restoreLiveChatView();
 
         } else {

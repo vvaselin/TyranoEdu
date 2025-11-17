@@ -9,11 +9,10 @@
 
 /* --- 上部エリア (入力フォームの上) --- */
 .mascot-ui-wrapper {
-    /* ★修正: flex-direction を削除 */
     flex-grow: 1; 
     min-height: 0; 
     width: 100%;
-    position: relative; /* ★ナビボタン配置のため (これは維持) */
+    position: relative; /* 子要素を absolute で配置する基準 */
 }
 
 /* --- (A) ライブ表示 --- */
@@ -21,8 +20,13 @@
     display: flex;
     flex-direction: column; 
     min-height: 0;
-    /* ★修正: 高さを wrapper 全体からナビボタンの高さを引いた値にする */
-    height: calc(100% - 30px); 
+    
+    /* ★修正: position: absolute で上部に固定 */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 30px); /* ナビボタン(30px)の高さを引く */
 }
 
 /* A1: AIエリア (立ち絵 + 吹き出し) */
@@ -97,8 +101,12 @@
 
 /* --- (B) ログ表示 --- */
 .log-view-area {
-    /* ★修正: 高さを wrapper 全体からナビボタンの高さを引いた値にする */
-    height: calc(100% - 30px);
+    /* ★修正: position: absolute で上部に固定 */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 30px); /* ナビボタン(30px)の高さを引く */
     min-height: 0;
     display: none; 
 }
@@ -113,16 +121,15 @@
 }
 
 
-/* --- (C) ナビゲーション --- */
+/* --- (C) ナビゲーション (変更なし) --- */
 .ai-chat-nav {
     text-align: center;
     padding-top: 5px;
-    /* ★修正: position: absolute で下部に固定 */
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 30px; /* 高さを指定 */
+    height: 30px; 
     box-sizing: border-box;
 }
 .ai-chat-prev,
@@ -147,7 +154,7 @@
 }
 
 
-/* --- メッセージ表示部 --- */
+/* --- メッセージ表示部 (変更なし) --- */
 .ai-chat-messages,
 .user-chat-messages {
     flex-grow: 1; 
@@ -185,7 +192,7 @@
     margin: 0; 
 }
 .ai-chat-message-simple pre {
-    background-color: #f5f5f5;
+    background-color: #f5f5ff; /* C++コードを読みやすくするため背景色変更 */
     border: 1px solid #ddd;
     border-radius: 4px;
     padding: 8px;
@@ -202,7 +209,7 @@
 }
 
 
-/* --- 入力フォーム (ai_chat オリジナル互換) --- */
+/* --- 入力フォーム (変更なし) --- */
 .ai-chat-form {
     height: 75px; 
     flex-shrink: 0; 
@@ -255,4 +262,43 @@
 .ai-chat-send-button:disabled {
     background-color: #7983f5;
     cursor: not-allowed;
+}
+.ai-chat-message-simple pre {
+    background-color: #2e3338; /* ai_chat のテーマ色 */
+    border: 1px solid #202225;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 5px 0;
+    overflow-x: auto;
+    display: block; 
+    color: #b9bbbe; /* コードの色 */
+    position: relative; /* ★コピーボタン配置のため */
+}
+.ai-chat-message-simple code {
+    font-family: Consolas, 'Courier New', monospace;
+}
+.ai-chat-message-simple pre code {
+    background-color: transparent;
+    padding: 0;
+}
+
+/* ★コピーボタン (ai_chat オリジナル) */
+.copy-code-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: #5865f2;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 3px 6px;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0.7;
+}
+.copy-code-button:hover {
+    opacity: 1;
+}
+.copy-code-button:active {
+    background-color: #4a54c4;
 }
