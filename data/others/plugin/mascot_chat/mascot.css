@@ -1,72 +1,129 @@
+/* --- メインコンテナ (JSでサイズ・位置指定) --- */
 .ai-chat-container {
-    margin-top: 15px; 
-    display: flex; 
-    align-items: flex-end; 
-    width: 100%; 
-    max-width: 800px; 
-    margin-left: auto; 
-    margin-right: auto; 
+    display: flex;
+    flex-direction: column;
+    height: 100%; 
     font-family: 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif;
-    z-index: 10000;
     background-color: transparent;
 }
 
-.ai-chat-sprite {
-    width: 300px; 
-    height: auto;
-    margin-right: -25px; 
-    z-index: 10;
-    pointer-events: none; 
+/* --- 上部エリア (入力フォームの上) --- */
+.mascot-ui-wrapper {
+    /* ★修正: flex-direction を削除 */
+    flex-grow: 1; 
+    min-height: 0; 
+    width: 100%;
+    position: relative; /* ★ナビボタン配置のため (これは維持) */
 }
 
-.ai-chat-right-panel {
+/* --- (A) ライブ表示 --- */
+.live-chat-view {
+    display: flex;
+    flex-direction: column; 
+    min-height: 0;
+    /* ★修正: 高さを wrapper 全体からナビボタンの高さを引いた値にする */
+    height: calc(100% - 30px); 
+}
+
+/* A1: AIエリア (立ち絵 + 吹き出し) */
+.ai-bubble-area {
+    display: flex;
+    align-items: flex-end; 
+    flex: 1; 
+    min-height: 0;
+}
+.ai-chat-sprite-small {
+    width: 150px; 
+    height: auto;
+    margin-right: -15px; 
+    z-index: 10;
+    pointer-events: none; 
+    flex-shrink: 0; 
+}
+.ai-chat-right-panel,
+.ai-chat-bubble {
     flex: 1; 
     display: flex;
     flex-direction: column; 
     z-index: 5;
     min-width: 0; 
+    height: 100%; 
 }
-
-.ai-chat-bubble-wrapper {
+.ai-chat-bubble {
     background-color: rgba(255, 255, 255, 0.95);
     border: 2px solid #aaa;
     border-radius: 15px; 
     padding: 10px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    margin-bottom: 10px;
     position: relative;
+    box-sizing: border-box; 
 }
-.ai-chat-bubble-wrapper::before {
+.ai-chat-bubble::before {
     content: "";
     position: absolute;
     bottom: -15px; 
     left: 20px; 
-    width: 0;
-    height: 0;
     border: 15px solid transparent;
     border-top-color: #aaa; 
     border-bottom: 0;
     margin-left: -7px;
 }
-.ai-chat-bubble-wrapper::after {
+.ai-chat-bubble::after {
     content: "";
     position: absolute;
     bottom: -12px;
     left: 20px;
-    width: 0;
-    height: 0;
     border: 13px solid transparent;
     border-top-color: rgba(255, 255, 255, 0.95); 
     border-bottom: 0;
     margin-left: -6px;
 }
 
+/* A2: ユーザーエリア */
+.user-bubble-area {
+    padding-top: 10px;
+}
+.user-chat-bubble {
+    background-color: #e6ffed; 
+    border: 2px solid #a1d9b4;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-sizing: border-box;
+    height: 140px; 
+    display: flex;
+    flex-direction: column;
+}
 
+/* --- (B) ログ表示 --- */
+.log-view-area {
+    /* ★修正: 高さを wrapper 全体からナビボタンの高さを引いた値にする */
+    height: calc(100% - 30px);
+    min-height: 0;
+    display: none; 
+}
+.log-chat-bubble {
+    background-color: #f0f0f0; 
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+    height: 100%;
+    overflow-y: auto;
+}
+
+
+/* --- (C) ナビゲーション --- */
 .ai-chat-nav {
     text-align: center;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 5px;
+    padding-top: 5px;
+    /* ★修正: position: absolute で下部に固定 */
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30px; /* 高さを指定 */
+    box-sizing: border-box;
 }
 .ai-chat-prev,
 .ai-chat-next {
@@ -90,20 +147,23 @@
 }
 
 
-.ai-chat-messages {
-    height: 160px; 
+/* --- メッセージ表示部 --- */
+.ai-chat-messages,
+.user-chat-messages {
+    flex-grow: 1; 
+    min-height: 0; 
     overflow-y: auto; 
     padding: 5px;
     box-sizing: border-box;
 }
-.ai-chat-messages::-webkit-scrollbar {
+.ai-chat-messages::-webkit-scrollbar,
+.user-chat-messages::-webkit-scrollbar,
+.log-chat-bubble::-webkit-scrollbar {
     width: 8px;
 }
-.ai-chat-messages::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-}
-.ai-chat-messages::-webkit-scrollbar-thumb {
+.ai-chat-messages::-webkit-scrollbar-thumb,
+.user-chat-messages::-webkit-scrollbar-thumb,
+.log-chat-bubble::-webkit-scrollbar-thumb {
     background: #ccc;
     border-radius: 4px;
 }
@@ -118,10 +178,11 @@
     margin-right: 5px;
 }
 .ai-chat-message-simple .message-body {
-    display: inline;
+    display: block; 
 }
 .ai-chat-message-simple p {
-    display: inline; 
+    display: block; 
+    margin: 0; 
 }
 .ai-chat-message-simple pre {
     background-color: #f5f5f5;
@@ -141,19 +202,21 @@
 }
 
 
+/* --- 入力フォーム (ai_chat オリジナル互換) --- */
 .ai-chat-form {
-    height: auto; 
-    flex-shrink: 0;
-    padding: 0;
+    height: 75px; 
+    flex-shrink: 0; 
+    padding: 15px; 
     border-top: none;
     background-color: transparent;
     display: flex; 
     gap: 10px; 
-    align-items: flex-end;
+    align-items: center; 
+    box-sizing: border-box; 
 }
 .ai-chat-input {
     flex-grow: 1;
-    height: auto; 
+    height: 45px; 
     min-height: 45px; 
     max-height: 150px; 
     resize: none;      
@@ -173,7 +236,6 @@
     outline: none;
     border-color: #5865f2; 
 }
-
 .ai-chat-send-button {
     background-color: #5865f2;
     color: white;
