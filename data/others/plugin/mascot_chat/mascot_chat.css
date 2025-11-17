@@ -89,8 +89,9 @@
     gap: 10px; 
     align-items: flex-end;
 }
-/* ★ クラス名を .mascot-chat-input に統一 */
-.mascot-chat-input {
+
+/* ★★★ クラス名を ai_chat と一致させる ★★★ */
+.ai-chat-input {
     flex-grow: 1;
     min-height: 45px; 
     max-height: 150px; 
@@ -104,8 +105,8 @@
     box-sizing: border-box;
     font-size: 16px;
 }
-/* ★ クラス名を .mascot-chat-send-button に統一 */
-.mascot-chat-send-button {
+/* ★★★ クラス名を ai_chat と一致させる ★★★ */
+.ai-chat-send-button {
     flex-shrink: 0;
     background-color: #5865f2;
     height: 45px;
@@ -117,7 +118,7 @@
     font-weight: bold;
     cursor: pointer;
 }
-.mascot-chat-send-button:disabled {
+.ai-chat-send-button:disabled {
     background-color: #aaa;
 }
 

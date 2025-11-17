@@ -1,149 +1,156 @@
-; AIチャットプラグイン 本体
+; マスコットチャット プラグイン 本体
 
-; [macro] AIチャットUIを表示するマクロ
-[macro name="ai_chat_show"]
+; [macro] マスコットチャットUIを表示するマクロ
+[macro name="mascot_show"]
 
-    ; 1. 必要なCSSを読み込む
-    [loadcss file="./data/others/plugin/ai_chat/ai_chat.css"]
+    ; 1. 必要なCSS・JSを読み込む
+    [loadcss file="./data/others/plugin/mascot_chat/mascot_chat.css"]
     [loadjs storage="./data/others/js/marked.min.js"] 
     [loadjs storage="./data/others/js/purify.min.js"] 
 
     ; 2. [html]タグでUIの骨格を生成する
-    ; この時点では通常レイヤーに一時的に配置される
+    ; ★★★ ご要望のUIレイアウト ＋ IDとクラスを修正 ★★★
     [html]
-    <div class="ai-chat-container" style="display:none;">
-        <div class="ai-chat-messages">
-            <div class="ai-chat-message">
-                <img src="./data/fgimage/chat/akane/egao.png" class="avatar">
-                <div class="message-content">
-                    <span class="username">あかね</span>
-                    <span>何が聞きたいの？</span>
+    <div class="mascot-chat-container" style="display:none;">
+        
+        <div class="mascot-bubble-area">
+            
+            <div class="mascot-nav">
+                <button class="mascot-nav-button" id="mascot_prev" disabled>◀</button>
+                <button class="mascot-nav-button" id="mascot_next" disabled>▶</button>
+            </div>
+
+            <div class="mascot-bubble">
+                <div class="mascot-message-content">
+                    何が聞きたいの？
                 </div>
             </div>
         </div>
-        <div class="ai-chat-form">
-            <textarea class="ai-chat-input" placeholder="メッセージを入力..." rows="1"></textarea>
-            <button class="ai-chat-send-button">送信</button>
+        
+        <div class="mascot-character">
+            <img src="./data/fgimage/chat/akane_f/normal.png" id="mascot_character_image">
         </div>
+
+        <div class="mascot-chat-form">
+            <textarea class="mascot-chat-input" placeholder="メッセージを入力..." rows="1"></textarea>
+            <button class="mascot-chat-send-button">送信</button>
+        </div>
+
     </div>
     [endhtml]
 
     ; 3. [iscript]でUIをfixレイヤーに移動し、イベントを設定する
+    ; (ai_chat のロジックをそのまま流用)
     [iscript]
-        var chat_container = $(".ai-chat-container");
-        var fix_layer = $(".fixlayer").first();
-        fix_layer.append(chat_container); 
+        // --- UI要素をfixレイヤーに移動 ---
+        var $chat_container = $(".mascot-chat-container");
+        var fix_layer = TYRANO.kag.layer.getLayer("fix");
+        fix_layer.append($chat_container);
 
-        // JavaScriptでUIの位置とサイズを「ピクセル単位」で明示的に設定する
-
-        const scWidth = parseInt(TYRANO.kag.config.scWidth);
-        const scHeight = parseInt(TYRANO.kag.config.scHeight); 
-
-        const chatWidth = scWidth * 0.35;
-        const marginRight = scWidth * 0.01;
-        const leftPosition = scWidth - chatWidth - marginRight;
-        
-        const chatHeight = scHeight * 0.90; 
-
-        chat_container.css({
+        // ★ スタイルを適用 (FLEXコンテナ化)
+        $chat_container.css({
             "position": "absolute",
-            "top": "2%",
-            "left": leftPosition + "px",
-            "width": chatWidth + "px",
-            "height": chatHeight + "px",
-            "z-index": "200"
+            "right": "10px",
+            "top": "15px",
+            "width": "30%", 
+            "height": "calc(100% - 30px)",
+            "z-index": "100",
+            "display": "flex",
+            "flex-direction": "column"
         });
 
-        const formHeight = 75;
-        const messagesHeight = chatHeight - formHeight;
+        // --- UI要素を取得 (★ HTMLとセレクタを完全に一致させる) ---
+        var $inputField = $chat_container.find(".mascot-chat-input");
+        var $sendButton = $chat_container.find(".mascot-chat-send-button");
+        var $char_image = $("#mascot_character_image");
+        var $bubbleContent = $chat_container.find(".mascot-message-content");
+        var $prevButton = $("#mascot_prev"); // ★ IDで取得
+        var $nextButton = $("#mascot_next"); // ★ IDで取得
 
-        const messagesArea = $(".ai-chat-messages");
-        const formArea = $(".ai-chat-form");
-        
-        messagesArea.css("height", messagesHeight + "px");
-        formArea.css("height", formHeight + "px");
+        // --- 会話履歴を管理する配列 ---
+        var messageHistory = [];
+        var currentIndex = -1;
 
-        chat_container.show();
-
-        const inputField = $(".ai-chat-input");
-        const sendButton = $(".ai-chat-send-button"); // ボタン要素を取得
-        const messagesContainer = $(".ai-chat-messages");
-        
-        function addMessage(sender, text, avatar) {
-            const cleanHtml = DOMPurify.sanitize(marked.parse(text));
-            const messageHTML = `
-                <div class="ai-chat-message">
-                    <img src="${avatar}" class="avatar">
-                    <div class="message-content">
-                        <span class="username">${sender}</span>
-                        <span>${cleanHtml}</span>
-                    </div>
-                </div>`;
-                
-            const messageElement = $(messageHTML);
-
-            messageElement.find("pre").each(function () {
-                const preBlock = $(this);
-                
-                // コピーボタンのHTML要素を作成します
-                const copyButton = $('<button class="copy-code-button">コピー</button>');
-                
-                // ボタンを<pre>タグの「中」に追加します
-                preBlock.append(copyButton);
-
-                // 作成したボタンにだけ、クリックイベントを設定します
-                copyButton.on("click", function (e) {
-                    // ティラノスクリプトへのクリックイベント伝播を、必ず止めます
-                    e.stopPropagation();
-                    
-                    // コピー処理：ボタン自身のテキストを含めないように、
-                    // pre要素を複製して、そこからボタンを削除したもののテキストを取得します。
-                    const preClone = preBlock.clone();
-                    preClone.find('.copy-code-button').remove();
-                    const codeText = preClone.text();
-                    
-                    navigator.clipboard.writeText(codeText).then(
-                        () => {
-                            alertify.success("チャットのコードをコピー");
-                        },
-                        (err) => {
-                            alertify.error("コピーに失敗しました");
-                        }
-                    );
-                });
-            });
+        // --- 履歴を描画する関数 (アイコン・名前なし) ---
+        function renderCurrentMessage() {
+            if (currentIndex < 0 || currentIndex >= messageHistory.length) return;
             
-            messagesContainer.append(messageElement);
-            messagesContainer.scrollTop(messagesContainer[0].scrollHeight);
+            var msg = messageHistory[currentIndex];
+            
+            // 1. 吹き出しの中身を上書き
+            var unsafe_html = marked.parse(msg.text);
+            var safe_html = DOMPurify.sanitize(unsafe_html);
+            $bubbleContent.html(safe_html);
+
+            // 2. コードブロックにコピーボタンを追加 (ai_chatから流用)
+            $bubbleContent.find("pre").each(function() {
+                if ($(this).find(".copy-code-button").length === 0) {
+                    var $button = $('<button class="copy-code-button">コピー</button>');
+                    $(this).append($button);
+                    $button.on("click", function() {
+                        var code = $(this).siblings("code").text();
+                        navigator.clipboard.writeText(code);
+                        $(this).text("コピー完了!");
+                        setTimeout(() => $(this).text("コピー"), 2000);
+                    });
+                }
+            });
+
+            // 3. 立ち絵を変更
+            if (msg.username !== "ユーザー" && msg.avatar) {
+                 var char_path = "./data/fgimage/chat/akane_f/normal.png"; 
+                 if (msg.avatar.includes("hirameki") || msg.avatar.includes("egao")) {
+                     char_path = "./data/fgimage/chat/akane_f/happy.png";
+                 } else if (msg.avatar.includes("naki")) {
+                     char_path = "./data/fgimage/chat/akane_f/normal.png"; 
+                 }
+                 $char_image.attr("src", char_path);
+            } else if (msg.username === "ユーザー") {
+                $char_image.attr("src", "./data/fgimage/chat/akane_f/normal.png");
+            }
+            
+            // 4. ナビゲーションボタンの状態を更新
+            $prevButton.prop("disabled", currentIndex === 0);
+            $nextButton.prop("disabled", currentIndex === messageHistory.length - 1);
         }
 
-        // メッセージ送信処理を関数にまとめる
+        // --- メッセージ追加関数 (履歴に追加して描画) ---
+        function addMessage(username, text, avatar) {
+            messageHistory.push({ username, text, avatar });
+            currentIndex = messageHistory.length - 1;
+            renderCurrentMessage();
+        }
+        
+        // --- ★★★ 送信処理 (init(ai_chat).ks のロジックをそのまま流用) ★★★ ---
         function sendMessage() {
-            const userMessage = inputField.val().trim();
-            if (userMessage === "") {
-                return; // 空の場合は何もしない
-            }
+            var userMessage = $inputField.val().trim();
+            if (userMessage === "") return;
 
-            // ユーザーのメッセージを表示
-            addMessage("あなた", userMessage, "./data/fgimage/chat/akane/normal.png");
-            inputField.val("");
-            inputField.prop("disabled", true).attr("placeholder", "AIの応答を待っています...");
-            sendButton.prop("disabled", true);
+            addMessage("ユーザー", userMessage, "./data/fgimage/chat/akane/normal.png"); 
+            
+            $inputField.val("").prop("disabled", true).attr("placeholder", "AIの応答を待っています...").css("height", "auto");
+            $sendButton.prop("disabled", true);
+            $prevButton.prop("disabled", true);
+            $nextButton.prop("disabled", true);
 
-            const CodeContent = TYRANO.kag.stat.f['my_code'];
-
+            // 2. Monaco Editor のコードを「直接」参照 (ai_chat と同じ)
+            var CodeContent = TYRANO.kag.stat.tf.current_code || "（コードなし）";
+            
+            // 3. 課題内容を「直接」参照 (ai_chat と同じ)
             var tasks = TYRANO.kag.stat.f.all_tasks;
             var current_id = TYRANO.kag.stat.f.current_task_id;
             var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
+            // ★ task_description の取得方法を ai_chat に合わせる
+            var task_description = task_data ? task_data.description : "（課題なし）";
 
-            // AIサーバーとの通信処理
-            fetch('/api/chat', {
+            // 4. サーバーに送信 (fetch) (ai_chat と同じ)
+            fetch('/api/chat', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     message: userMessage,
                     code: CodeContent,
-                    task: task_data.description,
+                    task: task_description, // ★ ai_chat に合わせて .description を渡す
                 }),
             })
             .then(response => response.ok ? response.json() : response.text().then(text => { throw new Error(text) }))
@@ -152,30 +159,44 @@
             })
             .catch(error => {
                 console.error("AIチャットエラー:", error);
-                addMessage("エラー", "AIとの通信に失敗しました。", "./data/fgimage/chat/akane/naki.png");
+                addMessage("エラー", "AIとの通信に失敗しました。\n" + error.message, "./data/fgimage/chat/akane/naki.png");
             })
             .finally(() => {
-                // 入力欄とボタンを元に戻す
-                inputField.prop("disabled", false).attr("placeholder", "メッセージを入力...").focus();
-                sendButton.prop("disabled", false);
+                $inputField.prop("disabled", false).attr("placeholder", "メッセージを入力...").focus();
+                $sendButton.prop("disabled", false);
+                renderCurrentMessage(); // ナビボタンの状態も更新
             });
         }
+        // ★★★ 送信処理ここまで ★★★
 
-        // イベントリスナーを設定
-        sendButton.on("click", sendMessage); 
-        inputField.on("keydown", function(e) {
+        // --- イベントリスナー ---
+        $sendButton.on("click", sendMessage); 
+        $inputField.on("keydown", function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault(); 
                 sendMessage();
             }
         });
-
-        inputField.on('input', function() {
-            this.style.height = 'auto'; // 高さを一旦リセット
-            this.style.height = (this.scrollHeight) + 'px'; // 内容の高さに合わせて自身の高さを変更
+        $inputField.on('input', function() {
+            this.style.height = 'auto'; 
+            this.style.height = (this.scrollHeight) + 'px';
         });
+        
+        $prevButton.on("click", function() { // ★ $ を追加
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderCurrentMessage();
+            }
+        });
+        $nextButton.on("click", function() { // ★ $ を追加
+            if (currentIndex < messageHistory.length - 1) {
+                currentIndex++;
+                renderCurrentMessage();
+            }
+        });
+        
+        // --- 初期メッセージを履歴に追加 ---
+        addMessage("あかね", "何が聞きたいの？", "./data/fgimage/chat/akane/egao.png");
+
     [endscript]
-
 [endmacro]
-
-[return]
