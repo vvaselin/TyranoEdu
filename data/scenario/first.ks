@@ -6,8 +6,8 @@
 [plugin name="monaco_editor"]
 [plugin name="cpp_executor"]
 [plugin name="glink_ex"]
-[plugin name="ai_chat"]
-;[plugin name="mascot_chat"]
+;[plugin name="ai_chat"]
+[plugin name="mascot_chat"]
 
 ; 実行ボタンglinkのデザイン用マクロ
 [loadcss file="./data/others/css/glink.css"]
