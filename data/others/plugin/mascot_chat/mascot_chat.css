@@ -1,61 +1,101 @@
 /* --- コンテナ全体 (FLEX縦積み) --- */
-.ai-chat-container {
-    /* init.ks で position, right, top, width, height, z-index, display, flex-direction が設定される */
+.mascot-chat-container {
     background-color: rgba(56, 56, 56, 0.9);
     border-radius: 10px;
     overflow: hidden;
     border: 1px solid #777;
     font-family: 'Helvetica', 'Arial', sans-serif;
+    /* init.ks で position, display:flex, flex-direction:column などが設定される */
 }
 
-/* --- (上) メッセージログ (可変) --- */
-.ai-chat-messages {
-    flex-grow: 1; /* ★ 残りのスペースをすべて取る */
-    min-height: 0; /* ★ 縮小できるようにする */
-    overflow-y: auto; /* ★ スクロール可能にする */
-    padding: 15px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    gap: 15px; /* メッセージ間の隙間 */
-}
-
-/* --- (中) 立ち絵 (固定) --- */
-.ai-chat-character {
+/* --- (上) 吹き出しエリア --- */
+.mascot-bubble-area {
     flex-shrink: 0; /* 縮まない */
-    height: 300px; /* ★ 立ち絵の高さを固定 (調整可) */
+    padding: 10px;
+    border-bottom: 1px solid #777;
+    background-color: rgba(0,0,0,0.1);
+}
+
+/* ★ 履歴ナビゲーション ★ */
+.mascot-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px; /* 吹き出しとの間隔 */
+    padding: 0 5px;
+}
+.mascot-nav-button {
+    font-size: 16px;
+    font-weight: bold;
+    background: #555;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 4px 10px;
+    cursor: pointer;
+}
+.mascot-nav-button:disabled {
+    background: #333;
+    color: #777;
+    cursor: not-allowed;
+}
+
+/* ★★★ 吹き出し本体 (白背景・黒文字) ★★★ */
+.mascot-bubble {
+    background: #FFFFFF; /* ★ 背景を白に */
+    color: #000000;    /* ★ 文字を黒に */
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ccc; /* 白い枠 */
+}
+
+/* ★ 吹き出しのスクロール設定 ★ */
+.mascot-message-content {
+    height: 150px; /* ★ 高さを固定 (調整可) */
+    overflow-y: auto; /* ★ はみ出たらスクロール */
+    padding-right: 5px;
+    word-wrap: break-word;
+    /* スクロールバー (白背景用) */
+    scrollbar-color: #aaa #f0f0f0;
+    scrollbar-width: thin;
+}
+.mascot-message-content::-webkit-scrollbar { width: 8px; }
+.mascot-message-content::-webkit-scrollbar-track { background: #f0f0f0; }
+.mascot-message-content::-webkit-scrollbar-thumb { background: #aaa; border-radius: 4px; }
+
+
+/* --- (中) 立ち絵 (可変) --- */
+.mascot-character {
+    flex-grow: 1; /* ★ 残りのスペースをすべて取る */
+    min-height: 200px; /* ★ 最小の高さを確保 */
     text-align: center;
-    border-top: 1px solid #777;
     border-bottom: 1px solid #777;
     background-color: rgba(0, 0, 0, 0.2);
     box-sizing: border-box;
     padding: 10px 0;
 }
-#ai_chat_character_image {
+#mascot_character_image {
     height: 100%;
     width: auto;
     object-fit: contain; /* アスペクト比を維持 */
 }
 
 /* --- (下) 入力フォーム (固定) --- */
-.ai-chat-form {
+.mascot-chat-form {
     flex-shrink: 0; /* 縮まない */
     padding: 10px;
     background-color: rgba(0, 0, 0, 0.3);
     display: flex; 
     gap: 10px; 
-    align-items: flex-end; /* ボタンと高さを合わせる */
+    align-items: flex-end;
 }
-
-/* --- 入力欄とボタン (ai_chat.cssから流用・微調整) --- */
-.ai-chat-input {
+/* ★ クラス名を .mascot-chat-input に統一 */
+.mascot-chat-input {
     flex-grow: 1;
-    height: auto; 
     min-height: 45px; 
-    max-height: 150px; /* 最大の高さ */
+    max-height: 150px; 
     resize: none;      
     overflow-y: auto;  
-    line-height: 1.5;  
     background-color: #40444b;
     border: none;
     border-radius: 5px;
@@ -63,16 +103,12 @@
     padding: 10px;
     box-sizing: border-box;
     font-size: 16px;
-    font-family: inherit; 
 }
-.ai-chat-input:disabled {
-    background-color: #555;
-}
-
-.ai-chat-send-button {
+/* ★ クラス名を .mascot-chat-send-button に統一 */
+.mascot-chat-send-button {
     flex-shrink: 0;
     background-color: #5865f2;
-    height: 45px; /* 入力欄の最小高と合わせる */
+    height: 45px;
     color: white;
     border: none;
     border-radius: 5px;
@@ -81,86 +117,32 @@
     font-weight: bold;
     cursor: pointer;
 }
-.ai-chat-send-button:disabled {
+.mascot-chat-send-button:disabled {
     background-color: #aaa;
 }
 
-
-/* --- ★以下、ai_chat.css から「そのままコピー」するスタイル★ --- */
-
-/* スクロールバー */
-.ai-chat-messages::-webkit-scrollbar {
-    width: 8px;
+/* ★★★ コードブロック (白背景用) ★★★ */
+.mascot-message-content pre {
+    background-color: #f0f0f0; /* ★ 明るい背景 */
+    color: #333;             /* ★ 暗い文字 */
+    padding: 1em; border-radius: 5px;
+    overflow-x: auto; position: relative;
+    border: 1px solid #ddd; margin: 10px 0;
 }
-.ai-chat-messages::-webkit-scrollbar-track {
-    background: #2e3338;
-}
-.ai-chat-messages::-webkit-scrollbar-thumb {
-    background: #202225;
-    border-radius: 4px;
-}
-
-/* 個別メッセージ（アバターと吹き出し） */
-.ai-chat-message {
-    display: flex;
-    align-items: flex-start;
-}
-.ai-chat-message .avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 15px;
-}
-.message-content {
-    flex-grow: 1;
-    background-color: #444; /* ai_chat.cssの 36393f より少し濃い色 */
-    padding: 10px;
-    border-radius: 8px;
-    color: #dcddde;
-    overflow-x: hidden;
-}
-.message-content .username {
-    display: block;
-    font-weight: bold;
-    font-size: 12px;
-    color: #ccc;
-    margin-bottom: 5px;
-}
-
-/* コードブロック */
-.message-content pre {
-    background-color: #1e1e1e;
-    color: #d4d4d4;
-    padding: 1em;
-    border-radius: 5px;
-    overflow-x: auto;
-    position: relative; /* コピーボタン用 */
-    border: 1px solid #555;
-    margin: 10px 0;
-}
-.message-content code {
+.mascot-message-content code {
     font-family: "Consolas", "Monaco", monospace;
     font-size: 14px;
 }
-
-/* コピーボタン */
-.message-content pre .copy-code-button {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background-color: #555;
-    color: white;
-    border: none;
-    padding: 5px 8px;
-    border-radius: 3px;
-    cursor: pointer;
-    font-size: 12px;
-    opacity: 0;
+/* ★ コピーボタン (白背景用) ★ */
+.mascot-message-content .copy-code-button {
+    position: absolute; top: 5px; right: 5px;
+    background-color: #ccc; /* ★ 明るいボタン */
+    color: #000;             /* ★ 暗い文字 */
+    border: none; padding: 5px 8px;
+    border-radius: 3px; cursor: pointer;
+    font-size: 12px; opacity: 0;
     transition: opacity 0.2s;
 }
-.message-content pre:hover .copy-code-button {
+.mascot-message-content pre:hover .copy-code-button {
     opacity: 1;
-}
-.message-content pre .copy-code-button:hover {
-    background-color: #777;
 }

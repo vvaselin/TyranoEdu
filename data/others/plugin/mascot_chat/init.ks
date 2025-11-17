@@ -9,95 +9,85 @@
     [loadjs storage="./data/others/js/purify.min.js"] 
 
     ; 2. [html]タグでUIの骨格を生成する
+    ; ★★★ ご要望の「白背景・アイコンなし」UIレイアウト ★★★
     [html]
-    <div class="ai-chat-container" style="display:none;">
+    <div class="mascot-chat-container" style="display:none;">
         
-        <div class="ai-chat-messages">
-            <div class="ai-chat-message">
-                <img src="./data/fgimage/chat/akane/egao.png" class="avatar">
-                <div class="message-content">
-                    <span class="username">あかね</span>
-                    <span>何が聞きたいの？</span>
+        <div class="mascot-bubble-area">
+            
+            <div class="mascot-nav">
+                <button class="mascot-nav-button" id="mascot_prev" disabled>◀</button>
+                <button class="mascot-nav-button" id="mascot_next" disabled>▶</button>
+            </div>
+
+            <div class="mascot-bubble">
+                <div class="mascot-message-content">
+                    何が聞きたいの？
                 </div>
             </div>
         </div>
         
-        <div class="ai-chat-character">
-            <img src="./data/fgimage/chat/akane_f/normal.png" id="ai_chat_character_image">
+        <div class="mascot-character">
+            <img src="./data/fgimage/chat/akane_f/normal.png" id="mascot_character_image">
         </div>
 
-        <div class="ai-chat-form">
-            <textarea class="ai-chat-input" placeholder="メッセージを入力..." rows="1"></textarea>
-            <button class="ai-chat-send-button">送信</button>
+        <div class="mascot-chat-form">
+            <textarea class="mascot-chat-input" placeholder="メッセージを入力..." rows="1"></textarea>
+            <button class="mascot-chat-send-button">送信</button>
         </div>
 
     </div>
     [endhtml]
 
     ; 3. [iscript]でUIをfixレイヤーに移動し、イベントを設定する
-    ; (グローバルオブジェクトを使わず、全てこの [iscript] 内で完結させる)
+    ; (ai_chat のロジックをそのまま流用)
     [iscript]
         // --- UI要素をfixレイヤーに移動 ---
-        var $chat_container = $(".ai-chat-container");
+        var chat_container = $(".mascot-chat-container");
         var fix_layer = TYRANO.kag.layer.getLayer("fix");
-        fix_layer.append($chat_container);
+        fix_layer.append(chat_container);
 
-        // ★ スタイルを調整して表示 (FLEXコンテナ化)
-        $chat_container.css({
+        // ★ スタイルを適用 (FLEXコンテナ化)
+        chat_container.css({
             "position": "absolute",
             "right": "10px",
             "top": "15px",
             "width": "30%", 
             "height": "calc(100% - 30px)",
             "z-index": "100",
-            "display": "flex",        // ★ flex を有効に
-            "flex-direction": "column" // ★ 縦積みに変更
+            "display": "flex",
+            "flex-direction": "column"
         });
 
-        // --- UI要素を取得 ---
-        var messagesContainer = $chat_container.find(".ai-chat-messages");
-        var inputField = $chat_container.find(".ai-chat-input");
-        var sendButton = $chat_container.find(".ai-chat-send-button");
-        var $char_image = $("#ai_chat_character_image"); // ★ 立ち絵用の要素を取得
+        // --- UI要素を取得 (★ セレクタをHTMLのクラス名と一致させる) ---
+        var inputField = chat_container.find(".mascot-chat-input");
+        var sendButton = chat_container.find(".mascot-chat-send-button");
+        var char_image = ("#mascot_character_image");
+        var bubbleContent= chat_container.find(".mascot-message-content");
+        var prevButton = ("#mascot_prev");
+        var nextButton = ("#mascot_next");
 
-        // --- メッセージ追加関数 (ローカル関数) ---
-        function addMessage(username, text, avatar) {
-            // marked.js と DOMPurify (流用)
-            var unsafe_html = marked.parse(text);
+        // --- 会話履歴を管理する配列 ---
+        var messageHistory = [];
+        var currentIndex = -1;
+
+        // --- 履歴を描画する関数 (アイコン・名前なし) ---
+        function renderCurrentMessage() {
+            if (currentIndex < 0 || currentIndex >= messageHistory.length) return;
+            
+            var msg = messageHistory[currentIndex];
+            
+            // 1. 吹き出しの中身を上書き
+            var unsafe_html = marked.parse(msg.text);
             var safe_html = DOMPurify.sanitize(unsafe_html);
+            bubbleContent.html(safe_html);
 
-            var messageHtml = `
-                <div class="ai-chat-message">
-                    <img src="${avatar}" class="avatar">
-                    <div class="message-content">
-                        <span class="username">${username}</span>
-                        <div>${safe_html}</div>
-                    </div>
-                </div>
-            `;
-            messagesContainer.append(messageHtml);
-            messagesContainer.scrollTop(messagesContainer.prop("scrollHeight"));
-
-            // --- ★ 立ち絵を変更する処理を追加 ---
-            if (username !== "ユーザー" && avatar) {
-                 var char_path = "./data/fgimage/chat/akane_f/normal.png"; // デフォルト
-                 if (avatar.includes("hirameki") || avatar.includes("egao")) {
-                     char_path = "./data/fgimage/chat/akane_f/happy.png";
-                 } else if (avatar.includes("naki")) {
-                     char_path = "./data/fgimage/chat/akane_f/normal.png"; 
-                 }
-                 $char_image.attr("src", char_path);
-            } else if (username === "ユーザー") {
-                $char_image.attr("src", "./data/fgimage/chat/akane_f/normal.png");
-            }
-            // --- ★ 立ち絵変更ここまで ---
-
-            // コードブロックにコピーボタンを追加 (流用)
-            $(messagesContainer).find("pre").each(function() {
+            // 2. コードブロックにコピーボタンを追加
+            bubbleContent.find("pre").each(function() {
                 if ($(this).find(".copy-code-button").length === 0) {
-                    var $button = $('<button class="copy-code-button">コピー</button>');
-                    $(this).append($button);
-                    $button.on("click", function() {
+                    var button = $('<button class="copy-code-button">コピー</button>');
+                    $(this).append(button);
+                    button.on("click", function() {
                         var code = $(this).siblings("code").text();
                         navigator.clipboard.writeText(code);
                         $(this).text("コピー完了!");
@@ -105,10 +95,33 @@
                     });
                 }
             });
+
+            // 3. 立ち絵を変更
+            if (msg.username !== "ユーザー" && msg.avatar) {
+                 var char_path = "./data/fgimage/chat/akane_f/normal.png"; 
+                 if (msg.avatar.includes("hirameki") || msg.avatar.includes("egao")) {
+                     char_path = "./data/fgimage/chat/akane_f/happy.png";
+                 } else if (msg.avatar.includes("naki")) {
+                     char_path = "./data/fgimage/chat/akane_f/normal.png"; 
+                 }
+                 char_image.attr("src", char_path);
+            } else if (msg.username === "ユーザー") {
+                char_image.attr("src", "./data/fgimage/chat/akane_f/normal.png");
+            }
+            
+            // 4. ナビゲーションボタンの状態を更新
+            prevButton.prop("disabled", currentIndex === 0);
+            nextButton.prop("disabled", currentIndex === messageHistory.length - 1);
+        }
+
+        // --- メッセージ追加関数 (履歴に追加して描画) ---
+        function addMessage(username, text, avatar) {
+            messageHistory.push({ username, text, avatar });
+            currentIndex = messageHistory.length - 1;
+            renderCurrentMessage();
         }
         
-        // --- 送信処理 (ローカル関数) ---
-        // (ご提示いただいた init.ks の sendMessage 関数をそのまま流用)
+        // --- 送信処理 (ai_chat/init.ks のロジックをそのまま流用) ---
         function sendMessage() {
             var userMessage = inputField.val().trim();
             if (userMessage === "") return;
@@ -117,18 +130,20 @@
             
             inputField.val("").prop("disabled", true).attr("placeholder", "AIの応答を待っています...").css("height", "auto");
             sendButton.prop("disabled", true);
+            prevButton.prop("disabled", true);
+            nextButton.prop("disabled", true);
 
-            // 1. Monaco Editor からコードを取得
+            // 2. Monaco Editor のコードを「直接」参照
             var CodeContent = TYRANO.kag.stat.tf.current_code || "（コードなし）";
             
-            // 2. 課題内容を取得
+            // 3. 課題内容を「直接」参照
             var tasks = TYRANO.kag.stat.f.all_tasks;
             var current_id = TYRANO.kag.stat.f.current_task_id;
             var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
             var task_description = task_data ? task_data.description : "（課題なし）";
 
-            // 3. サーバーに送信 (fetch)
-            fetch('/api/chat', { // 相対パス
+            // 4. サーバーに送信 (fetch)
+            fetch('/api/chat', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
@@ -139,22 +154,20 @@
             })
             .then(response => response.ok ? response.json() : response.text().then(text => { throw new Error(text) }))
             .then(data => {
-                // 4. 成功時: 応答を addMessage で表示
                 addMessage("あかね", data.text, "./data/fgimage/chat/akane/hirameki.png");
             })
             .catch(error => {
                 console.error("AIチャットエラー:", error);
-                // 5. 失敗時: エラーを addMessage で表示
                 addMessage("エラー", "AIとの通信に失敗しました。\n" + error.message, "./data/fgimage/chat/akane/naki.png");
             })
             .finally(() => {
-                // 6. 完了時: UIを元に戻す
                 inputField.prop("disabled", false).attr("placeholder", "メッセージを入力...").focus();
                 sendButton.prop("disabled", false);
+                renderCurrentMessage(); // ナビボタンの状態も更新
             });
         }
 
-        // --- イベントリスナー (ローカル関数を紐付け) ---
+        // --- イベントリスナー ---
         sendButton.on("click", sendMessage); 
         inputField.on("keydown", function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -163,11 +176,26 @@
             }
         });
 
-        // (textarea の自動リサイズ ... 流用)
         inputField.on('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
+            this.style.height = 'auto'; // 高さを一旦リセット
+            this.style.height = (this.scrollHeight) + 'px'; // 内容の高さに合わせて自身の高さを変更
         });
+
+        prevButton.on("click", function() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderCurrentMessage();
+            }
+        });
+        nextButton.on("click", function() {
+            if (currentIndex < messageHistory.length - 1) {
+                currentIndex++;
+                renderCurrentMessage();
+            }
+        });
+        
+        // --- 初期メッセージを履歴に追加 ---
+        addMessage("あかね", "何が聞きたいの？", "./data/fgimage/chat/akane/egao.png");
 
     [endscript]
 [endmacro]
