@@ -70,7 +70,7 @@
     height: 75%; 
     
     background-color: rgba(255, 255, 255, 0.95);
-    border: 2px solid #aaa;
+    border: 2px solid #525252;
     border-radius: 15px; 
     padding: 10px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -78,7 +78,29 @@
     box-sizing: border-box; 
     margin-bottom: 10px; 
 }
-/* ★しっぽ (::before, ::after) は立ち絵が下に移動したため不要。削除。 */
+/* しっぽ（枠線部分） */
+.ai-chat-bubble::before {
+    content: "";
+    position: absolute;
+    top: 100%;             /* 吹き出しの下端 */
+    left: 75%;             /* 立ち絵(80%)の方へ寄せる */
+    margin-left: -13px;    /* 中央寄せ調整 */
+    border-width: 24px;
+    border-style: solid;
+    border-color: #525252 transparent transparent transparent; /* 上側の色だけ指定＝下向き三角 */
+}
+
+/* しっぽ（内側の塗りつぶし部分） */
+.ai-chat-bubble::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 75%;
+    margin-left: -9px;     /* 枠線の分だけ小さく */
+    border-width: 20px;     /* 枠線の分だけ小さく */
+    border-style: solid;
+    border-color: rgba(255, 255, 255, 0.95) transparent transparent transparent; /* 背景色と同じ色 */
+}
 
 
 /* --- (B) ログ表示 --- */
