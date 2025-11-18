@@ -35,7 +35,6 @@ $.ajax({
 
 ; AIチャットUIを初期化して表示
 [stop_keyconfig]
-;[ai_chat_show]
 [ai_chat_show]
 
 ; ■■■ 初期設定（UIをfixレイヤーに一度だけ配置） ■■■
