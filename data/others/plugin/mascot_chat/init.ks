@@ -1,14 +1,12 @@
-; AIチャットプラグイン 本体 (マスコットUI版)
-
 ; [macro] AIチャットUIを表示するマクロ
 [macro name="ai_chat_show"]
 
-    ; 1. 必要なCSSを読み込む
+    ; 必要なCSSを読み込む
     [loadcss file="./data/others/plugin/mascot_chat/mascot.css"]
     [loadjs storage="./data/others/js/marked.min.js"] 
     [loadjs storage="./data/others/js/purify.min.js"] 
 
-    ; 2. [html]タグでUIの骨格を生成する (新レイアウト)
+    ; [html]タグでUIの骨格を生成する (新レイアウト)
     [html]
     <div class="ai-chat-container" style="display:none;">
         
@@ -49,7 +47,7 @@
     </div>
     [endhtml]
 
-    ; 3. [iscript]でUIをfixレイヤーに移動し、イベントを設定する
+    ; [iscript]でUIをfixレイヤーに移動し、イベントを設定する
     [iscript]
     try {
         var container = $(".ai-chat-container");
@@ -90,7 +88,7 @@
 
             container.show(); 
             
-            // --- UI要素の参照 (新レイアウト) ---
+            // --- UI要素の参照 ---
             var liveChatView = container.find(".live-chat-view");
             var logView = container.find(".log-view-area");
             
@@ -103,29 +101,30 @@
             var navPrev = container.find(".ai-chat-nav .ai-chat-prev");
             var navNext = container.find(".ai-chat-nav .ai-chat-next");
             
-            // --- 履歴管理 (変更なし) ---
-            function getSfHistory() {
-                if (typeof TYRANO.kag.stat.sf === "undefined") {
-                    return []; 
+            // --- 履歴管理 ---
+            function getTfHistory() {
+                if (typeof TYRANO.kag.stat.tf === "undefined") {
+                    TYRANO.kag.stat.tf = {};
                 }
-                if (!TYRANO.kag.stat.sf.ai_chat_history) {
-                    TYRANO.kag.stat.sf.ai_chat_history = [];
+                if (!TYRANO.kag.stat.tf.ai_chat_history) {
+                    TYRANO.kag.stat.tf.ai_chat_history = [];
                 }
-                return TYRANO.kag.stat.sf.ai_chat_history;
-                console.error(TYRANO.kag.stat.sf.ai_chat_history);
+                // console.error(TYRANO.kag.stat.tf.ai_chat_history); // ユーザーのデバッグ用 (sf -> tf)
+                return TYRANO.kag.stat.tf.ai_chat_history;
             }
             
-            function getFLogIndex() {
-                if (typeof TYRANO.kag.stat.f === "undefined") {
-                    return -1; 
+            // ログインデックス
+            function getTfLogIndex() {
+                if (typeof TYRANO.kag.stat.tf === "undefined") {
+                    TYRANO.kag.stat.tf = {};
                 }
-                if (typeof TYRANO.kag.stat.f.ai_chat_log_index === "undefined") {
-                    TYRANO.kag.stat.f.ai_chat_log_index = -1;
+                if (typeof TYRANO.kag.stat.tf.ai_chat_log_index === "undefined") {
+                    TYRANO.kag.stat.tf.ai_chat_log_index = -1;
                 }
-                return TYRANO.kag.stat.f.ai_chat_log_index;
+                return TYRANO.kag.stat.tf.ai_chat_log_index;
             }
             
-            // --- 関数定義 (★ 2点修正) ---
+            // --- 関数定義 ---
             
             function addMessage(username, message, is_history_load = false) {
                 var messageHtml = DOMPurify.sanitize(marked.parse(message));
@@ -138,27 +137,19 @@
                     </div>
                 `);
 
-                // ★修正点2: コピーボタン機能を復活 (ai_chat より移植)
+                // コピーボタン機能
                 messageEl.find("pre code").each(function(i, block) {
                     var $block = $(block);
                     var $pre = $block.parent("pre");
-                    
-                    if ($pre.find('.copy-code-button').length > 0) {
-                        return; 
-                    }
-
+                    if ($pre.find('.copy-code-button').length > 0) return; 
                     $pre.css("position", "relative"); 
                     var copyButton = $('<button class="copy-code-button">コピー</button>');
-                    
                     copyButton.on("click", function() {
                         var codeText = $block.text();
                         navigator.clipboard.writeText(codeText).then(() => {
                             copyButton.text("コピー完了!");
-                            setTimeout(() => {
-                                copyButton.text("コピー");
-                            }, 2000);
+                            setTimeout(() => { copyButton.text("コピー"); }, 2000);
                         }, (err) => {
-                            console.error('クリップボードへのコピーに失敗しました', err);
                             copyButton.text("失敗");
                         });
                     });
@@ -168,32 +159,33 @@
 
                 // ライブ表示の際、AIとユーザーの枠を分けて更新
                 if (username === "あなた") {
-                    userMessagesContainer.html(messageEl); // 上書き
+                    userMessagesContainer.html(messageEl);
                     userMessagesContainer.scrollTop(0);
                 } else {
-                    aiMessagesContainer.html(messageEl); // 上書き
+                    aiMessagesContainer.html(messageEl);
                     aiMessagesContainer.scrollTop(0);
                 }
                 
-               if (!is_history_load) {
+                // 履歴保存とボタン有効化
+                if (!is_history_load) {
+                    
                     navPrev.prop("disabled", false);
 
-                    var history = getSfHistory(); 
+                    var history = getTfHistory();
                     
-                    if (typeof TYRANO.kag.stat.sf !== "undefined") {
-                        history.push({ username, message });
-                        if (history.length > 50) {
-                            history.shift();
-                        }
+                    history.push({ username, message });
+                    if (history.length > 50) {
+                        history.shift();
                     }
                 }
             }
 
             function showLogMessage(index) {
-                var history = getSfHistory(); 
+                var history = getTfHistory();
                 if (!history[index]) return;
                 
                 var item = history[index];
+                
                 var messageHtml = DOMPurify.sanitize(marked.parse(item.message));
                 var userNameColor = (item.username === "あなた") ? "#008800" : "#d9534f";
                 
@@ -234,15 +226,17 @@
             }
             
             function restoreLiveChatView() {
-                if (typeof TYRANO.kag.stat.f !== "undefined") {
-                     TYRANO.kag.stat.f.ai_chat_log_index = -1;
+                if (typeof TYRANO.kag.stat.tf !== "undefined") {
+                     TYRANO.kag.stat.tf.ai_chat_log_index = -1;
+                } else {
+                    getTfLogIndex();
                 }
                 
                 logView.hide();         
                 liveChatView.show();    
                 container.find(".ai-chat-form").show(); 
                 
-                var history = getSfHistory();
+                var history = getTfHistory(); 
                 
                 var lastAiMsg = history.findLast(item => item.username !== "あなた");
                 var lastUserMsg = history.findLast(item => item.username === "あなた");
@@ -263,18 +257,18 @@
                 navNext.prop("disabled", true); 
             }
             
-            // --- 送信処理 (変更なし) ---
+            // --- 送信処理 ---
             function sendMessage() {
+                if (getTfLogIndex() !== -1) { // ★ tf を使用
+                    restoreLiveChatView();
+                }
+
                 if (typeof TYRANO.kag.stat.f === "undefined") {
                     console.error("TYRANO.kag.stat.f が undefined です。");
                     addMessage("エラー", "システムが準備中です。少し待ってからもう一度試してください。", true);
                     return;
                 }
                 var f = TYRANO.kag.stat.f;
-
-                if (getFLogIndex() !== -1) { 
-                    restoreLiveChatView();
-                }
 
                 var userMessage = inputField.val().trim();
                 if (userMessage === "") return;
@@ -296,7 +290,7 @@
                     body: JSON.stringify({ 
                         message: userMessage,
                         code: CodeContent,
-                        task: task_data.description,
+                        task: task_data ? task_data.description : "タスクがありません", // null回避
                     }),
                 })
                 .then(response => response.ok ? response.json() : response.text().then(text => { throw new Error(text) }))
@@ -314,7 +308,7 @@
                 });
             }
             
-            // --- イベントリスナー (変更なし) ---
+            // --- イベントリスナー ---
             
             sendButton.on("click", sendMessage); 
             
@@ -331,12 +325,10 @@
             });
             
             navPrev.on("click", function() {
-                if (typeof TYRANO.kag.stat.f === "undefined") return; 
-                
-                var history = getSfHistory();
+                var history = getTfHistory(); // ★ tf から取得
                 if (history.length === 0) return;
                 
-                var currentLogIndex = getFLogIndex();
+                var currentLogIndex = getTfLogIndex();
                 
                 if (currentLogIndex === -1) {
                     currentLogIndex = history.length - 1;
@@ -344,20 +336,18 @@
                     currentLogIndex--;
                 }
                 
-                TYRANO.kag.stat.f.ai_chat_log_index = currentLogIndex;
+                TYRANO.kag.stat.tf.ai_chat_log_index = currentLogIndex;
                 showLogMessage(currentLogIndex);
             });
             
             navNext.on("click", function() {
-                if (typeof TYRANO.kag.stat.f === "undefined") return; 
-                
-                var currentLogIndex = getFLogIndex();
+                var currentLogIndex = getTfLogIndex();
                 if (currentLogIndex === -1) return; 
                 
-                var history = getSfHistory();
+                var history = getTfHistory(); // ★ tf から取得
                 if (currentLogIndex < history.length - 1) {
                     currentLogIndex++;
-                    TYRANO.kag.stat.f.ai_chat_log_index = currentLogIndex;
+                    TYRANO.kag.stat.tf.ai_chat_log_index = currentLogIndex;
                     showLogMessage(currentLogIndex);
                 } else {
                     restoreLiveChatView();
