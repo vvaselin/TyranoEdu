@@ -13,17 +13,17 @@
         <div class="mascot-ui-wrapper">
             
             <div class="live-chat-view">
-                <div class="ai-bubble-area">
-                    <div class="ai-chat-bubble">
-                        <div class="ai-chat-messages">
-                            </div>
-                    </div>
-                    <img src="./data/fgimage/chara/akane/normal.png" class="ai-chat-sprite-small">
-                </div>
                 
                 <div class="user-bubble-area">
                     <div class="user-chat-bubble">
                         <div class="user-chat-messages">
+                            </div>
+                    </div>
+                </div>
+
+                <div class="ai-bubble-area">
+                    <div class="ai-chat-bubble">
+                        <div class="ai-chat-messages">
                             </div>
                     </div>
                 </div>
@@ -39,6 +39,8 @@
                 <button class="ai-chat-next">▶</button>
             </div>
         </div>
+
+        <img src="./data/fgimage/chara/akane/normal.png" class="ai-chat-sprite-bottom">
 
         <div class="ai-chat-form">
             <textarea class="ai-chat-input" placeholder="メッセージを入力..." rows="1"></textarea>
@@ -88,7 +90,7 @@
 
             container.show(); 
             
-            // --- UI要素の参照 ---
+            // --- UI要素の参照 (新レイアウト) ---
             var liveChatView = container.find(".live-chat-view");
             var logView = container.find(".log-view-area");
             
@@ -101,7 +103,8 @@
             var navPrev = container.find(".ai-chat-nav .ai-chat-prev");
             var navNext = container.find(".ai-chat-nav .ai-chat-next");
             
-            // --- 履歴管理 ---
+            // --- 履歴管理 (tf を使用) ---
+            
             function getTfHistory() {
                 if (typeof TYRANO.kag.stat.tf === "undefined") {
                     TYRANO.kag.stat.tf = {};
@@ -109,11 +112,9 @@
                 if (!TYRANO.kag.stat.tf.ai_chat_history) {
                     TYRANO.kag.stat.tf.ai_chat_history = [];
                 }
-                // console.error(TYRANO.kag.stat.tf.ai_chat_history); // ユーザーのデバッグ用 (sf -> tf)
                 return TYRANO.kag.stat.tf.ai_chat_history;
             }
             
-            // ログインデックス
             function getTfLogIndex() {
                 if (typeof TYRANO.kag.stat.tf === "undefined") {
                     TYRANO.kag.stat.tf = {};
@@ -159,21 +160,21 @@
 
                 // ライブ表示の際、AIとユーザーの枠を分けて更新
                 if (username === "あなた") {
-                    userMessagesContainer.html(messageEl);
+                    userMessagesContainer.html(messageEl); // 上書き
                     userMessagesContainer.scrollTop(0);
                 } else {
-                    aiMessagesContainer.html(messageEl);
+                    aiMessagesContainer.html(messageEl); // 上書き
                     aiMessagesContainer.scrollTop(0);
                 }
                 
-                // 履歴保存とボタン有効化
+                // 履歴保存とボタン有効化ロジック (tf を使用)
                 if (!is_history_load) {
                     
-                    navPrev.prop("disabled", false);
+                    navPrev.prop("disabled", false); 
 
-                    var history = getTfHistory();
+                    var history = getTfHistory(); 
                     
-                    history.push({ username, message });
+                    history.push({ username, message }); 
                     if (history.length > 50) {
                         history.shift();
                     }
@@ -181,7 +182,7 @@
             }
 
             function showLogMessage(index) {
-                var history = getTfHistory();
+                var history = getTfHistory(); 
                 if (!history[index]) return;
                 
                 var item = history[index];
@@ -229,7 +230,7 @@
                 if (typeof TYRANO.kag.stat.tf !== "undefined") {
                      TYRANO.kag.stat.tf.ai_chat_log_index = -1;
                 } else {
-                    getTfLogIndex();
+                    getTfLogIndex(); // tf が undefined なら初期化
                 }
                 
                 logView.hide();         
@@ -259,7 +260,7 @@
             
             // --- 送信処理 ---
             function sendMessage() {
-                if (getTfLogIndex() !== -1) { // ★ tf を使用
+                if (getTfLogIndex() !== -1) { 
                     restoreLiveChatView();
                 }
 
@@ -325,7 +326,7 @@
             });
             
             navPrev.on("click", function() {
-                var history = getTfHistory(); // ★ tf から取得
+                var history = getTfHistory(); 
                 if (history.length === 0) return;
                 
                 var currentLogIndex = getTfLogIndex();
@@ -344,7 +345,7 @@
                 var currentLogIndex = getTfLogIndex();
                 if (currentLogIndex === -1) return; 
                 
-                var history = getTfHistory(); // ★ tf から取得
+                var history = getTfHistory(); 
                 if (currentLogIndex < history.length - 1) {
                     currentLogIndex++;
                     TYRANO.kag.stat.tf.ai_chat_log_index = currentLogIndex;
