@@ -126,14 +126,12 @@
             }
             
             // --- 関数定義 ---
-            
+            // ログ表示
             function addMessage(username, message, is_history_load = false) {
                 var messageHtml = DOMPurify.sanitize(marked.parse(message));
-                var userNameColor = (username === "あなた") ? "#008800" : "#d9534f";
                 
                 var messageEl = $(`
                     <div class="ai-chat-message-simple"> 
-                        <span class="username" style="color: ${userNameColor};">${username}</span>:
                         <div class="message-body">${messageHtml}</div>
                     </div>
                 `);
@@ -187,20 +185,22 @@
                 
                 var item = history[index];
                 
-                var messageHtml = DOMPurify.sanitize(marked.parse(item.message));
-                var userNameColor = (item.username === "あなた") ? "#008800" : "#d9534f";
+                // ログ表示中はライブビューと入力欄を隠す
+                liveChatView.show();
+                logView.hide();
+                container.find(".ai-chat-form").hide(); 
                 
+                // 表示するメッセージを作成
+                var messageHtml = DOMPurify.sanitize(marked.parse(item.message));
                 var messageEl = $(`
                     <div class="ai-chat-message-simple"> 
-                        <span class="username" style="color: ${userNameColor};">${item.username}</span>:
                         <div class="message-body">${messageHtml}</div>
                     </div>
                 `);
                 
-                // ログにもコピーボタン機能を追加
+                // コピーボタンを追加
                 messageEl.find("pre code").each(function(i, block) {
-                    var $block = $(block);
-                    var $pre = $block.parent("pre");
+                    var $block = $(block); var $pre = $block.parent("pre");
                     if ($pre.find('.copy-code-button').length > 0) return; 
                     $pre.css("position", "relative"); 
                     var copyButton = $('<button class="copy-code-button">コピー</button>');
@@ -209,33 +209,64 @@
                         navigator.clipboard.writeText(codeText).then(() => {
                             copyButton.text("コピー完了!");
                             setTimeout(() => { copyButton.text("コピー"); }, 2000);
-                        }, (err) => {
-                            copyButton.text("失敗");
                         });
                     });
                     $pre.append(copyButton);
                 });
 
-                logMessagesContainer.html(messageEl); 
-                
-                liveChatView.hide(); 
-                logView.show();      
-                container.find(".ai-chat-form").hide(); 
+                // メッセージの投入先を決定
+                if (item.username === "あなた") {
+                    // ユーザーのログの場合
+                    userMessagesContainer.html(messageEl); // ユーザー枠に表示
+                    
+                    // このログの直前のAIの返答を探す
+                    var prevAiMsg = null;
+                    for (var i = index - 1; i >= 0; i--) {
+                        if (history[i].username !== "あなた") {
+                            prevAiMsg = history[i];
+                            break;
+                        }
+                    }
+                    if (prevAiMsg) {
+                        addMessage(prevAiMsg.username, prevAiMsg.message, true);
+                    } else {
+                        addMessage("あかね", "何が聞きたいの？", true); // 見つからなければデフォルト
+                    }
+                    
+                } else {
+                    // AIのログの場合
+                    aiMessagesContainer.html(messageEl); // AI枠に表示
+                    
+                    // このログの直前のユーザーの質問を探す
+                    var prevUserMsg = null;
+                    for (var i = index - 1; i >= 0; i--) {
+                        if (history[i].username === "あなた") {
+                            prevUserMsg = history[i];
+                            break;
+                        }
+                    }
+                    if (prevUserMsg) {
+                        addMessage(prevUserMsg.username, prevUserMsg.message, true);
+                    } else {
+                        userMessagesContainer.html(""); // 見つからなければ空
+                    }
+                }
                 
                 navPrev.prop("disabled", index === 0);
                 navNext.prop("disabled", false); 
             }
             
+            // ライブ復帰ロジック (入力欄の表示を徹底)
             function restoreLiveChatView() {
                 if (typeof TYRANO.kag.stat.tf !== "undefined") {
                      TYRANO.kag.stat.tf.ai_chat_log_index = -1;
                 } else {
-                    getTfLogIndex(); // tf が undefined なら初期化
+                    getTfLogIndex(); 
                 }
                 
-                logView.hide();         
-                liveChatView.show();    
-                container.find(".ai-chat-form").show(); 
+                logView.hide();         // ログ専用枠は隠す
+                liveChatView.show();    // ライブ枠を表示
+                container.find(".ai-chat-form").show();
                 
                 var history = getTfHistory(); 
                 
@@ -247,13 +278,11 @@
                 } else {
                     addMessage("あかね", "何が聞きたいの？", true); 
                 }
-                
                 if (lastUserMsg) {
                     addMessage(lastUserMsg.username, lastUserMsg.message, true);
                 } else {
                     userMessagesContainer.html(""); 
                 }
-
                 navPrev.prop("disabled", history.length === 0);
                 navNext.prop("disabled", true); 
             }
@@ -328,28 +357,28 @@
             navPrev.on("click", function() {
                 var history = getTfHistory(); 
                 if (history.length === 0) return;
-                
                 var currentLogIndex = getTfLogIndex();
                 
                 if (currentLogIndex === -1) {
                     currentLogIndex = history.length - 1;
-                } else if (currentLogIndex > 0) {
-                    currentLogIndex--;
+                } else if (currentLogIndex >= 0) {
+                    currentLogIndex -= 2;
                 }
-                
+                if (currentLogIndex < 0) currentLogIndex = 0;
                 TYRANO.kag.stat.tf.ai_chat_log_index = currentLogIndex;
                 showLogMessage(currentLogIndex);
             });
-            
+            // ログ「次へ」
             navNext.on("click", function() {
                 var currentLogIndex = getTfLogIndex();
                 if (currentLogIndex === -1) return; 
                 
                 var history = getTfHistory(); 
-                if (currentLogIndex < history.length - 1) {
-                    currentLogIndex++;
-                    TYRANO.kag.stat.tf.ai_chat_log_index = currentLogIndex;
-                    showLogMessage(currentLogIndex);
+                var nextLogIndex = currentLogIndex + 2;
+                
+                if (nextLogIndex < history.length - 1) {
+                    TYRANO.kag.stat.tf.ai_chat_log_index = nextLogIndex;
+                    showLogMessage(nextLogIndex);
                 } else {
                     restoreLiveChatView();
                 }
