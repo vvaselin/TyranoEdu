@@ -150,6 +150,8 @@ $("#modal_copy_button_id").button("disable");
 [glink fix="true" color="btn_01_green" storage="editor.ks" text="コードを実行" target="*execute_code" width="410" size="20" x="240" y="650"]
 ; 実行結果モーダル表示ボタン
 [glink fix="true" color="btn_01_blue" storage="editor.ks" text="コンソール" target="*open_result_window" width="150" size="20" x="655" y="650"]
+; 採点
+[glink fix="true" color="btn_01_blue" storage="editor.ks" text="提出" target="*submit" width="150" size="20" x="50" y="650"]
 
 ; 課題表示UI
 [eval exp="f.current_task_id = sf.current_task_id || 'task1'"]
@@ -170,6 +172,7 @@ $("#modal_copy_button_id").button("disable");
 ">
     <h3 id="task-title" style="margin-bottom: 10px;">課題</h3>
   <p id="task-content" style="white-space: pre-wrap;"></p>
+  <p id="grade-result"></p>
 </div>
 [endhtml]
 
@@ -247,6 +250,11 @@ if (task_data) {
     console.error("実行時間：", (performance.now() - f.starttime), "ms");
 [endscript]
 
+[return]
+
+*submit
+;コード実行
+[execute_cpp code=&f.my_code]
 ; 採点処理
 [iscript]
 $("#result_modal_content").append("\n\n--- 採点中... ---");
