@@ -151,7 +151,7 @@ $("#modal_copy_button_id").button("disable");
 ; 実行結果モーダル表示ボタン
 [glink fix="true" color="btn_01_blue" storage="editor.ks" text="コンソール" target="*open_result_window" width="150" size="20" x="655" y="650"]
 ; 採点
-[glink fix="true" color="btn_01_blue" storage="editor.ks" text="提出" target="*submit" width="150" size="20" x="50" y="650"]
+[glink fix="true" color="btn_01_black" storage="editor.ks" text="提出" target="*submit" width="150" size="20" x="50" y="650"]
 
 ; 課題表示UI
 [eval exp="f.current_task_id = sf.current_task_id || 'task1'"]
@@ -171,8 +171,18 @@ $("#modal_copy_button_id").button("disable");
     box-sizing: border-box;
 ">
     <h3 id="task-title" style="margin-bottom: 10px;">課題</h3>
-  <p id="task-content" style="white-space: pre-wrap;"></p>
-  <p id="grade-result"></p>
+    <p id="task-content" style="white-space: pre-wrap;"></p>
+    <div id="grade-result-area" style="
+        display:none; 
+        margin-top:15px; 
+        padding:10px; 
+        background:rgba(0,0,0,0.5); 
+        border-radius:5px;
+    ">
+        <h4 style="color:#ffcc00; margin:0 0 5px 0;">▼ 採点結果</h4>
+        <div id="grade-content" style="font-size:14px; line-height:1.4;">
+            </div>
+    </div>
 </div>
 [endhtml]
 
@@ -253,11 +263,14 @@ if (task_data) {
 [return]
 
 *submit
+[iscript]
+    $("#grade-result-area").show();
+    $("#grade-content").html("<span style='color:gray;'>採点中...</span>");
+[endscript]
 ;コード実行
 [execute_cpp code=&f.my_code]
 ; 採点処理
 [iscript]
-$("#result_modal_content").append("\n\n--- 採点中... ---");
 // 課題データ
 var task = TYRANO.kag.stat.f.all_tasks[TYRANO.kag.stat.f.current_task_id];
 var payload = {
@@ -275,12 +288,15 @@ $.ajax({
     dataType: "json",
     
     success: function(data) {
-        // 結果の表示成形
-        var msg = "\n\n【採点結果】 " + data.score + "点\n";
-        msg += "理由: " + data.reason + "\n";
-        msg += "アドバイス: " + data.improvement;
-        
-        $("#result_modal_content").append(msg);
+        var html = "";
+
+        // 点数によって色を変える演出
+        var scoreColor = (data.score >= 80) ? "#00ff00" : "#ff4444";
+        html += "<strong style='font-size:18px; color:" + scoreColor + ";'>" + data.score + "点</strong><br>";
+
+        html += "<strong>理由:</strong> " + data.reason + "<br>";
+        html += "<strong style='color:#ffffaa;'>アドバイス:</strong> " + data.improvement;      
+        $("#grade-content").html(html);
         
         // 合格判定などのフラグ処理があればここに記述
         if(data.score >= 80){
@@ -289,20 +305,11 @@ $.ajax({
         else{
             alertify.error("不合格...");
         }
-        // 処理完了後、スクリプトを再開させる
-        TYRANO.kag.ftag.startTag("jump", {target: "*grade_done"});
     },
-    
-    error: function(xhr, status, error) {
-        console.error("Grading Error:", error);
-        $("#result_modal_content").append("\n\n(採点サーバーとの通信に失敗しました)");
-        TYRANO.kag.ftag.startTag("jump", {target: "*grade_done"});
+    error: function() {
+        $("#grade-content").text("採点サーバーとの通信に失敗しました。");
     }
 });
 [endscript]
-
-[s]
-
-*grade_done
 
 [return]
