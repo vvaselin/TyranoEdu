@@ -253,7 +253,7 @@ $("#result_modal_content").append("\n\n--- 採点中... ---");
 // 課題データ
 var task = TYRANO.kag.stat.f.all_tasks[TYRANO.kag.stat.f.current_task_id];
 var payload = {
-    code: TYRANO.kag.stat.f.current_code,     
+    code: TYRANO.kag.stat.f['my_code'],     
     output: TYRANO.kag.stat.f.execution_result,
     task_desc: task.description,               
     expected_output: task.expected_output || ""
