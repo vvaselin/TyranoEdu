@@ -150,6 +150,7 @@
                             setTimeout(() => { copyButton.text("コピー"); }, 2000);
                         }, (err) => {
                             copyButton.text("失敗");
+                            setTimeout(() => { copyButton.text("コピー"); }, 2000);
                         });
                     });
                     $pre.append(copyButton);

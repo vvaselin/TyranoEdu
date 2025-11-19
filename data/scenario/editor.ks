@@ -110,14 +110,19 @@ $modal.dialog({
             click: function() {
                 var $dialog_content = $(this).find("#result_modal_content");
                 var textToCopy = $dialog_content.text();
-                
-                console.log("コピーボタンクリック: ", textToCopy);
+                var $button = $(event.target).closest("button");
                 navigator.clipboard.writeText(textToCopy).then(
                     () => {
-                        alertify.success("実行結果をコピー");
+                        $button.text("コピー完了!");
+                        setTimeout(() => { 
+                            $button.text("コピー"); 
+                        }, 2000);
                     },
                     (err) => {
-                        alert("コピーに失敗しました。");
+                        $button.text("失敗");
+                        setTimeout(() => { 
+                            $button.text("コピー"); 
+                        }, 2000);
                     }
                 );
             }
