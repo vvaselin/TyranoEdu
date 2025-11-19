@@ -247,5 +247,52 @@ if (task_data) {
     console.error("実行時間：", (performance.now() - f.starttime), "ms");
 [endscript]
 
+; 採点処理
+[iscript]
+$("#result_modal_content").append("\n\n--- 採点中... ---");
+// 課題データ
+var task = TYRANO.kag.stat.f.all_tasks[TYRANO.kag.stat.f.current_task_id];
+var payload = {
+    code: TYRANO.kag.stat.f.current_code,     
+    output: TYRANO.kag.stat.f.execution_result,
+    task_desc: task.description,               
+    expected_output: task.expected_output || ""
+};
+
+$.ajax({
+    url: "/api/grade",
+    type: "POST",
+    data: JSON.stringify(payload),
+    contentType: "application/json",
+    dataType: "json",
+    
+    success: function(data) {
+        // 結果の表示成形
+        var msg = "\n\n【採点結果】 " + data.score + "点\n";
+        msg += "理由: " + data.reason + "\n";
+        msg += "アドバイス: " + data.improvement;
+        
+        $("#result_modal_content").append(msg);
+        
+        // 合格判定などのフラグ処理があればここに記述
+        if(data.score >= 80){
+            // 例: f.is_cleared = true;
+        }
+        // 処理完了後、スクリプトを再開させる
+        TYRANO.kag.ftag.startTag("jump", {target: "*grade_done"});
+    },
+    
+    error: function(xhr, status, error) {
+        console.error("Grading Error:", error);
+        $("#result_modal_content").append("\n\n(採点サーバーとの通信に失敗しました)");
+        TYRANO.kag.ftag.startTag("jump", {target: "*grade_done"});
+    }
+});
+[endscript]
+
+[s]
+
+*grade_done
+
 ; sのとこに戻る
 [return]
