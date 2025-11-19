@@ -276,7 +276,10 @@ $.ajax({
         
         // 合格判定などのフラグ処理があればここに記述
         if(data.score >= 80){
-            // 例: f.is_cleared = true;
+            alertify.success("合格!");
+        }
+        else{
+            alertify.error("不合格...");
         }
         // 処理完了後、スクリプトを再開させる
         TYRANO.kag.ftag.startTag("jump", {target: "*grade_done"});
@@ -294,5 +297,4 @@ $.ajax({
 
 *grade_done
 
-; sのとこに戻る
 [return]
