@@ -14,7 +14,7 @@ f.my_code = [
     '#include <iostream>',
     '',
     'int main() {',
-    '    std::cout << "Hello World!" << std::endl;',
+    '    // コードを書いてみよう',
     '    return 0;',
     '}'
 ].join('\n');
@@ -122,8 +122,8 @@ $("#modal_copy_button_id").button("disable");
 [glink fix="true" color="btn_01_blue" storage="editor.ks" text="コンソール" target="*open_result_window" width="150" size="20" x="655" y="650"]
 ; 採点
 [glink fix="true" color="btn_01_black" storage="editor.ks" text="提出" target="*submit" width="150" size="20" x="50" y="650"]
-
-[glink color="btn_01_black" storage="editor.ks" text="タイトルに戻る↩" target="*back2title" width="200" size="20" x="20" y="20"]
+; 課題選択に戻る
+[glink color="btn_02_white" storage="editor.ks" text="戻る↩" target="*back" width="200" size="18" x="20" y="10"]
 
 ; 課題表示UI
 [layopt layer=fix visible=true page=fore]
@@ -285,5 +285,5 @@ $.ajax({
 
 [return]
 
-*back2title
+*back
 [jump storage="first.ks" target="*start"]
