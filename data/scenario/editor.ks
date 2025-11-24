@@ -123,15 +123,17 @@ $("#modal_copy_button_id").button("disable");
 ; 採点
 [glink fix="true" color="btn_01_black" storage="editor.ks" text="提出" target="*submit" width="150" size="20" x="50" y="650"]
 
+[glink color="btn_01_black" storage="editor.ks" text="タイトルに戻る↩" target="*back2title" width="200" size="20" x="20" y="20"]
+
 ; 課題表示UI
 [layopt layer=fix visible=true page=fore]
 [html]
 <div id="task-box" style="
     position:absolute;
     left:5px; 
-    top:18px;
+    top:68px;
     width:230px; 
-    height:650px;
+    height:600px;
     background-color:rgba(56, 56, 56, 1);
     color:rgb(255, 255, 255);
     border-radius:10px;
@@ -282,3 +284,6 @@ $.ajax({
 [endscript]
 
 [return]
+
+*back2title
+[jump storage="first.ks" target="*start"]

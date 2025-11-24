@@ -3,18 +3,17 @@
 [bg storage="rouka.jpg" time="0"]
 @layopt layer="message0" visible=false
 
+[if exp="f.system_initialized == true"]
+[jump target="*menu_start"]
+[endif]
+
 ; プラグインを読み込む
 [plugin name="monaco_editor"]
 [plugin name="cpp_executor"]
 [plugin name="glink_ex"]
 ;[plugin name="ai_chat"]
 [plugin name="mascot_chat"]
-
-; 実行ボタンglinkのデザイン用マクロ
 [loadcss file="./data/others/css/glink.css"]
-[macro name="start_button"]
-[glink color=%color storage="first.ks" target=%target text=%text width="640" size="20" x=%x y=%y]
-[endmacro]
 
 ; 課題データの読み込み
 [eval exp="f.current_task_id = sf.current_task_id || 'task1'"]
@@ -47,6 +46,14 @@ $.ajax({
 });
 [endscript]
 
+[eval exp="f.system_initialized = true"]
+
+*menu_start
+
+; 実行ボタンglinkのデザイン用マクロ
+[macro name="start_button"]
+[glink color=%color storage="first.ks" target=%target text=%text width="640" size="20" x=%x y=%y]
+[endmacro]
 
 [start_button color="btn_01_blue" target="*quest1" text="課題1" x="50" y="70"]
 [start_button color="btn_01_blue" target="*quest2" text="課題2" x="50" y="170"]
