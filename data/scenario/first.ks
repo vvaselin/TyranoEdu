@@ -3,9 +3,8 @@
 [bg storage="rouka.jpg" time="0"]
 @layopt layer="message0" visible=false
 
-[if exp="f.system_initialized == true"]
-[jump target="*menu_start"]
-[endif]
+[jump target="*menu_start" cond="f.system_initialized == true" ]
+
 
 ; プラグインを読み込む
 [plugin name="monaco_editor"]
@@ -29,7 +28,7 @@ $.ajax({
     
     success: function(data) {
         TYRANO.kag.stat.f.all_tasks = data;
-        console.error("tasks.json 読み込み成功:", TYRANO.kag.stat.f.all_tasks);
+        console.log("tasks.json 読み込み成功:", TYRANO.kag.stat.f.all_tasks);
     },
     
     error: function(xhr, status, error) {
