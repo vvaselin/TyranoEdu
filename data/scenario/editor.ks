@@ -3,36 +3,6 @@
 [bg storage="room.jpg" time="0"]
 @layopt layer="message0" visible=false
 
-; 課題データの読み込み
-[iscript]
-// 読み込む JSON ファイルのパス
-var json_path = "./data/others/tasks.json";
-
-$.ajax({
-    url: json_path,
-    type: 'GET',
-    dataType: 'json',
-    async: false,
-    
-    success: function(data) {
-        TYRANO.kag.stat.f.all_tasks = data;
-        console.log("tasks.json 読み込み成功:", TYRANO.kag.stat.f.all_tasks);
-    },
-    
-    error: function(xhr, status, error) {
-        console.error("tasks.json 読み込み失敗:", json_path, error);
-        
-        TYRANO.kag.stat.f.all_tasks = { 
-            "error_task": { 
-                "title": "読込失敗", 
-                "description": "tasks.json が見つかりません。\nパスを確認してください。" 
-            }
-        };
-        TYRANO.kag.stat.f.current_task_id = "error_task";
-    }
-});
-[endscript]
-
 ; AIチャットUIを初期化して表示
 [stop_keyconfig]
 [ai_chat_show]
@@ -154,7 +124,6 @@ $("#modal_copy_button_id").button("disable");
 [glink fix="true" color="btn_01_black" storage="editor.ks" text="提出" target="*submit" width="150" size="20" x="50" y="650"]
 
 ; 課題表示UI
-[eval exp="f.current_task_id = sf.current_task_id || 'task1'"]
 [layopt layer=fix visible=true page=fore]
 [html]
 <div id="task-box" style="
