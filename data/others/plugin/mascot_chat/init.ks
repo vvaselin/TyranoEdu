@@ -327,10 +327,17 @@
                 .then(response => response.ok ? response.json() : response.text().then(text => { throw new Error(text) }))
                 .then(data => {
                     addMessage("あかね", data.text, false);
+                    if (data.emotion) {
+                        var imgPath = "./data/fgimage/chara/akane/" + data.emotion + ".png";
+                        // クラス名 .ai-chat-sprite-bottom を持つimgタグのsrcを書き換え
+                        $(".ai-chat-sprite-bottom").attr("src", imgPath);
+                        console.error("感情:", data.emotion);
+                    }
                 })
                 .catch(error => {
                     console.error("AIチャットエラー:", error);
-                    addMessage("エラー", "AIとの通信に失敗しました。", false);
+                    addMessage("エラー", "上手くお話出来ませんでした。", false);
+                    $(".ai-chat-sprite-bottom").attr("src", "./data/fgimage/chara/akane/sad.png");
                 })
                 .finally(() => {
                     inputField.prop("disabled", false).attr("placeholder", "メッセージを入力...").focus();

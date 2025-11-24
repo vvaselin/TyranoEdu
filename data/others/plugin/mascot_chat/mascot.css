@@ -67,7 +67,7 @@
     flex-direction: column; 
     z-index: 5;
     min-width: 0; 
-    height: 75%; 
+    height: 65%; 
     
     background-color: rgba(255, 255, 255, 0.95);
     border: 2px solid #525252;
@@ -164,8 +164,8 @@
     left: 80%;
     transform: translateX(-50%);
     
-    width: 200px;
-    height: 200px;
+    width: 250px;
+    height: 250px;
     object-fit: cover;
     object-position: 0% 0%;
     
