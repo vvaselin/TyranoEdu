@@ -2,23 +2,12 @@
 [clearfix]
 [bg storage="room.jpg" time="0"]
 @layopt layer="message0" visible=false
+[stop_keyconfig]
 
 ; AIチャットUIを初期化して表示
-[stop_keyconfig]
 [ai_chat_show]
 
 ; ■■■ 初期設定（UIをfixレイヤーに一度だけ配置） ■■■
-
-[iscript]
-f.my_code = [
-    '#include <iostream>',
-    '',
-    'int main() {',
-    '    // コードを書いてみよう',
-    '    return 0;',
-    '}'
-].join('\n');
-[endscript]
 
 ; --- Monaco Editorを生成し、fixレイヤーに移動 ---
 @monaco_show storage="f.my_code"
@@ -38,9 +27,6 @@ $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
 [endscript]
 
 ; --- 結果表示用モーダル---
-[loadcss file="./tyrano/libs/jquery-ui/jquery-ui.css"]
-[loadcss file="./data/others/css/modal_dark_theme.css"]
-
 [iscript]
 // ティラノの変数 f を参照
 var f = TYRANO.kag.stat.f;
@@ -117,11 +103,11 @@ $("#modal_copy_button_id").button("disable");
 [endscript]
 
 ; 実行ボタン
-[glink fix="true" color="btn_01_green" storage="editor.ks" text="コードを実行" target="*execute_code" width="410" size="20" x="240" y="650"]
+[glink fix="true" color="mybtn_06" storage="editor.ks" text="コードを実行" target="*execute_code" width="410" size="20" x="240" y="650"]
 ; 実行結果モーダル表示ボタン
-[glink fix="true" color="btn_01_blue" storage="editor.ks" text="コンソール" target="*open_result_window" width="150" size="20" x="655" y="650"]
+[glink fix="true" color="mybtn_01" storage="editor.ks" text="コンソール" target="*open_result_window" width="150" size="20" x="655" y="650"]
 ; 採点
-[glink fix="true" color="btn_01_black" storage="editor.ks" text="提出" target="*submit" width="150" size="20" x="50" y="650"]
+[glink fix="true" color="mybtn_07" storage="editor.ks" text="提出" target="*submit" width="200" size="20" x="15" y="650"]
 ; 課題選択に戻る
 [glink color="btn_02_white" storage="editor.ks" text="戻る↩" target="*back" width="200" size="18" x="20" y="10"]
 

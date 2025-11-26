@@ -2,6 +2,7 @@
 [clearfix]
 [bg storage="rouka.jpg" time="0"]
 @layopt layer="message0" visible=false
+[stop_keyconfig]
 
 [jump target="*menu_start" cond="f.system_initialized == true" ]
 
@@ -12,7 +13,11 @@
 [plugin name="glink_ex"]
 ;[plugin name="ai_chat"]
 [plugin name="mascot_chat"]
+; css読み込み
 [loadcss file="./data/others/css/glink.css"]
+[loadcss file="./tyrano/libs/jquery-ui/jquery-ui.css"]
+[loadcss file="./data/others/css/modal_dark_theme.css"]
+[loadcss file="./data/others/plugin/css/mystyle.css"]
 
 ; 課題データの読み込み
 [eval exp="f.current_task_id = sf.current_task_id || 'task1'"]
@@ -63,6 +68,17 @@ $.ajax({
 
 [eval exp="f.current_task_id = 'task1'"]
 
+[iscript]
+f.my_code = [
+    '#include <iostream>',
+    '',
+    'int main() {',
+    '    // Hello, World! を出力してみよう',
+    '    return 0;',
+    '}'
+].join('\n');
+[endscript]
+
 [jump storage="editor.ks" target="*start"]
 
 [s]
@@ -70,6 +86,19 @@ $.ajax({
 *quest2
 
 [eval exp="f.current_task_id = 'task2'"]
+
+[iscript]
+f.my_code = [
+    '#include <iostream>',
+    '',
+    'int main() {',
+    '    int a;',
+    '    // aに10を代入してみよう',
+    '    // aの内容を出力してみよう',
+    '    return 0;',
+    '}'
+].join('\n');
+[endscript]
 
 [jump storage="editor.ks" target="*start"]
 
