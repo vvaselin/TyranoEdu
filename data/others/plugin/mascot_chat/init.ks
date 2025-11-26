@@ -6,7 +6,7 @@
     [loadjs storage="./data/others/js/marked.min.js"] 
     [loadjs storage="./data/others/js/purify.min.js"] 
 
-    ; [html]タグでUIの骨格を生成する (新レイアウト)
+    ; [html]タグでUIの骨格を生成する
     [html]
     <div class="ai-chat-container" style="display:none;">
         
@@ -128,7 +128,11 @@
             // --- 関数定義 ---
             // ログ表示
             function addMessage(username, message, is_history_load = false) {
-                var messageHtml = DOMPurify.sanitize(marked.parse(message));
+                if (message) {
+                    message = message.replace(/\\n/g, '\n');
+                }
+
+                var messageHtml = DOMPurify.sanitize(marked.parse(message, { breaks: true }));
                 
                 var messageEl = $(`
                     <div class="ai-chat-message-simple"> 

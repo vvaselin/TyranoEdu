@@ -107,7 +107,7 @@ $("#modal_copy_button_id").button("disable");
 ; 実行結果モーダル表示ボタン
 [glink fix="true" color="mybtn_01" storage="editor.ks" text="コンソール" target="*open_result_window" width="150" size="20" x="655" y="650"]
 ; 採点
-[glink fix="true" color="mybtn_07" storage="editor.ks" text="提出" target="*submit" width="200" size="20" x="15" y="650"]
+[glink fix="true" color="mybtn_07" storage="editor.ks" text="提出" target="*submit" width="200" size="20" x="15" y="600"]
 ; 課題選択に戻る
 [glink color="btn_02_white" storage="editor.ks" text="戻る↩" target="*back" width="200" size="18" x="20" y="10"]
 
