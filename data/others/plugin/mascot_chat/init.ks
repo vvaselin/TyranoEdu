@@ -303,40 +303,66 @@
                     addMessage("エラー", "システムが準備中です。少し待ってからもう一度試してください。", true);
                     return;
                 }
+                
+                // 変数ショートカット
                 var f = TYRANO.kag.stat.f;
+                var sf = TYRANO.kag.stat.sf; // システム変数(好感度用)
 
                 var userMessage = inputField.val().trim();
                 if (userMessage === "") return;
                 
+                // 1. 画面には「ユーザーの入力した文字だけ」を表示
                 addMessage("あなた", userMessage, false); 
                 
                 inputField.val("").attr("placeholder", "考え中...").prop("disabled", true);
                 sendButton.prop("disabled", true);
                 
-                const CodeContent = TYRANO.kag.stat.f['my_code'];
+                const CodeContent = f['my_code'];
                 
-                var tasks = TYRANO.kag.stat.f.all_tasks;
-                var current_id = TYRANO.kag.stat.f.current_task_id;
+                var tasks = f.all_tasks;
+                var current_id = f.current_task_id;
                 var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
+
+                // --- AIへの送信メッセージを作成（好感度情報を付与） ---
+                // 現在の好感度を取得 (未定義なら0)
+                var currentLove = f.love_level || 0;
                 
+                // システムプロンプトへの指示としてメッセージ末尾に付与（ユーザーには見えない）
+                var messageToSend = userMessage + `\n\n(System Info: Current Favorability/Love Level is ${currentLove})`;
+
                 fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        message: userMessage,
+                        message: messageToSend, // ここを userMessage から messageToSend に変更
                         code: CodeContent,
-                        task: task_data ? task_data.description : "タスクがありません", // null回避
+                        task: task_data ? task_data.description : "タスクがありません",
                     }),
                 })
                 .then(response => response.ok ? response.json() : response.text().then(text => { throw new Error(text) }))
                 .then(data => {
-                    addMessage("あかね", data.text, false);
-                    if (data.emotion) {
-                        var imgPath = "./data/fgimage/chara/akane/" + data.emotion + ".png";
-                        // クラス名 .ai-chat-sprite-bottom を持つimgタグのsrcを書き換え
-                        $(".ai-chat-sprite-bottom").attr("src", imgPath);
-                        console.error("感情:", data.emotion);
+                    // --- 受信データの処理 ---
+                    
+                    // テキストと感情の取得
+                    var aiText = data.text;
+                    var emotion = data.emotion || "normal";
+                    var loveUpVal = parseInt(data.love_up) || 0; // JSONから数値を取得
+
+                    // 好感度の更新処理
+                    if (loveUpVal > 0) {
+                        var current = parseInt(f.love_level) || 0;
+                        f.love_level = current + loveUpVal;
+                        console.error(`★好感度が ${loveUpVal} 上がりました！ 現在: ${f.love_level}`);
+                        alertify.success("好感度UP! 現在："+f.love_level);
                     }
+
+                    // メッセージ表示
+                    addMessage("あかね", aiText, false);
+
+                    // 表情画像の切り替え
+                    var imgPath = "./data/fgimage/chara/akane/" + emotion + ".png";
+                    $(".ai-chat-sprite-bottom").attr("src", imgPath);
+                    console.log("表情変更:", emotion);
                 })
                 .catch(error => {
                     console.error("AIチャットエラー:", error);

@@ -1,17 +1,17 @@
 {
   "task1": {
     "title": "課題1: Hello World",
-    "description": "「Hello World!」と\n表示するプログラムを作成せよ。",
+    "description": "「Hello World!」と表示するプログラムを作成せよ。",
     "expected_output": "Hello World!"
   },
   "task2": {
     "title": "課題2: 変数",
-    "description": "整数型の変数 `a` を宣言し、\n値 `10` を代入して、\nその値を表示せよ。",
+    "description": "整数型の変数`a`を宣言し、値`10`を代入して、その値を表示せよ。",
     "expected_output": "10"
   },
   "task3": {
     "title": "課題3: 条件分岐",
-    "description": "変数 `score` に `85` を代入し、\nもし `score` が 80 以上なら\n「合格」と表示するプログラムを\n作成せよ。",
+    "description":"変数`score`に`85`を代入し、もし`score`が80以上なら「合格」と表示するプログラムを作成せよ。",
     "expected_output": "合格"
   }
 }

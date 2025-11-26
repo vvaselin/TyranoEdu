@@ -29,6 +29,7 @@ $.ajax({
     url: json_path,
     type: 'GET',
     dataType: 'json',
+    cache: false,
     async: false,
     
     success: function(data) {
@@ -50,6 +51,9 @@ $.ajax({
 });
 [endscript]
 
+; 好感度（初期値0）
+[eval exp="f.love_level = 40"]
+
 [eval exp="f.system_initialized = true"]
 
 *menu_start
@@ -61,6 +65,7 @@ $.ajax({
 
 [start_button color="btn_01_blue" target="*quest1" text="課題1" x="50" y="70"]
 [start_button color="btn_01_blue" target="*quest2" text="課題2" x="50" y="170"]
+[start_button color="btn_01_blue" target="*quest3" text="課題3" x="50" y="270"]
 
 [s]
 
@@ -73,7 +78,7 @@ f.my_code = [
     '#include <iostream>',
     '',
     'int main() {',
-    '    // Hello, World! を出力してみよう',
+    '    // Hello World! を出力してみよう',
     '    return 0;',
     '}'
 ].join('\n');
@@ -95,6 +100,28 @@ f.my_code = [
     '    int a;',
     '    // aに10を代入してみよう',
     '    // aの内容を出力してみよう',
+    '    return 0;',
+    '}'
+].join('\n');
+[endscript]
+
+[jump storage="editor.ks" target="*start"]
+
+[s]
+
+*quest3
+
+[eval exp="f.current_task_id = 'task3'"]
+
+[iscript]
+f.my_code = [
+    '#include <iostream>',
+    '',
+    'int main() {',
+    '    int score;',
+    '    // scoreに85を代入してみよう',
+    '    // 条件分岐を使って、',
+    '    // scoreが80以上なら"合格"と出力してみよう',
     '    return 0;',
     '}'
 ].join('\n');
