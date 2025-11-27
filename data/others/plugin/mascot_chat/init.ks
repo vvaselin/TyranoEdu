@@ -281,7 +281,7 @@
                 if (lastAiMsg) {
                     addMessage(lastAiMsg.username, lastAiMsg.message, true);
                 } else {
-                    addMessage("あかね", "何が聞きたいの？", true); 
+                    addMessage("あかね", "何か質問ある？", true); 
                 }
                 if (lastUserMsg) {
                     addMessage(lastUserMsg.username, lastUserMsg.message, true);

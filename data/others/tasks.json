@@ -2,16 +2,65 @@
   "task1": {
     "title": "課題1: Hello World",
     "description": "「Hello World!」と表示するプログラムを作成せよ。",
-    "expected_output": "Hello World!"
+    "expected_output": "Hello World!",
+    "initial_code": [
+      "#include <iostream>",
+      "",
+      "int main() {",
+      "    // Hello, World! を出力してみよう",
+      "    return 0;",
+      "}"
+    ]
   },
   "task2": {
     "title": "課題2: 変数",
     "description": "整数型の変数`a`を宣言し、値`10`を代入して、その値を表示せよ。",
-    "expected_output": "10"
+    "expected_output": "10",
+    "initial_code": [
+      "#include <iostream>",
+      "",
+      "int main() {",
+      "    int a;",
+      "    // aに10を代入してみよう",
+      "    // aの内容を出力してみよう",
+      "    return 0;",
+      "}"
+    ]
   },
   "task3": {
     "title": "課題3: 条件分岐",
     "description":"変数`score`に`85`を代入し、もし`score`が80以上なら「合格」と表示するプログラムを作成せよ。",
-    "expected_output": "合格"
+    "expected_output": "合格",
+    "initial_code": [
+      "#include <iostream>",
+      "",
+      "int main() {",
+      "    int score;",
+      "    // scoreに85を代入してみよう",
+      "    // 条件分岐を使って、",
+      "    // scoreが80以上なら\"合格\"と出力してみよう",
+      "    return 0;",
+      "}"
+    ]
+  },
+  "task_ex": {
+    "title": "課題EX: 1〜100までの素数の和",
+    "description":"1から100までの整数のうち、『素数』のみをすべて足し合わせた合計値を出力してください。\n\n【ヒント】\n素数とは「1とその数自身以外では割り切れない、1より大きい自然数」のことです。\n（例：2, 3, 5, 7, 11...）\n\n判定ロジックを考えて実装してみましょう！",
+    "expected_output": "1060",
+    "initial_code": [
+      "#include <iostream>",
+      "",
+      "bool isPrime(int n) {",
+      "    // ここに素数判定のロジックを書こう",
+      "    return false;",
+      "}",
+      "",
+      "int main() {",
+      "    int sum = 0;",
+      "    // 1〜100までループして素数なら足す",
+      "    std::cout << sum << std::endl;",
+      "    return 0;",
+      "}"
+    ]
   }
 }
