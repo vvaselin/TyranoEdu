@@ -1,5 +1,6 @@
 *start
 [clearfix]
+[showmenubutton]
 [bg storage="room.jpg" time="0"]
 @layopt layer="message0" visible=true
 [position height=200 top=480]

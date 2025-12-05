@@ -1,4 +1,5 @@
 *start
+[hidemenubutton] 
 [clearfix]
 [bg storage="rouka.jpg" time="0"]
 @layopt layer="message0" visible=false
