@@ -1,7 +1,7 @@
 {
   "task1": {
     "title": "課題1: はじめの一歩",
-    "description": "プログラミングの第一歩です。\n画面に「Hello, World!」と表示するプログラムを作成してください。\n※この課題では入力（stdin）は使用しません。",
+    "description": "プログラミングの第一歩です。\n画面に「Hello, World!」と表示するプログラムを作成してください。",
     "stdin": "",
     "expected_output": "Hello, World!",
     "initial_code": [
@@ -9,7 +9,7 @@
       "",
       "int main() {",
       "    // Hello, World! と出力するコードを書いてみよう",
-      "    ",
+      "    // std::coutを使おう",
       "    return 0;",
       "}"
     ]
