@@ -206,7 +206,7 @@ if (task_data) {
 ; 完了後、モーダルウィンドウの結果を上書きする
 [iscript]
     // 実行結果を変数から取得
-    var result_text = f.execution_result || "（不明なエラー）";
+    var result_text = f.execution_result || "（何も出力されなかったよ）";
     
     // モーダルの中身を更新
     $("#result_modal_content").text(result_text);
