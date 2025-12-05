@@ -292,4 +292,4 @@ if (window.mascot_chat_save) {
 
 *back_real
 ; 元の画面に戻る
-[jump storage="first.ks" target="*start"]
+[jump storage="select.ks" target="*start"]
