@@ -1,4 +1,3 @@
-; [macro] AIチャットUIを表示するマクロ
 [macro name="ai_chat_show"]
 
     ; 必要なCSSを読み込む
@@ -37,6 +36,7 @@
             <div class="ai-chat-nav">
                 <button class="ai-chat-prev">◀</button>
                 <button class="ai-chat-next">▶</button>
+                <button class="ai-chat-save" style="font-size:12px; margin-left:10px;">記録して終了</button>
             </div>
         </div>
 
@@ -53,11 +53,9 @@
     [iscript]
     try {
         var container = $(".ai-chat-container");
-        
         if (container.length > 0) {
             
-            var fix_layer = $(".fixlayer").last(); 
-            
+            var fix_layer = $(".fixlayer").last();
             if (fix_layer.find(".ai-chat-container").length > 0) {
                  fix_layer.find(".ai-chat-container").remove();
             }
@@ -70,8 +68,7 @@
             const chatWidth = scWidth * 0.37;
             const marginRight = scWidth * 0.001;
             const leftPosition = scWidth - chatWidth - marginRight;
-            const chatHeight = scHeight * 0.90; 
-
+            const chatHeight = scHeight * 0.90;
             container.css({
                 "position": "absolute",
                 "top": "2%",
@@ -80,7 +77,6 @@
                 "height": chatHeight + "px",
                 "z-index": "20000"
             });
-            
             var messagesWrapper = container.find(".mascot-ui-wrapper");
             
             const formHeight = 75; 
@@ -88,9 +84,8 @@
             
             messagesWrapper.css("height", messagesWrapperHeight + "px");
 
-            container.show(); 
-            
-            // --- UI要素の参照 (新レイアウト) ---
+            container.show();
+            // --- UI要素の参照 ---
             var liveChatView = container.find(".live-chat-view");
             var logView = container.find(".log-view-area");
             
@@ -102,17 +97,34 @@
             var sendButton = container.find(".ai-chat-send-button");
             var navPrev = container.find(".ai-chat-nav .ai-chat-prev");
             var navNext = container.find(".ai-chat-nav .ai-chat-next");
+            var saveButton = container.find(".ai-chat-save"); 
+
+            // --- 記憶管理 ---
             
-            // --- 履歴管理 (tf を使用) ---
+            // サーバーから長期記憶をロード
+            if (typeof TYRANO.kag.stat.f.ai_memory === "undefined") {
+                TYRANO.kag.stat.f.ai_memory = { summary: "", learned_topics: [], weaknesses: [] };
+            }
             
-            function getTfHistory() {
-                if (typeof TYRANO.kag.stat.tf === "undefined") {
-                    TYRANO.kag.stat.tf = {};
+            fetch('/api/memory')
+                .then(r => r.ok ? r.json() : null)
+                .then(data => {
+                    if(data){
+                        TYRANO.kag.stat.f.ai_memory = data;
+                        console.log("Memory Loaded:", data);
+                    }
+                })
+                .catch(e => console.error("Memory Load Error:", e));
+
+
+            function getHistory() {
+                if (typeof TYRANO.kag.stat.f === "undefined") {
+                    TYRANO.kag.stat.f = {};
                 }
-                if (!TYRANO.kag.stat.tf.ai_chat_history) {
-                    TYRANO.kag.stat.tf.ai_chat_history = [];
+                if (!TYRANO.kag.stat.f.ai_chat_history) {
+                    TYRANO.kag.stat.f.ai_chat_history = [];
                 }
-                return TYRANO.kag.stat.tf.ai_chat_history;
+                return TYRANO.kag.stat.f.ai_chat_history;
             }
             
             function getTfLogIndex() {
@@ -133,13 +145,12 @@
                 }
 
                 var messageHtml = DOMPurify.sanitize(marked.parse(message, { breaks: true }));
-                
                 var messageEl = $(`
                     <div class="ai-chat-message-simple"> 
                         <div class="message-body">${messageHtml}</div>
                     </div>
                 `);
-
+                
                 // コピーボタン機能
                 messageEl.find("pre code").each(function(i, block) {
                     var $block = $(block);
@@ -160,22 +171,18 @@
                     $pre.append(copyButton);
                 });
 
-
-                // ライブ表示の際、AIとユーザーの枠を分けて更新
                 if (username === "あなた") {
-                    userMessagesContainer.html(messageEl); // 上書き
+                    userMessagesContainer.html(messageEl);
                     userMessagesContainer.scrollTop(0);
                 } else {
-                    aiMessagesContainer.html(messageEl); // 上書き
+                    aiMessagesContainer.html(messageEl);
                     aiMessagesContainer.scrollTop(0);
                 }
                 
-                // 履歴保存とボタン有効化ロジック (tf を使用)
+                // 履歴保存とボタン有効化ロジック
                 if (!is_history_load) {
-                    
-                    navPrev.prop("disabled", false); 
-
-                    var history = getTfHistory(); 
+                    navPrev.prop("disabled", false);
+                    var history = getHistory(); 
                     
                     history.push({ username, message }); 
                     if (history.length > 50) {
@@ -185,17 +192,15 @@
             }
 
             function showLogMessage(index) {
-                var history = getTfHistory(); 
+                var history = getHistory();
                 if (!history[index]) return;
                 
                 var item = history[index];
                 
-                // ログ表示中はライブビューと入力欄を隠す
                 liveChatView.show();
                 logView.hide();
                 container.find(".ai-chat-form").hide(); 
                 
-                // 表示するメッセージを作成
                 var messageHtml = DOMPurify.sanitize(marked.parse(item.message));
                 var messageEl = $(`
                     <div class="ai-chat-message-simple"> 
@@ -203,8 +208,7 @@
                     </div>
                 `);
                 
-                // コピーボタンを追加
-                messageEl.find("pre code").each(function(i, block) {
+                 messageEl.find("pre code").each(function(i, block) {
                     var $block = $(block); var $pre = $block.parent("pre");
                     if ($pre.find('.copy-code-button').length > 0) return; 
                     $pre.css("position", "relative"); 
@@ -219,12 +223,8 @@
                     $pre.append(copyButton);
                 });
 
-                // メッセージの投入先を決定
                 if (item.username === "あなた") {
-                    // ユーザーのログの場合
-                    userMessagesContainer.html(messageEl); // ユーザー枠に表示
-                    
-                    // このログの直前のAIの返答を探す
+                    userMessagesContainer.html(messageEl);
                     var prevAiMsg = null;
                     for (var i = index - 1; i >= 0; i--) {
                         if (history[i].username !== "あなた") {
@@ -235,14 +235,11 @@
                     if (prevAiMsg) {
                         addMessage(prevAiMsg.username, prevAiMsg.message, true);
                     } else {
-                        addMessage("あかね", "何が聞きたいの？", true); // 見つからなければデフォルト
+                        addMessage("あかね", "何が聞きたいの？", true);
                     }
                     
                 } else {
-                    // AIのログの場合
-                    aiMessagesContainer.html(messageEl); // AI枠に表示
-                    
-                    // このログの直前のユーザーの質問を探す
+                    aiMessagesContainer.html(messageEl); 
                     var prevUserMsg = null;
                     for (var i = index - 1; i >= 0; i--) {
                         if (history[i].username === "あなた") {
@@ -253,7 +250,7 @@
                     if (prevUserMsg) {
                         addMessage(prevUserMsg.username, prevUserMsg.message, true);
                     } else {
-                        userMessagesContainer.html(""); // 見つからなければ空
+                        userMessagesContainer.html("");
                     }
                 }
                 
@@ -261,32 +258,30 @@
                 navNext.prop("disabled", false); 
             }
             
-            // ライブ復帰ロジック (入力欄の表示を徹底)
             function restoreLiveChatView() {
                 if (typeof TYRANO.kag.stat.tf !== "undefined") {
                      TYRANO.kag.stat.tf.ai_chat_log_index = -1;
                 } else {
-                    getTfLogIndex(); 
+                    getTfLogIndex();
                 }
                 
-                logView.hide();         // ログ専用枠は隠す
-                liveChatView.show();    // ライブ枠を表示
+                logView.hide();
+                liveChatView.show();
                 container.find(".ai-chat-form").show();
                 
-                var history = getTfHistory(); 
-                
+                var history = getHistory(); 
                 var lastAiMsg = history.findLast(item => item.username !== "あなた");
                 var lastUserMsg = history.findLast(item => item.username === "あなた");
-
+                
                 if (lastAiMsg) {
                     addMessage(lastAiMsg.username, lastAiMsg.message, true);
                 } else {
-                    addMessage("あかね", "何か質問ある？", true); 
+                    addMessage("あかね", "何か質問ある？", true);
                 }
                 if (lastUserMsg) {
                     addMessage(lastUserMsg.username, lastUserMsg.message, true);
                 } else {
-                    userMessagesContainer.html(""); 
+                    userMessagesContainer.html("");
                 }
                 navPrev.prop("disabled", history.length === 0);
                 navNext.prop("disabled", true); 
@@ -300,69 +295,59 @@
 
                 if (typeof TYRANO.kag.stat.f === "undefined") {
                     console.error("TYRANO.kag.stat.f が undefined です。");
-                    addMessage("エラー", "システムが準備中です。少し待ってからもう一度試してください。", true);
+                    addMessage("エラー", "システムが準備中です。", true);
                     return;
                 }
                 
-                // 変数ショートカット
                 var f = TYRANO.kag.stat.f;
-                var sf = TYRANO.kag.stat.sf; // システム変数(好感度用)
-
                 var userMessage = inputField.val().trim();
                 if (userMessage === "") return;
                 
-                // 1. 画面には「ユーザーの入力した文字だけ」を表示
-                addMessage("あなた", userMessage, false); 
-                
+                addMessage("あなた", userMessage, false);
                 inputField.val("").attr("placeholder", "考え中...").prop("disabled", true);
                 sendButton.prop("disabled", true);
                 
                 const CodeContent = f['my_code'];
-                
                 var tasks = f.all_tasks;
                 var current_id = f.current_task_id;
                 var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
-
-                // --- AIへの送信メッセージを作成（好感度情報を付与） ---
-                // 現在の好感度を取得 (未定義なら0)
                 var currentLove = f.love_level || 0;
+
+                // 記憶情報をシステムプロンプト指示として付与
+                var memoryContext = "";
+                if (f.ai_memory) {
+                    var summary = f.ai_memory.summary || "なし";
+                    var weak = f.ai_memory.weaknesses ? f.ai_memory.weaknesses.join(",") : "なし";
+                    memoryContext = `\n\n[Long Term Memory Info]\nSummary: ${summary}\nWeaknesses: ${weak}\n`;
+                }
                 
-                // システムプロンプトへの指示としてメッセージ末尾に付与（ユーザーには見えない）
-                var messageToSend = userMessage + `\n\n(System Info: Current Favorability/Love Level is ${currentLove})`;
+                var messageToSend = userMessage + memoryContext + `\n\n(System Info: Current Love Level is ${currentLove})`;
 
                 fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        message: messageToSend, // ここを userMessage から messageToSend に変更
+                        message: messageToSend, 
                         code: CodeContent,
                         task: task_data ? task_data.description : "タスクがありません",
                     }),
                 })
                 .then(response => response.ok ? response.json() : response.text().then(text => { throw new Error(text) }))
                 .then(data => {
-                    // --- 受信データの処理 ---
-                    
-                    // テキストと感情の取得
                     var aiText = data.text;
                     var emotion = data.emotion || "normal";
-                    var loveUpVal = parseInt(data.love_up) || 0; // JSONから数値を取得
+                    var loveUpVal = parseInt(data.love_up) || 0; 
 
-                    // 好感度の更新処理
                     if (loveUpVal > 0) {
                         var current = parseInt(f.love_level) || 0;
                         f.love_level = current + loveUpVal;
-                        console.error(`★好感度が ${loveUpVal} 上がりました！ 現在: ${f.love_level}`);
+                        console.error(`好感度が ${loveUpVal} 上がりました！ 現在: ${f.love_level}`);
                         alertify.success("好感度UP! 現在："+f.love_level);
                     }
 
-                    // メッセージ表示
                     addMessage("あかね", aiText, false);
-
-                    // 表情画像の切り替え
                     var imgPath = "./data/fgimage/chara/akane/" + emotion + ".png";
                     $(".ai-chat-sprite-bottom").attr("src", imgPath);
-                    console.log("表情変更:", emotion);
                 })
                 .catch(error => {
                     console.error("AIチャットエラー:", error);
@@ -375,25 +360,65 @@
                     inputField.css('height', 'auto'); 
                 });
             }
+
+            // セッション保存(要約)処理
+            function saveSessionAndClear() {
+                var history = getHistory();
+                if (!history || history.length === 0) {
+                    alertify.message("記録する会話履歴がありません");
+                    return;
+                }
+
+                saveButton.prop("disabled", true).text("記録中...");
+
+                fetch('/api/summarize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_history: history })
+                })
+                .then(r => r.ok ? r.json() : Promise.reject(r))
+                .then(data => {
+                    alertify.success("学習記録を保存しました");
+                    // セッション履歴をクリア
+                    TYRANO.kag.stat.f.ai_chat_history = [];
+                    // UIリセット
+                    userMessagesContainer.html("");
+                    aiMessagesContainer.html("");
+                    restoreLiveChatView();
+                    
+                    // 最新の記憶を再ロード
+                    return fetch('/api/memory');
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if(data) TYRANO.kag.stat.f.ai_memory = data;
+                })
+                .catch(e => {
+                    console.error("Save Error:", e);
+                    alertify.error("記録の保存に失敗しました");
+                })
+                .finally(() => {
+                    saveButton.prop("disabled", false).text("記録して終了");
+                });
+            }
             
             // --- イベントリスナー ---
             
-            sendButton.on("click", sendMessage); 
-            
+            sendButton.on("click", sendMessage);
             inputField.on("keydown", function(e) {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault(); 
                     sendMessage();
                 }
             });
-
             inputField.on('input', function() {
                 this.style.height = 'auto'; 
                 this.style.height = (this.scrollHeight) + 'px'; 
             });
             
+            // 履歴ナビゲーション
             navPrev.on("click", function() {
-                var history = getTfHistory(); 
+                var history = getHistory(); 
                 if (history.length === 0) return;
                 var currentLogIndex = getTfLogIndex();
                 
@@ -406,12 +431,12 @@
                 TYRANO.kag.stat.tf.ai_chat_log_index = currentLogIndex;
                 showLogMessage(currentLogIndex);
             });
-            // ログ「次へ」
+            
             navNext.on("click", function() {
                 var currentLogIndex = getTfLogIndex();
                 if (currentLogIndex === -1) return; 
                 
-                var history = getTfHistory(); 
+                var history = getHistory(); 
                 var nextLogIndex = currentLogIndex + 2;
                 
                 if (nextLogIndex < history.length - 1) {
@@ -421,7 +446,12 @@
                     restoreLiveChatView();
                 }
             });
-            
+
+            // 保存ボタンイベント
+            saveButton.on("click", function(){
+                saveSessionAndClear();
+            });
+
             restoreLiveChatView();
 
         } else {
