@@ -68,7 +68,7 @@ $.ajax({
 
 [start_button color="btn_01_blue" target="*questEX" text="課題EX" x="50" y="470"]
 
-;[start_button color="btn_01_blue" target="*lecture1" text="講義1" x="350" y="70"]
+[start_button color="btn_01_blue" target="*lecture1" text="講義1" x="500" y="70"]
 
 [s]
 

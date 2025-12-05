@@ -272,7 +272,6 @@ $.ajax({
 [return]
 
 *exit_chat
-[cm]
 [iscript]
 $(".ai-chat-container").css("pointer-events", "none");
 
