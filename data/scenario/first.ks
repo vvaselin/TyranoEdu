@@ -85,7 +85,7 @@ $.ajax({
 [jump target="*common_task_start"]
 
 *lecture1
-@layopt layer="message0" visible=ture
+@layopt layer="message0" visible=true
 [start_keyconfig]
 
 [jump storage="lecture/1.ks" target="*start"]
