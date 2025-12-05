@@ -1,31 +1,45 @@
+/* コンテナ：画面全体を覆うが、クリックは透過させる */
+.doc-viewer-container {
+    position: absolute;
+    top: 10px;
+    left: 790px;
+    width: 490px;
+    height: 700px;
+    pointer-events: none; /* ゲーム本編の操作を邪魔しない */
+    z-index: 21000; /* AIチャット(20000)より手前に表示 */
+    overflow: hidden; /* 画面外へ出た要素がスクロールバーを出さないように */
+}
+
 /* 資料を開くボタン */
 .doc-viewer-btn {
     position: absolute;
-    top: 100px;
+    top: 130px; /* AIチャットの顔に被りにくい位置へ調整 */
     right: 0;
-    width: 40px;
+    width: 45px;
     height: 120px;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(50, 50, 50, 0.9);
     color: white;
     cursor: pointer;
-    z-index: 9999;
     border-top-left-radius: 8px;
     border-bottom-left-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: -2px 2px 5px rgba(0,0,0,0.3);
-    transition: background 0.3s;
+    box-shadow: -2px 2px 5px rgba(0,0,0,0.5);
+    pointer-events: auto; /* ボタンはクリック可能 */
+    transition: transform 0.3s ease, background-color 0.3s;
+    z-index: 21002;
 }
 
 .doc-viewer-btn:hover {
-    background-color: rgba(0, 0, 0, 0.9);
+    background-color: rgba(70, 70, 70, 1);
+    transform: translateX(-5px); /* ホバー時に少し飛び出す演出 */
 }
 
 .doc-btn-text {
-    writing-mode: vertical-rl; /* 縦書き */
+    writing-mode: vertical-rl;
     font-size: 16px;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
     font-weight: bold;
 }
 
@@ -33,36 +47,41 @@
 .doc-panel {
     position: absolute;
     top: 0;
-    right: -600px; /* 初期状態は画面外 */
-    width: 500px;
+    right: 0;
+    width: 100%; /* パネルの幅 */
     height: 100%;
-    background-color: rgba(30, 30, 30, 0.95);
-    z-index: 10000;
-    transition: right 0.3s ease-in-out;
-    box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+    background-color: rgba(30, 30, 30, 0.98);
     color: #e0e0e0;
     display: flex;
     flex-direction: column;
+    pointer-events: auto; /* パネル内は操作可能 */
+    z-index: 21001;
+    box-shadow: -5px 0 20px rgba(0,0,0,0.8);
+    
+    /* アニメーション設定 */
+    transform: translateX(100%); /* 初期状態：自分の幅分だけ右に移動して隠れる */
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* 参考サイトに近い滑らかな動き */
 }
 
 /* パネルが表示された時のクラス */
 .doc-panel.active {
-    right: 0;
+    transform: translateX(0); /* 画面内に戻る */
 }
 
 /* ヘッダー */
 .doc-header {
-    height: 50px;
-    background-color: #333;
+    height: 60px;
+    background-color: #222;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 15px;
-    border-bottom: 1px solid #555;
+    padding: 0 20px;
+    border-bottom: 1px solid #444;
+    flex-shrink: 0;
 }
 
 .doc-title {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: bold;
 }
 
@@ -70,27 +89,32 @@
     background: none;
     border: none;
     color: #fff;
-    font-size: 24px;
+    font-size: 28px;
     cursor: pointer;
+    padding: 0 10px;
+}
+.doc-close-btn:hover {
+    color: #ff6666;
 }
 
 /* コンテンツエリア */
 .doc-content {
     flex: 1;
-    padding: 20px;
+    padding: 30px;
     overflow-y: auto;
     font-family: "Meiryo", sans-serif;
-    line-height: 1.6;
+    line-height: 1.8;
+    text-align: left;
 }
 
-/* Markdownのスタイル調整 */
-.doc-content h1 { font-size: 24px; border-bottom: 1px solid #666; padding-bottom: 5px; margin-bottom: 15px; color: #fff; }
-.doc-content h2 { font-size: 20px; border-left: 4px solid #007acc; padding-left: 10px; margin-top: 20px; margin-bottom: 10px; color: #fff; }
-.doc-content h3 { font-size: 18px; margin-top: 15px; color: #ddd; }
-.doc-content p { margin-bottom: 15px; }
-.doc-content code { background-color: #444; padding: 2px 5px; border-radius: 3px; font-family: monospace; }
-.doc-content pre { background-color: #222; padding: 10px; border-radius: 5px; overflow-x: auto; margin-bottom: 15px; border: 1px solid #444; }
-.doc-content ul, .doc-content ol { margin-left: 20px; margin-bottom: 15px; }
-.doc-content li { margin-bottom: 5px; }
-.doc-content a { color: #4daafc; text-decoration: none; }
+/* Markdown装飾 */
+.doc-content h1 { font-size: 22px; border-bottom: 2px solid #007acc; padding-bottom: 5px; margin-bottom: 20px; color: #fff; }
+.doc-content h2 { font-size: 18px; border-left: 5px solid #007acc; padding-left: 15px; margin-top: 30px; margin-bottom: 15px; color: #fff; background: rgba(255,255,255,0.05); padding-top:5px; padding-bottom:5px;}
+.doc-content h3 { font-size: 15px; margin-top: 20px; color: #ddd; font-weight: bold; }
+.doc-content p { margin-bottom: 11px; color: #ccc; }
+.doc-content code { background-color: #444; padding: 2px 6px; border-radius: 4px; font-family: monospace; color: #ffdddd; }
+.doc-content pre { background-color: #1e1e1e; padding: 11px; border-radius: 6px; overflow-x: auto; margin-bottom: 20px; border: 1px solid #333; }
+.doc-content ul, .doc-content ol { margin-left: 25px; margin-bottom: 20px; }
+.doc-content li { margin-bottom: 8px; }
+.doc-content a { color: #66b3ff; text-decoration: none; }
 .doc-content a:hover { text-decoration: underline; }
