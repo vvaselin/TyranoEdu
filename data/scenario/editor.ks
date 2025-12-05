@@ -109,7 +109,7 @@ $("#modal_copy_button_id").button("disable");
 ; 採点
 [glink fix="true" color="mybtn_07" storage="editor.ks" text="提出" target="*submit" width="200" size="20" x="15" y="655"]
 ; 課題選択に戻る
-[glink color="btn_02_white" storage="editor.ks" text="戻る↩" target="*exit_chat" width="200" size="18" x="20" y="10"]
+[glink color="mybtn_09" storage="editor.ks" text="戻る↩" target="*exit_chat" width="200" size="20" x="20" y="10"]
 
 ; 課題表示UI
 [layopt layer=fix visible=true page=fore]

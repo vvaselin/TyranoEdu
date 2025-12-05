@@ -8,7 +8,6 @@
 [plugin name="glink_ex"]
 [plugin name="mascot_chat"]
 ; css読み込み
-[loadcss file="./data/others/css/glink.css"]
 [loadcss file="./tyrano/libs/jquery-ui/jquery-ui.css"]
 [loadcss file="./data/others/css/modal_dark_theme.css"]
 [loadcss file="./data/others/plugin/css/mystyle.css"]

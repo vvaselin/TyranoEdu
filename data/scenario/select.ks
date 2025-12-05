@@ -7,17 +7,20 @@
 [stop_keyconfig]
 
 ; 実行ボタンglinkのデザイン用マクロ
-[macro name="start_button"]
-[glink color=%color storage="select.ks" target=%target text=%text width="300" size="20" x=%x y=%y]
+[macro name="start_quest"]
+[glink color=mybtn_08 storage="select.ks" target=%target text=%text width="300" size="30" x=%x y=%y]
+[endmacro]
+[macro name="start_story"]
+[glink color=mybtn_10 storage="select.ks" target=%target text=%text width="300" size="30" x=%x y=%y]
 [endmacro]
 
-[start_button color="btn_01_blue" target="*quest1" text="課題1" x="50" y="70"]
-[start_button color="btn_01_blue" target="*quest2" text="課題2" x="50" y="170"]
-[start_button color="btn_01_blue" target="*quest3" text="課題3" x="50" y="270"]
-[start_button color="btn_01_blue" target="*quest4" text="課題4" x="50" y="370"]
-[start_button color="btn_01_blue" target="*quest5" text="課題5" x="50" y="470"]
+[start_quest  target="*quest1" text="課題1" x="50" y="70"]
+[start_quest  target="*quest2" text="課題2" x="50" y="170"]
+[start_quest  target="*quest3" text="課題3" x="50" y="270"]
+[start_quest  target="*quest4" text="課題4" x="50" y="370"]
+[start_quest  target="*quest5" text="課題5" x="50" y="470"]
 
-[start_button color="btn_01_blue" target="*lecture1" text="講義1" x="500" y="70"]
+[start_story  target="*lecture1" text="講義1" x="500" y="70"]
 
 [s]
 
