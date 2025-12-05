@@ -1,66 +1,84 @@
 {
   "task1": {
-    "title": "課題1: Hello World",
-    "description": "「Hello World!」と表示するプログラムを作成せよ。",
-    "expected_output": "Hello World!",
+    "title": "課題1: はじめの一歩",
+    "description": "プログラミングの第一歩です。\n画面に「Hello, World!」と表示するプログラムを作成してください。\n※この課題では入力（stdin）は使用しません。",
+    "stdin": "",
+    "expected_output": "Hello, World!",
     "initial_code": [
       "#include <iostream>",
       "",
       "int main() {",
-      "    // Hello, World! を出力してみよう",
+      "    // Hello, World! と出力するコードを書いてみよう",
+      "    ",
       "    return 0;",
       "}"
     ]
   },
   "task2": {
-    "title": "課題2: 変数",
-    "description": "整数型の変数`a`を宣言し、値`10`を代入して、その値を表示せよ。",
+    "title": "課題2: 入力の基本",
+    "description": "標準入力から「整数を1つ」受け取り、その数値をそのまま表示するプログラムを作成してください。\n（テスト用入力として 10 が渡されます）",
     "stdin": "10",
     "expected_output": "10",
     "initial_code": [
       "#include <iostream>",
       "",
       "int main() {",
-      "    int a=0;",
-      "    // aに10を代入してみよう",
-      "    // aの内容を出力してみよう",
+      "    int a = 0; // 変数は0で初期化する癖をつけよう",
+      "    // std::cin を使って a に値を受け取ろう",
+      "    // std::cout を使って a の値を表示しよう",
       "    return 0;",
       "}"
     ]
   },
   "task3": {
-    "title": "課題3: 条件分岐",
-    "description":"変数`score`に`85`を代入し、もし`score`が80以上なら「合格」と表示するプログラムを作成せよ。",
+    "title": "課題3: 複数の入力と演算",
+    "description": "標準入力から「空白区切りの2つの整数」を受け取り、その合計（足し算の結果）を表示してください。\n（テスト用入力として 10 と 20 が渡されます）",
+    "stdin": "10 20",
+    "expected_output": "30",
+    "initial_code": [
+      "#include <iostream>",
+      "",
+      "int main() {",
+      "    int a = 0;",
+      "    int b = 0;",
+      "    // 2つの変数に値を入力しよう (st::cin)",
+      "    // 2つの和を出力しよう",
+      "    return 0;",
+      "}"
+    ]
+  },
+  "task4": {
+    "title": "課題4: 条件分岐",
+    "description": "標準入力から「整数の点数」を受け取ります。\n点数が 80点以上 なら「合格」、それ以外（80点未満）なら「不合格」と表示するプログラムを作成してください。\n（テスト用入力として 85 が渡されます）",
     "stdin": "85",
     "expected_output": "合格",
     "initial_code": [
       "#include <iostream>",
       "",
       "int main() {",
-      "    int score=0;",
-      "    // scoreに85を代入してみよう",
-      "    // 条件分岐を使って、",
-      "    // scoreが80以上なら\"合格\"と出力してみよう",
+      "    int score = 0;",
+      "    // scoreに入力値を受け取ろう",
+      "    ",
+      "    // if文を使って判定しよう",
+      "    // 80以上なら 合格, そうでなければ 不合格 を出力",
       "    return 0;",
       "}"
     ]
   },
-  "task_ex": {
-    "title": "課題EX: 1〜100までの素数の和",
-    "description":"1から100までの整数のうち、『素数』のみをすべて足し合わせた合計値を出力してください。\n\n【ヒント】\n素数とは「1とその数自身以外では割り切れない、1より大きい自然数」のことです。\n（例：2, 3, 5, 7, 11...）\n\n判定ロジックを考えて実装してみましょう！",
-    "expected_output": "1060",
+  "task5": {
+    "title": "課題5: 繰り返し処理",
+    "description": "標準入力から「正の整数 N」を受け取ります。\n1 から N までの数字を、空白で区切って順に表示するプログラムを作成してください。\n（テスト用入力として 5 が渡されます。出力例: 1 2 3 4 5）",
+    "stdin": "5",
+    "expected_output": "1 2 3 4 5",
     "initial_code": [
       "#include <iostream>",
       "",
-      "bool isPrime(int n) {",
-      "    // ここに素数判定のロジックを書こう",
-      "    return false;",
-      "}",
-      "",
       "int main() {",
-      "    int sum = 0;",
-      "    // 1〜100までループして素数なら足す",
-      "    std::cout << sum << std::endl;",
+      "    int n = 0;",
+      "    // nに入力値を受け取ろう",
+      "    ",
+      "    // for文やwhile文を使って 1からnまで繰り返そう",
+      "    // 数字を出力するたびに、空白 \" \" も出力しよう",
       "    return 0;",
       "}"
     ]

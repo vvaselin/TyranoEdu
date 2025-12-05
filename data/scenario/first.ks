@@ -65,8 +65,8 @@ $.ajax({
 [start_button color="btn_01_blue" target="*quest1" text="課題1" x="50" y="70"]
 [start_button color="btn_01_blue" target="*quest2" text="課題2" x="50" y="170"]
 [start_button color="btn_01_blue" target="*quest3" text="課題3" x="50" y="270"]
-
-[start_button color="btn_01_blue" target="*questEX" text="課題EX" x="50" y="470"]
+[start_button color="btn_01_blue" target="*quest4" text="課題4" x="50" y="370"]
+[start_button color="btn_01_blue" target="*quest5" text="課題5" x="50" y="470"]
 
 [start_button color="btn_01_blue" target="*lecture1" text="講義1" x="500" y="70"]
 
@@ -84,15 +84,19 @@ $.ajax({
 [eval exp="f.current_task_id = 'task3'"]
 [jump target="*common_task_start"]
 
+*quest4
+[eval exp="f.current_task_id = 'task4'"]
+[jump target="*common_task_start"]
+
+*quest5
+[eval exp="f.current_task_id = 'task5'"]
+[jump target="*common_task_start"]
+
 *lecture1
 @layopt layer="message0" visible=true
 [start_keyconfig]
 
 [jump storage="lecture/1.ks" target="*start"]
-
-*questEX
-[eval exp="f.current_task_id = 'task_ex'"]
-[jump target="*common_task_start"]
 
 *common_task_start
 [iscript]
