@@ -20,6 +20,15 @@
             } else {
                 code_to_execute = pm.code;
             }
+
+            let input_stdin = "";
+            if (f.all_tasks && f.current_task_id) {
+                const current_task = f.all_tasks[f.current_task_id];
+                // タスクデータがあり、stdinが定義されていれば使用する
+                if (current_task && current_task.stdin) {
+                    input_stdin = current_task.stdin;
+                }
+            }
             
             // 先に結果変数をクリアしておく
             f.execution_result = "";
@@ -28,7 +37,10 @@
             fetch(pm.url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: code_to_execute }),
+                body: JSON.stringify({ 
+                    code: code_to_execute, 
+                    stdin: input_stdin
+                }),
             })
             .then(response => {
                 if (!response.ok) {

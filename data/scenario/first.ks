@@ -98,6 +98,7 @@ $.ajax({
 [iscript]
 var taskId = TYRANO.kag.stat.f.current_task_id;
 var taskData = TYRANO.kag.stat.f.all_tasks[taskId];
+var inputData = (taskData && taskData.stdin) ? taskData.stdin : "";
 
 if (taskData && taskData.initial_code) {
     if (Array.isArray(taskData.initial_code)) {

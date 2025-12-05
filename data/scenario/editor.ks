@@ -273,6 +273,9 @@ $.ajax({
 
 *exit_chat
 [iscript]
+var $dialog = $("#result_modal");
+if ($dialog.dialog("isOpen")) $dialog.dialog("close");
+
 $(".ai-chat-container").css("pointer-events", "none");
 
 // 保存処理を実行し、完了後に *back_real へジャンプ

@@ -15,12 +15,13 @@
   "task2": {
     "title": "課題2: 変数",
     "description": "整数型の変数`a`を宣言し、値`10`を代入して、その値を表示せよ。",
+    "stdin": "10",
     "expected_output": "10",
     "initial_code": [
       "#include <iostream>",
       "",
       "int main() {",
-      "    int a;",
+      "    int a=0;",
       "    // aに10を代入してみよう",
       "    // aの内容を出力してみよう",
       "    return 0;",
@@ -30,12 +31,13 @@
   "task3": {
     "title": "課題3: 条件分岐",
     "description":"変数`score`に`85`を代入し、もし`score`が80以上なら「合格」と表示するプログラムを作成せよ。",
+    "stdin": "85",
     "expected_output": "合格",
     "initial_code": [
       "#include <iostream>",
       "",
       "int main() {",
-      "    int score;",
+      "    int score=0;",
       "    // scoreに85を代入してみよう",
       "    // 条件分岐を使って、",
       "    // scoreが80以上なら\"合格\"と出力してみよう",
