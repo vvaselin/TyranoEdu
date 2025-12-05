@@ -37,40 +37,66 @@
     var fix_layer = $(".fixlayer").last();
     container.appendTo(fix_layer);
 
-    // 初期化：確実にクラスを外して隠す
+    // 初期化
     panel.removeClass("active");
     btn.show();
 
-    // イベント設定: 開く
+    // --- イベント設定 ---
+
+    // 開く
     btn.on("click", function() {
         panel.addClass("active");
-        // ボタンを隠す（右へスライドアウトさせるようなアニメーションも可）
-        // ここではシンプルにフェードアウトさせます
         btn.fadeOut(200);
     });
 
-    // イベント設定: 閉じる
+    // 閉じる
     closeBtn.on("click", function() {
         panel.removeClass("active");
-        // 閉じた少し後にボタンを再表示
         setTimeout(function(){
             btn.fadeIn(200);
         }, 300);
     });
 
+    // ★追加：Markdown内のリンクをクリックした時の処理
+    contentArea.on("click", "a", function(e) {
+        var href = $(this).attr("href");
+
+        // ".md" で終わるリンクの場合だけ、内部移動として処理する
+        if (href && href.indexOf(".md") !== -1) {
+            e.preventDefault(); // 通常のリンク動作（画面遷移）をキャンセル
+            TYRANO.kag.stat.f.loadDocMarkdown(href); // 指定されたmdファイルを読み込む
+        }
+        // httpなどで始まる外部リンクは、そのまま（別窓などで）開く
+        else if (href && (href.indexOf("http") === 0)) {
+            e.preventDefault();
+            require('electron').shell.openExternal(href); // PCアプリ版の場合
+            // ブラウザ版なら window.open(href, '_blank');
+        }
+    });
+
     // 読み込み関数
     TYRANO.kag.stat.f.loadDocMarkdown = function(file) {
-        var filePath = "./data/others/plugin/doc_viewer/docs/" + file;
-        $.get(filePath, function(data) {
-            var html = DOMPurify.sanitize(marked.parse(data));
-            contentArea.html(html);
-        })
-        .fail(function() {
-            contentArea.html("<p>資料の読み込みに失敗しました。<br>" + filePath + "</p>");
+        // パスが "http" 等で始まらない場合、フォルダパスを補完
+        var filePath = file;
+        if (file.indexOf("http") === -1 && file.indexOf("./") === -1) {
+             filePath = "./data/others/plugin/doc_viewer/docs/" + file;
+        }
+
+        $.ajax({
+            url: filePath,
+            cache: false, // ★重要：これでキャッシュを無効化（URL末尾に自動でタイムスタンプが付与されます）
+            success: function(data) {
+                var html = DOMPurify.sanitize(marked.parse(data));
+                contentArea.html(html);
+                contentArea.scrollTop(0);
+            },
+            error: function() {
+                contentArea.html("<p>読み込みエラー：<br>" + filePath + "</p>");
+            }
         });
     };
 
-    // 引数で指定されたファイルを読み込む
+    // 初期ファイル読み込み
     var initialFile = mp.file || "sample.md";
     TYRANO.kag.stat.f.loadDocMarkdown(initialFile);
 

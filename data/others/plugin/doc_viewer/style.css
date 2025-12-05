@@ -69,15 +69,79 @@
 }
 
 /* ヘッダー */
+/* --- ヘッダー（ハンバーガーと閉じるボタンを配置） --- */
 .doc-header {
-    height: 60px;
-    background-color: #222;
+    height: 50px;
+    background-color: #2d2d2d;
     display: flex;
+    justify-content: space-between; /* 左右に配置 */
     align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
-    border-bottom: 1px solid #444;
-    flex-shrink: 0;
+    padding: 0 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    z-index: 21005; /* サイドバーより手前 */
+    position: relative;
+}
+
+/* --- ハンバーガーボタン --- */
+.doc-hamburger {
+    font-size: 24px;
+    cursor: pointer;
+    color: #fff;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    user-select: none;
+}
+.doc-hamburger:hover { background-color: rgba(255,255,255,0.1); }
+
+/* --- サイドバー（メニュー一覧） --- */
+.doc-sidebar {
+    position: absolute;
+    top: 50px; /* ヘッダーの高さ分下げる */
+    left: 0;
+    width: 200px; /* メニューの幅 */
+    height: calc(100% - 50px);
+    background-color: #252525;
+    border-right: 1px solid #444;
+    transform: translateX(-100%); /* 初期状態は左に隠す */
+    transition: transform 0.3s ease;
+    z-index: 21004; /* コンテンツより手前 */
+    overflow-y: auto;
+}
+.doc-sidebar.active {
+    transform: translateX(0); /* 出現 */
+}
+
+/* --- メニューアイテム --- */
+.doc-menu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.doc-menu-item {
+    padding: 15px 20px;
+    border-bottom: 1px solid #333;
+    cursor: pointer;
+    color: #ccc;
+    font-size: 16px;
+    transition: background 0.2s;
+}
+.doc-menu-item:hover {
+    background-color: #444;
+    color: #fff;
+}
+
+/* --- オーバーレイ（メニューが開いている時の背景暗転） --- */
+.doc-overlay {
+    position: absolute;
+    top: 50px;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 50px);
+    background-color: rgba(0,0,0,0.5);
+    z-index: 21003; /* コンテンツとサイドバーの間 */
+    display: none; /* 初期状態は非表示 */
 }
 
 .doc-title {
