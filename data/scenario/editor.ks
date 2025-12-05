@@ -7,6 +7,8 @@
 ; AIチャットUIを初期化して表示
 [ai_chat_show]
 
+[show_doc_button file="sample.md"]
+
 ; ■■■ 初期設定（UIをfixレイヤーに一度だけ配置） ■■■
 
 ; --- Monaco Editorを生成し、fixレイヤーに移動 ---

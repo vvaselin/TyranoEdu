@@ -7,6 +7,7 @@
 [plugin name="cpp_executor"]
 [plugin name="glink_ex"]
 [plugin name="mascot_chat"]
+[plugin name="doc_viewer"]
 ; css読み込み
 [loadcss file="./tyrano/libs/jquery-ui/jquery-ui.css"]
 [loadcss file="./data/others/css/modal_dark_theme.css"]
