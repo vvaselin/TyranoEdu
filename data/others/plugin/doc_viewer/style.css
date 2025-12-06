@@ -15,7 +15,7 @@
     position: absolute;
     top: 130px; /* AIチャットの顔に被りにくい位置へ調整 */
     right: 0;
-    width: 45px;
+    width: 30px;
     height: 120px;
     background-color: rgba(50, 50, 50, 0.9);
     color: white;
