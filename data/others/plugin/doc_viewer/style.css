@@ -48,19 +48,19 @@
     position: absolute;
     top: 0;
     right: 0;
-    width: 100%; /* パネルの幅 */
+    width: 100%;
     height: 100%;
     background-color: rgba(30, 30, 30, 0.98);
     color: #e0e0e0;
     display: flex;
     flex-direction: column;
-    pointer-events: auto; /* パネル内は操作可能 */
+    pointer-events: auto;
     z-index: 21001;
     box-shadow: -5px 0 20px rgba(0,0,0,0.8);
     
-    /* アニメーション設定 */
-    transform: translateX(100%); /* 初期状態：自分の幅分だけ右に移動して隠れる */
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* 参考サイトに近い滑らかな動き */
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
 }
 
 /* パネルが表示された時のクラス */
@@ -69,17 +69,16 @@
 }
 
 /* ヘッダー */
-/* --- ヘッダー（ハンバーガーと閉じるボタンを配置） --- */
 .doc-header {
     height: 50px;
     background-color: #2d2d2d;
     display: flex;
-    justify-content: space-between; /* 左右に配置 */
-    align-items: center;
+    align-items: center; /* 垂直方向中央揃え */
     padding: 0 10px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.5);
     z-index: 21005; /* サイドバーより手前 */
     position: relative;
+    flex-shrink: 0; /* ヘッダーが潰れないように */
 }
 
 /* --- ハンバーガーボタン --- */
@@ -92,21 +91,23 @@
     line-height: 40px;
     text-align: center;
     user-select: none;
+    margin-right: 10px; /* タイトルとの隙間 */
 }
-.doc-hamburger:hover { background-color: rgba(255,255,255,0.1); }
+.doc-hamburger:hover { background-color: rgba(255,255,255,0.1); border-radius: 4px;}
 
 /* --- サイドバー（メニュー一覧） --- */
 .doc-sidebar {
     position: absolute;
-    top: 50px; /* ヘッダーの高さ分下げる */
+    top: 50px; /* ヘッダーの下から開始 */
     left: 0;
-    width: 200px; /* メニューの幅 */
+    width: 200px;
     height: calc(100% - 50px);
     background-color: #252525;
     border-right: 1px solid #444;
-    transform: translateX(-100%); /* 初期状態は左に隠す */
+    transform: translateX(-100%); 
     transition: transform 0.3s ease;
-    z-index: 21004; /* コンテンツより手前 */
+    
+    z-index: 21004;
     overflow-y: auto;
 }
 .doc-sidebar.active {
@@ -140,15 +141,17 @@
     width: 100%;
     height: calc(100% - 50px);
     background-color: rgba(0,0,0,0.5);
-    z-index: 21003; /* コンテンツとサイドバーの間 */
-    display: none; /* 初期状態は非表示 */
+    z-index: 21003;
+    display: none;
 }
 
 .doc-title {
     font-size: 20px;
     font-weight: bold;
+    flex-grow: 1; /* 余白を埋める */
 }
 
+/* --- 閉じるボタン --- */
 .doc-close-btn {
     background: none;
     border: none;
@@ -156,6 +159,7 @@
     font-size: 28px;
     cursor: pointer;
     padding: 0 10px;
+    line-height: 1;
 }
 .doc-close-btn:hover {
     color: #ff6666;
