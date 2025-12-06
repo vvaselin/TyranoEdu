@@ -120,6 +120,20 @@
     padding: 0;
     margin: 0;
 }
+
+/* カテゴリ見出し */
+.doc-menu-category {
+    padding: 12px 15px;
+    background-color: #333;
+    color: #888;
+    font-size: 13px;
+    font-weight: bold;
+    border-bottom: 1px solid #444;
+    cursor: default;
+    user-select: none;
+}
+
+/* 通常のアイテム */
 .doc-menu-item {
     padding: 15px 20px;
     border-bottom: 1px solid #333;
@@ -127,10 +141,18 @@
     color: #ccc;
     font-size: 16px;
     transition: background 0.2s;
+    background-color: #252525;
 }
+
 .doc-menu-item:hover {
     background-color: #444;
     color: #fff;
+}
+
+/* 階層下のアイテム（インデントをつける） */
+.doc-menu-item.sub-item {
+    padding-left: 35px; /* 左を空ける */
+    font-size: 15px;
 }
 
 /* --- オーバーレイ（メニューが開いている時の背景暗転） --- */

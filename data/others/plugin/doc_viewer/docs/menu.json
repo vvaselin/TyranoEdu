@@ -1,0 +1,19 @@
+[
+  { "title": "トップページ", "file": "sample.md" },
+  
+  {
+    "category": "設定資料",
+    "items": [
+       { "title": "世界観",     "file": "world.md" },
+       { "title": "キャラクター", "file": "chara.md" }
+    ]
+  },
+  
+  {
+    "category": "システム",
+    "items": [
+       { "title": "操作説明",   "file": "help.md" },
+       { "title": "C++の基礎",  "file": "cpp_basic.md" }
+    ]
+  }
+]

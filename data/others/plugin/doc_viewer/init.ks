@@ -31,20 +31,10 @@
     [endhtml]
 
     [iscript]
-    // --- 設定：メニュー項目 ---
-    var menuItems = [
-        { title: "トップページ", file: "sample.md" },
-        { title: "世界観",      file: "world.md" },
-        { title: "キャラクター", file: "chara.md" },
-        { title: "操作説明",    file: "help.md" }
-    ];
-
-    // コンテナ取得
     var container = $(".doc-viewer-container");
-    // 重複削除（ロードし直し対策）
     $(".doc-viewer-container").not(container).remove();
 
-    // fixレイヤーへ移動（最前面へ）
+    // fixレイヤーへ移動
     var fix_layer = $(".fixlayer").last();
     container.appendTo(fix_layer);
 
@@ -58,16 +48,54 @@
     var menuList = container.find(".doc-menu-list");
     var contentArea = container.find("#doc_content_area");
 
-    // --- メニューリストの生成 ---
-    menuList.empty(); // 重複防止のため一度空にする
-    menuItems.forEach(function(item) {
-        var li = $('<li class="doc-menu-item">' + item.title + '</li>');
+    // --- ★変更点: 外部JSONからメニューを生成する関数 ---
+    var menuJsonPath = "./data/others/plugin/doc_viewer/docs/menu.json";
+
+    function createMenu(items) {
+        menuList.empty();
+        
+        items.forEach(function(item) {
+            // カテゴリ（見出し）がある場合
+            if (item.category && item.items) {
+                // 見出しを追加
+                var catEl = $('<li class="doc-menu-category">' + item.category + '</li>');
+                menuList.append(catEl);
+                
+                // 中身のアイテムを追加
+                item.items.forEach(function(subItem){
+                    addMenuItem(subItem, true); // trueはインデント用フラグ
+                });
+            } 
+            // 普通の項目の場合
+            else {
+                addMenuItem(item, false);
+            }
+        });
+    }
+
+    function addMenuItem(item, isSubItem) {
+        var className = "doc-menu-item";
+        if(isSubItem) className += " sub-item"; // インデント用クラス
+        
+        var li = $('<li class="' + className + '">' + item.title + '</li>');
         li.on("click", function() {
             TYRANO.kag.stat.f.loadDocMarkdown(item.file);
-            toggleSidebar(false); // 選択したらサイドバーを閉じる
+            // モバイル等のためにクリックしたら閉じる（PCなら閉じなくてもいいかも）
+            if(window.innerWidth < 800) { 
+                toggleSidebar(false);
+            }
         });
         menuList.append(li);
+    }
+
+    // --- JSON読み込み実行 ---
+    $.getJSON(menuJsonPath, function(data) {
+        createMenu(data);
+    }).fail(function() {
+        console.error("menu.json の読み込みに失敗しました");
+        menuList.html('<li class="doc-menu-item">メニュー読込エラー</li>');
     });
+
 
     // --- 関数: サイドバーの開閉 ---
     function toggleSidebar(show) {
@@ -81,49 +109,41 @@
     }
 
     // --- イベント設定 ---
-
-    // 1. パネルを開く
+    // (ここは前回と同じ)
     btn.on("click", function() {
         panel.addClass("active");
         btn.fadeOut(200);
     });
 
-    // 2. パネルを閉じる
     closeBtn.on("click", function() {
         panel.removeClass("active");
-        toggleSidebar(false); // メニューも閉じる
+        toggleSidebar(false);
         setTimeout(function(){ btn.fadeIn(200); }, 300);
     });
 
-    // 3. ハンバーガーボタン
     hamburger.on("click", function() {
         var isActive = sidebar.hasClass("active");
         toggleSidebar(!isActive);
     });
 
-    // 4. オーバーレイ（背景）クリックでメニューを閉じる
     overlay.on("click", function() {
         toggleSidebar(false);
     });
 
-    // 5. 本文内のリンク処理
     contentArea.on("click", "a", function(e) {
         var href = $(this).attr("href");
         if (href && href.indexOf(".md") !== -1) {
-            // .mdリンクなら内部読み込み
             e.preventDefault();
             TYRANO.kag.stat.f.loadDocMarkdown(href);
         } else if (href && (href.indexOf("http") === 0)) {
-            // 外部リンクならブラウザで開く
             e.preventDefault();
             require('electron').shell.openExternal(href);
         }
     });
 
-    // 読み込み関数（前回と同じ：キャッシュ無効化）
+    // 読み込み関数
     TYRANO.kag.stat.f.loadDocMarkdown = function(file) {
         var filePath = file;
-        // URLでない、かつパスが含まれていない場合はデフォルトフォルダを補完
         if (file.indexOf("http") === -1 && file.indexOf("./") === -1) {
                 filePath = "./data/others/plugin/doc_viewer/docs/" + file;
         }
@@ -142,7 +162,7 @@
     };
 
     // 初期表示
-    panel.removeClass("active"); // 最初は閉じておく
+    panel.removeClass("active");
     btn.show();
     var initialFile = mp.file || "sample.md";
     TYRANO.kag.stat.f.loadDocMarkdown(initialFile);
