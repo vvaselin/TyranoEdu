@@ -13,10 +13,10 @@
 /* 資料を開くボタン */
 .doc-viewer-btn {
     position: absolute;
-    top: 130px; /* AIチャットの顔に被りにくい位置へ調整 */
+    top: 10px; /* AIチャットの顔に被りにくい位置へ調整 */
     right: 0;
     width: 30px;
-    height: 120px;
+    height: 100px;
     background-color: rgba(50, 50, 50, 0.9);
     color: white;
     cursor: pointer;
@@ -33,7 +33,7 @@
 
 .doc-viewer-btn:hover {
     background-color: rgba(70, 70, 70, 1);
-    transform: translateX(-5px); /* ホバー時に少し飛び出す演出 */
+    transform: translateX(-2px); /* ホバー時に少し飛び出す演出 */
 }
 
 .doc-btn-text {
