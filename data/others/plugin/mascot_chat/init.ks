@@ -29,7 +29,7 @@
             <div class="ai-chat-nav">
                 <button class="ai-chat-prev">◀</button>
                 <button class="ai-chat-next">▶</button>
-                </div>
+            </div>
         </div>
 
         <img src="./data/fgimage/chara/akane/normal.png" class="ai-chat-sprite-bottom">
@@ -430,7 +430,7 @@
                 // AIチャット中状態にする（入力無効化など）
                 var container = $(".ai-chat-container");
                 var inputField = container.find(".ai-chat-input");
-                inputField.attr("placeholder", "反応中...").prop("disabled", true);
+                inputField.attr("placeholder", "考え中...").prop("disabled", true);
 
                 // APIコール
                 fetch('/api/chat', {
@@ -451,16 +451,12 @@
                     var loveUpVal = parseInt(data.love_up) || 0; 
                     if (loveUpVal !== 0) {
                         f.love_level = (parseInt(f.love_level) || 0) + loveUpVal;
-                        // 必要なら通知
+                        // 画面右上に通知を出す（通常のチャットと同じ演出）
+                        alertify.success("好感度UP! 現在：" + f.love_level);
+                        console.log("System Trigger Love Update:", loveUpVal);
                     }
 
-                    // AIのメッセージだけを表示（addMessageは既存のものを使用）
-                    // ここで第3引数などを調整して「ログに残さない」設定にしても良いですが、
-                    // AIの発言は残したほうが自然です。
-                    // ※addMessage関数がinit.ks内のスコープにあるため、windowスコープから呼ぶには工夫が必要ですが、
-                    // このコードが init.ks 内にあるなら直接呼べます。
-                    
-                    // init.ks内のローカル関数 addMessage を呼ぶ
+                    // メッセージ表示
                     addMessage("モカ", aiText, false);
 
                     // 表情変更
