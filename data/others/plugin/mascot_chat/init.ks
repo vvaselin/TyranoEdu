@@ -82,12 +82,13 @@
             var sendButton = container.find(".ai-chat-send-button");
             var navPrev = container.find(".ai-chat-nav .ai-chat-prev");
             var navNext = container.find(".ai-chat-nav .ai-chat-next");
+            var uid = TYRANO.kag.stat.f.user_id;
 
             // --- 記憶ロード ---
             if (typeof TYRANO.kag.stat.f.ai_memory === "undefined") {
                 TYRANO.kag.stat.f.ai_memory = { summary: "", learned_topics: [], weaknesses: [] };
             }
-            fetch('/api/memory')
+            fetch('/api/memory?user_id=' + uid)
                 .then(r => r.ok ? r.json() : null)
                 .then(data => {
                     if(data){
@@ -384,8 +385,9 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
+                        user_id: TYRANO.kag.stat.f.user_id, // ★追加
                         chat_history: history,
-                        current_love_level: parseInt(currentLove) // ★現在の総量を送信
+                        current_love_level: parseInt(currentLove)
                     })
                 })
                 .then(r => r.json())

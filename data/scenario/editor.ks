@@ -258,6 +258,8 @@ if (task_data) {
 // 課題データ
 var task = TYRANO.kag.stat.f.all_tasks[TYRANO.kag.stat.f.current_task_id];
 var payload = {
+    user_id: TYRANO.kag.stat.f.user_id,
+    task_id: TYRANO.kag.stat.f.current_task_id,
     code: TYRANO.kag.stat.f['my_code'],     
     output: TYRANO.kag.stat.f.execution_result,
     task_desc: task.description,               
@@ -285,7 +287,18 @@ $.ajax({
             alertify.error("不合格...");
         }
 
-        // ここで採点結果だけを話させる ■■■
+        var bonusMsg = "";
+        if (data.is_new_record) {
+             bonusMsg = " (自己ベスト更新！)";
+             // ここでクライアント側の好感度も増やしておく
+             if(data.bonus_love > 0) {
+                var current = parseInt(TYRANO.kag.stat.f.love_level) || 0;
+                TYRANO.kag.stat.f.love_level = current + data.bonus_love;
+                alertify.success("ハイスコアボーナス! 好感度+" + data.bonus_love);
+             }
+        }
+
+        // ここで採点結果だけを話させる 
         if (window.mascot_chat_trigger) {
              // 点数と理由をAIに伝えて、プロンプトの指示通りに反応してもらう
              var msg = "[SYSTEM] 採点結果: " + data.score + "点。\n評価コメント: " + data.reason;

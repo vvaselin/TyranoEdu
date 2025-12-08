@@ -13,6 +13,39 @@
 [loadcss file="./data/others/css/modal_dark_theme.css"]
 [loadcss file="./data/others/plugin/css/mystyle.css"]
 
+[iscript]
+// テスト用IDをグローバル変数に設定
+TYRANO.kag.stat.f.user_id = "00000000-0000-0000-0000-000000000001";
+
+var uid = TYRANO.kag.stat.f.user_id;
+
+$.ajax({
+    url: '/api/memory?user_id=' + uid,
+    type: 'GET',
+    dataType: 'json',
+    cache: false,
+    async: false, // ★重要: 読み込み完了まで待機させる
+    
+    success: function(data) {
+        if (data) {
+            // サーバーの値をティラノ変数に適用
+            TYRANO.kag.stat.f.love_level = data.love_level || 0;
+            
+            // 記憶データも変数に入れておく（チャット機能がこれを使う）
+            TYRANO.kag.stat.f.ai_memory = data;
+            
+            console.log("★Profile Loaded:", data);
+        }
+    },
+    error: function() {
+        console.error("プロフィールの読み込みに失敗しました。オフラインかエラーです。");
+        // 失敗時は初期値にしておく
+        TYRANO.kag.stat.f.love_level = 0;
+        TYRANO.kag.stat.f.ai_memory = { summary: "", learned_topics: [], weaknesses: [] };
+    }
+});
+[endscript]
+
 ; 課題データの読み込み
 [eval exp="f.current_task_id = sf.current_task_id || 'task1'"]
 [iscript]
@@ -44,9 +77,6 @@ $.ajax({
     }
 });
 [endscript]
-
-; 好感度
-[eval exp="f.love_level = 20"]
 
 [eval exp="f.system_initialized = true"]
 
