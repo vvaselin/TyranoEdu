@@ -408,6 +408,72 @@
                     if (callback) callback();
                 });
             };
+
+            // window.mascot_chat_trigger としてグローバル公開
+            window.mascot_chat_trigger = function(systemMessage) {
+                // 必須チェック
+                if (typeof TYRANO.kag.stat.f === "undefined") return;
+                var f = TYRANO.kag.stat.f;
+
+                // ユーザーのチャット履歴には「表示しない」が、AIには送る
+                // (履歴配列にだけ追加して、UIには出さない、あるいは履歴にも入れないなどの調整が可能)
+                // ここでは「履歴には入れず、コンテキストとして送る」簡易パターンとします。
+
+                var tasks = f.all_tasks;
+                var current_id = f.current_task_id;
+                var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
+                var currentLove = f.love_level || 0;
+                
+                // システム通知であることを明示するプレフィックスを付ける
+                var messageToSend = "[SYSTEM] " + systemMessage + `\n\n(System Info: Current Love Level is ${currentLove})`;
+
+                // AIチャット中状態にする（入力無効化など）
+                var container = $(".ai-chat-container");
+                var inputField = container.find(".ai-chat-input");
+                inputField.attr("placeholder", "反応中...").prop("disabled", true);
+
+                // APIコール
+                fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        message: messageToSend, 
+                        code: f['my_code'], // 現在のコードも送る
+                        task: task_data ? task_data.description : "タスクなし",
+                    }),
+                })
+                .then(r => r.json())
+                .then(data => {
+                    var aiText = data.text;
+                    var emotion = data.emotion || "normal";
+                    
+                    // 好感度変動があれば反映
+                    var loveUpVal = parseInt(data.love_up) || 0; 
+                    if (loveUpVal !== 0) {
+                        f.love_level = (parseInt(f.love_level) || 0) + loveUpVal;
+                        // 必要なら通知
+                    }
+
+                    // AIのメッセージだけを表示（addMessageは既存のものを使用）
+                    // ここで第3引数などを調整して「ログに残さない」設定にしても良いですが、
+                    // AIの発言は残したほうが自然です。
+                    // ※addMessage関数がinit.ks内のスコープにあるため、windowスコープから呼ぶには工夫が必要ですが、
+                    // このコードが init.ks 内にあるなら直接呼べます。
+                    
+                    // init.ks内のローカル関数 addMessage を呼ぶ
+                    addMessage("モカ", aiText, false);
+
+                    // 表情変更
+                    var imgPath = "./data/fgimage/chara/akane/" + emotion + ".png";
+                    $(".ai-chat-sprite-bottom").attr("src", imgPath);
+                })
+                .catch(error => {
+                    console.error("Trigger Error:", error);
+                })
+                .finally(() => {
+                    inputField.prop("disabled", false).attr("placeholder", "メッセージを入力...");
+                });
+            };
             
             // --- イベントリスナー ---
             sendButton.on("click", sendMessage);
