@@ -21,7 +21,7 @@ editor_wrapper.css({
     "position": "absolute", 
     "left": "18.5%", 
     "top": "2.5%", 
-    "width": "45%", 
+    "width": "43%", 
     "height": "87%", 
     "z-index": "100" 
 });
@@ -105,9 +105,9 @@ $("#modal_copy_button_id").button("disable");
 [endscript]
 
 ; 実行ボタン
-[glink fix="true" color="mybtn_06" storage="editor.ks" text="コードを実行" target="*execute_code" width="410" size="20" x="240" y="650"]
+[glink fix="true" color="mybtn_06" storage="editor.ks" text="コードを実行" target="*execute_code" width="400" size="20" x="240" y="650"]
 ; 実行結果モーダル表示ボタン
-[glink fix="true" color="mybtn_01" storage="editor.ks" text="コンソール" target="*open_result_window" width="150" size="20" x="655" y="650"]
+[glink fix="true" color="mybtn_01" storage="editor.ks" text="コンソール" target="*open_result_window" width="140" size="20" x="645" y="650"]
 ; 採点
 [glink fix="true" color="mybtn_07" storage="editor.ks" text="提出" target="*submit" width="200" size="20" x="15" y="655"]
 ; 課題選択に戻る

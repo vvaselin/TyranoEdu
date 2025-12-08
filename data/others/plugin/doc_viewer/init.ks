@@ -89,11 +89,17 @@
     }
 
     // --- JSON読み込み実行 ---
-    $.getJSON(menuJsonPath, function(data) {
-        createMenu(data);
-    }).fail(function() {
-        console.error("menu.json の読み込みに失敗しました");
-        menuList.html('<li class="doc-menu-item">メニュー読込エラー</li>');
+    $.ajax({
+        url: menuJsonPath,
+        dataType: 'json',
+        cache: false,
+        success: function(data) {
+            createMenu(data);
+        },
+        error: function() {
+            console.error("menu.json の読み込みに失敗しました");
+            menuList.html('<li class="doc-menu-item">メニュー読込エラー</li>');
+        }
     });
 
 

@@ -129,8 +129,8 @@
     text-align: left;
     padding-top: 5px;
     position: absolute;
-    bottom: -20px;
-    left: 10px;
+    bottom: 40px;
+    left: 8px;
     width: 100%;
     height: 0px; 
     box-sizing: border-box;
@@ -160,12 +160,12 @@
 /* --- (2) 下部エリア: 立ち絵 --- */
 .ai-chat-sprite-bottom {
     position: absolute;
-    bottom: -20px;
+    bottom: -35px;
     left: 80%;
     transform: translateX(-50%);
     
-    width: 250px;
-    height: 250px;
+    width: 270px;
+    height: 270px;
     object-fit: cover;
     object-position: 0% 0%;
     
@@ -177,15 +177,15 @@
 /* --- (3) 下部エリア: 入力フォーム --- */
 .ai-chat-form {
     position: absolute;
-    bottom: -20px;
+    bottom: -38px;
     left: -5px;
     width: 100%;
-    height: 40px; 
-    z-index: 2; /* ★立ち絵の前面 */
+    height: 45px; 
+    z-index: 2;
 
     padding: 15px; 
     border-top: none;
-    background-color: transparent; /* ★背景を透過させる */
+    background-color: transparent;
     display: flex; 
     gap: 5px; 
     align-items: center; 
@@ -193,13 +193,11 @@
 }
 .ai-chat-input {
     flex-grow: 1;
-    height: 45px; 
-    min-height: 45px; 
-    max-height: 150px; 
+    height: 45px;
     resize: none;      
     overflow-y: auto;  
-    line-height: 1.5;  
-    background-color: rgba(255, 255, 255, 0.9); /* ★少し透過した白 */
+    line-height: 1.0;  
+    background-color: rgba(255, 255, 255, 0.9);
     border: 1px solid #cccccc;
     border-radius: 5px;
     color: #333333;

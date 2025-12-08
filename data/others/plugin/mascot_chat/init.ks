@@ -55,8 +55,8 @@
             
             var scWidth = parseInt(TYRANO.kag.config.scWidth);
             var scHeight = parseInt(TYRANO.kag.config.scHeight);
-            const chatWidth = scWidth * 0.36;
-            const marginRight = scWidth * 0.01;
+            const chatWidth = scWidth * 0.37;
+            const marginRight = scWidth * 0.02;
             const leftPosition = scWidth - chatWidth - marginRight;
             const chatHeight = scHeight * 0.92;
             container.css({
