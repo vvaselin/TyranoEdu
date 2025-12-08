@@ -115,7 +115,7 @@
 }
 
 /* --- メニューアイテム --- */
-.doc-menu-list {
+.doc-menu-list, .doc-sub-menu {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -125,28 +125,56 @@
 .doc-menu-category {
     padding: 12px 15px;
     background-color: #333;
-    color: #888;
-    font-size: 13px;
+    color: #e0e0e0;
+    font-size: 14px;
     font-weight: bold;
     border-bottom: 1px solid #444;
-    cursor: default;
+    cursor: pointer;
     user-select: none;
+    display: flex;
+    align-items: center;
+    transition: background 0.2s;
+}
+.doc-menu-category:hover {
+    background-color: #444;
 }
 
-/* 通常のアイテム */
+/* 矢印アイコン */
+.cat-arrow {
+    display: inline-block;
+    width: 20px;
+    font-size: 10px;
+    color: #aaa;
+    text-align: center;
+}
+
+/* --- サブメニュー（展開される部分） --- */
+.doc-sub-menu {
+    background-color: #262626; /* 少し暗くする */
+}
+
+/* --- メニューアイテム（共通） --- */
 .doc-menu-item {
-    padding: 15px 20px;
+    padding: 12px 20px;
     border-bottom: 1px solid #333;
     cursor: pointer;
     color: #ccc;
-    font-size: 16px;
+    font-size: 15px;
     transition: background 0.2s;
-    background-color: #252525;
+}
+.doc-sub-menu .doc-menu-item {
+    padding-left: 40px; /* 字下げ */
+    font-size: 14px;
 }
 
 .doc-menu-item:hover {
-    background-color: #444;
+    background-color: #555;
     color: #fff;
+}
+/* 選択中のアイテムハイライト */
+.doc-menu-item.current {
+    background-color: #007acc;
+    color: white;
 }
 
 /* 階層下のアイテム（インデントをつける） */
@@ -195,6 +223,26 @@
     font-family: "Meiryo", sans-serif;
     line-height: 1.8;
     text-align: left;
+}
+
+.copy-code-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 12px;
+    padding: 4px 8px;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 10;
+}
+
+.copy-code-button:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+    color: #fff;
 }
 
 /* Markdown装飾 */

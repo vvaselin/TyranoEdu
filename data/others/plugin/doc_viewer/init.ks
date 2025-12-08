@@ -48,7 +48,7 @@
     var menuList = container.find(".doc-menu-list");
     var contentArea = container.find("#doc_content_area");
 
-    // --- ★変更点: 外部JSONからメニューを生成する関数 ---
+    // --- 外部JSONからメニューを生成する関数 ---
     var menuJsonPath = "./data/others/plugin/doc_viewer/docs/menu.json";
 
     function createMenu(items) {
@@ -57,35 +57,66 @@
         items.forEach(function(item) {
             // カテゴリ（見出し）がある場合
             if (item.category && item.items) {
-                // 見出しを追加
-                var catEl = $('<li class="doc-menu-category">' + item.category + '</li>');
-                menuList.append(catEl);
+                // カテゴリのコンテナ(li)を作成
+                var catLi = $('<li class="doc-category-container"></li>');
+                
+                // 見出し部分（クリック可能）を作成
+                // 矢印アイコン(▼)を含める
+                var catTitle = $('<div class="doc-menu-category"><span class="cat-arrow">▼</span> ' + item.category + '</div>');
+                
+                // サブメニューのコンテナ(ul)を作成
+                var subUl = $('<ul class="doc-sub-menu"></ul>');
                 
                 // 中身のアイテムを追加
                 item.items.forEach(function(subItem){
-                    addMenuItem(subItem, true); // trueはインデント用フラグ
+                    var subLi = createMenuItem(subItem);
+                    subUl.append(subLi);
+                });
+                
+                // 組み立て
+                catLi.append(catTitle);
+                catLi.append(subUl);
+                menuList.append(catLi);
+                
+                // アコーディオン開閉
+                catTitle.on("click", function() {
+                    var $ul = $(this).next(".doc-sub-menu");
+                    var $arrow = $(this).find(".cat-arrow");
+                    
+                    // アニメーションで開閉
+                    $ul.slideToggle(200);
+                    
+                    // 矢印の切り替え
+                    if ($arrow.text() === "▼") {
+                        $arrow.text("▶");
+                    } else {
+                        $arrow.text("▼");
+                    }
                 });
             } 
-            // 普通の項目の場合
+            // カテゴリなしの項目の場合
             else {
-                addMenuItem(item, false);
+                var li = createMenuItem(item);
+                menuList.append(li);
             }
         });
     }
 
-    function addMenuItem(item, isSubItem) {
-        var className = "doc-menu-item";
-        if(isSubItem) className += " sub-item"; // インデント用クラス
-        
-        var li = $('<li class="' + className + '">' + item.title + '</li>');
+    // アイテム生成の共通関数
+    function createMenuItem(item) {
+        var li = $('<li class="doc-menu-item">' + item.title + '</li>');
         li.on("click", function() {
             TYRANO.kag.stat.f.loadDocMarkdown(item.file);
-            // モバイル等のためにクリックしたら閉じる（PCなら閉じなくてもいいかも）
+            
+            // 選択状態の見た目を変える（ハイライト）
+            $(".doc-menu-item").removeClass("current");
+            $(this).addClass("current");
+
             if(window.innerWidth < 800) { 
                 toggleSidebar(false);
             }
         });
-        menuList.append(li);
+        return li;
     }
 
     // --- JSON読み込み実行 ---
@@ -115,7 +146,6 @@
     }
 
     // --- イベント設定 ---
-    // (ここは前回と同じ)
     btn.on("click", function() {
         panel.addClass("active");
         btn.fadeOut(200);
@@ -151,15 +181,44 @@
     TYRANO.kag.stat.f.loadDocMarkdown = function(file) {
         var filePath = file;
         if (file.indexOf("http") === -1 && file.indexOf("./") === -1) {
-                filePath = "./data/others/plugin/doc_viewer/docs/" + file;
+             filePath = "./data/others/plugin/doc_viewer/docs/" + file;
         }
         $.ajax({
             url: filePath,
+            dataType: 'text', // 明示的にtextとして取得
             cache: false,
             success: function(data) {
                 var html = DOMPurify.sanitize(marked.parse(data));
                 contentArea.html(html);
                 contentArea.scrollTop(0);
+
+                // コピーボタン
+                contentArea.find("pre code").each(function(i, block) {
+                    var $block = $(block);
+                    var $pre = $block.parent("pre");
+                    
+                    // ボタンの配置基準にするため relative を設定
+                    $pre.css("position", "relative"); 
+
+                    // ボタン生成
+                    var copyButton = $('<button class="copy-code-button">コピー</button>');
+                    
+                    // クリックイベント
+                    copyButton.on("click", function() {
+                        var codeText = $block.text();
+                        navigator.clipboard.writeText(codeText).then(() => {
+                            copyButton.text("コピー完了!");
+                            setTimeout(() => { copyButton.text("コピー"); }, 2000);
+                        }, (err) => {
+                            copyButton.text("失敗");
+                            setTimeout(() => { copyButton.text("コピー"); }, 2000);
+                        });
+                    });
+
+                    // preタグの中にボタンを追加
+                    $pre.append(copyButton);
+                });
+
             },
             error: function() {
                 contentArea.html("<p>読み込みエラー：<br>" + filePath + "</p>");
