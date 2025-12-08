@@ -1,7 +1,7 @@
 /* コンテナ：画面全体を覆うが、クリックは透過させる */
 .doc-viewer-container {
     position: absolute;
-    top: 10px;
+    top: 5px;
     left: 790px;
     width: 490px;
     height: 700px;

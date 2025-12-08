@@ -130,7 +130,25 @@ $("#modal_copy_button_id").button("disable");
     box-sizing: border-box;
 ">
     <h3 id="task-title" style="margin-bottom: 10px;">課題</h3>
-    <p id="task-content" style="white-space: pre-wrap;"></p>
+    <p id="task-content" style="white-space: pre-wrap; margin-bottom: 15px;"></p>
+
+    <div id="expected-output-area" style="
+        display:none;
+        background-color: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 15px;
+    ">
+        <div style="font-size:12px; color:#aaa; margin-bottom:5px;">▼ 期待される出力</div>
+        <div id="expected-output-text" style="
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            color: #8edc9d;
+        "></div>
+    </div>
+
     <div id="grade-result-area" style="
         display:none; 
         margin-top:15px; 
@@ -155,6 +173,13 @@ if (task_data) {
     // 成功: データをUIにセット
     $("#task-title").text(task_data.title);
     $("#task-content").text(task_data.description);
+
+    if (task_data.expected_output && task_data.expected_output !== "") {
+        $("#expected-output-area").show();
+        $("#expected-output-text").text(task_data.expected_output);
+    } else {
+        $("#expected-output-area").hide();
+    }
 } else {
     // 失敗: 課題IDが見つからない
     $("#task-title").text("エラー");
