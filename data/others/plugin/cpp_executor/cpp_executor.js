@@ -6,7 +6,8 @@
         
         pm: {
             code: "",         // 実行するC++コード（文字列）
-            url: "/execute"   // GoサーバーのAPIエンドポイント
+            url: "/execute",   // GoサーバーのAPIエンドポイント
+            silent: "false" // デフォルトは喋る
         },
         
         start: function(pm) {
@@ -54,8 +55,7 @@
                 // 成功した結果を変数に格納
                 f.execution_result = data.result;
 
-                if (window.mascot_chat_trigger) {
-                    // 結果が長すぎる場合は切り詰めるなどの処理を入れても良い
+                if (pm.silent !== "true" && window.mascot_chat_trigger) {
                     var shortResult = data.result.substring(0, 100); 
                     window.mascot_chat_trigger("ユーザーがコードを実行しました。実行結果: " + shortResult);
                 }
@@ -64,7 +64,7 @@
                 // 失敗した結果を変数に格納
                 f.execution_result = "エラー:\n" + error.message;
 
-                if (window.mascot_chat_trigger) {
+                if (pm.silent !== "true" && window.mascot_chat_trigger) {
                     window.mascot_chat_trigger("コード実行時にエラーが発生しました: " + error.message);
                 }
             })

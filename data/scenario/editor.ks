@@ -252,7 +252,7 @@ if (task_data) {
     $("#grade-content").html("<span style='color:gray;'>採点中...</span>");
 [endscript]
 ;コード実行
-[execute_cpp code=&f.my_code]
+[execute_cpp code=&f.my_code silent="true"]
 ; 採点処理
 [iscript]
 // 課題データ
@@ -273,25 +273,28 @@ $.ajax({
     
     success: function(data) {
         var html = "";
-
-        // 点数によって色を変える演出
         var scoreColor = (data.score >= 80) ? "#00ff00" : "#ff4444";
         html += "<strong style='font-size:18px; color:" + scoreColor + ";'>" + data.score + "点</strong><br>";
-
         html += "<strong>理由:</strong> " + data.reason + "<br>";
         html += "<strong style='color:#ffffaa;'>アドバイス:</strong> " + data.improvement;      
         $("#grade-content").html(html);
         
-        // 合格判定などのフラグ処理があればここに記述
         if(data.score >= 80){
             alertify.success("合格!");
-        }
-        else{
+        } else {
             alertify.error("不合格...");
+        }
+
+        // ここで採点結果だけを話させる ■■■
+        if (window.mascot_chat_trigger) {
+             // 点数と理由をAIに伝えて、プロンプトの指示通りに反応してもらう
+             var msg = "[SYSTEM] 採点結果: " + data.score + "点。\n評価コメント: " + data.reason;
+             window.mascot_chat_trigger(msg);
         }
     },
     error: function() {
         $("#grade-content").text("採点サーバーとの通信に失敗しました。");
+        // 通信エラー時もAIに反応させたい場合はここに追記
     }
 });
 [endscript]
