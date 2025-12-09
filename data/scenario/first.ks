@@ -68,7 +68,7 @@ var uid = TYRANO.kag.stat.f.user_id;
 console.log("Loading Profile for:", uid);
 
 $.ajax({
-    url: 'http://localhost:8080/api/memory?user_id=' + uid,
+    url: '/api/memory?user_id=' + uid,
     type: 'GET',
     dataType: 'json',
     success: function(data) {
