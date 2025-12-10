@@ -333,6 +333,7 @@
                         message: messageToSend, 
                         code: f['my_code'],
                         task: task_data ? task_data.description : "タスクがありません",
+                        love_level:parseInt(currentLove)
                     }),
                 })
                 .then(r => r.json())
@@ -465,6 +466,7 @@
                         message: messageToSend, 
                         code: f['my_code'], // 現在のコードも送る
                         task: task_data ? task_data.description : "タスクなし",
+                        love_level:parseInt(currentLove)
                     }),
                 })
                 .then(r => r.json())
