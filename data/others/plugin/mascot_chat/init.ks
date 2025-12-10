@@ -32,7 +32,7 @@
             </div>
         </div>
 
-        <img src="./data/fgimage/chara/akane/normal.png" class="ai-chat-sprite-bottom">
+        <img src="./data/fgimage/chara/mocha/normal.png" class="ai-chat-sprite-bottom">
 
         <div class="ai-chat-form">
             <textarea class="ai-chat-input" placeholder="メッセージを入力..." rows="1"></textarea>
@@ -354,13 +354,27 @@
                     }
                     
                     addMessage("モカ", aiText, false);
-                    var imgPath = "./data/fgimage/chara/akane/" + emotion + ".png";
-                    $(".ai-chat-sprite-bottom").attr("src", imgPath);
+                    var charaDir = "./data/fgimage/chara/mocha/";
+                    var emotion = data.emotion || "normal";
+
+                    // 古いIDのマッピング（念のため）
+                    if (emotion === "angry") emotion = "oko";
+                    if (emotion === "doki") emotion = "tere";
+
+                    var imgPath = charaDir + emotion + ".png";
+
+                    // 画像が存在しない場合の対策（jQueryのerrorイベントはimgタグに使う）
+                    var $img = $(".ai-chat-sprite-bottom");
+                    $img.off("error").on("error", function() {
+                        // 指定した感情画像がない場合は normal.png に戻す
+                        $(this).attr("src", charaDir + "normal.png");
+                    });
+                    $img.attr("src", imgPath);
                 })
                 .catch(error => {
                     console.error("AIチャットエラー:", error);
                     addMessage("エラー", "上手くお話出来ませんでした。", false);
-                    $(".ai-chat-sprite-bottom").attr("src", "./data/fgimage/chara/akane/sad.png");
+                    $(".ai-chat-sprite-bottom").attr("src", "./data/fgimage/chara/mocha/sad.png");
                 })
                 .finally(() => {
                     inputField.prop("disabled", false).attr("placeholder", "メッセージを入力...").focus();
@@ -471,8 +485,22 @@
                     addMessage("モカ", aiText, false);
 
                     // 表情変更
-                    var imgPath = "./data/fgimage/chara/akane/" + emotion + ".png";
-                    $(".ai-chat-sprite-bottom").attr("src", imgPath);
+                    var charaDir = "./data/fgimage/chara/mocha/";
+                    var emotion = data.emotion || "normal";
+
+                    // 古いIDのマッピング（念のため）
+                    if (emotion === "angry") emotion = "oko";
+                    if (emotion === "doki") emotion = "tere";
+
+                    var imgPath = charaDir + emotion + ".png";
+
+                    // 画像が存在しない場合の対策（jQueryのerrorイベントはimgタグに使う）
+                    var $img = $(".ai-chat-sprite-bottom");
+                    $img.off("error").on("error", function() {
+                        // 指定した感情画像がない場合は normal.png に戻す
+                        $(this).attr("src", charaDir + "normal.png");
+                    });
+                    $img.attr("src", imgPath);
                 })
                 .catch(error => {
                     console.error("Trigger Error:", error);

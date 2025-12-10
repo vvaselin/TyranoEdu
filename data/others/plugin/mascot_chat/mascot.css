@@ -82,9 +82,9 @@
 .ai-chat-bubble::before {
     content: "";
     position: absolute;
-    top: 100%;             /* 吹き出しの下端 */
-    left: 75%;             /* 立ち絵(80%)の方へ寄せる */
-    margin-left: -13px;    /* 中央寄せ調整 */
+    top: 100%;          
+    left: 75%;          
+    margin-left: -13px; 
     border-width: 24px;
     border-style: solid;
     border-color: #525252 transparent transparent transparent; /* 上側の色だけ指定＝下向き三角 */
@@ -161,12 +161,12 @@
 /* --- (2) 下部エリア: 立ち絵 --- */
 .ai-chat-sprite-bottom {
     position: absolute;
-    bottom: -35px;
+    bottom: -58px;
     left: 80%;
     transform: translateX(-50%);
     
-    width: 270px;
-    height: 270px;
+    width: 430px;
+    height: 295px;
     object-fit: cover;
     object-position: 0% 0%;
     
