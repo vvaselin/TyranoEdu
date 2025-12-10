@@ -345,8 +345,8 @@
                         var current = parseInt(f.love_level) || 0;
                         f.love_level = current + loveUpVal; 
                         
-                        console.error(`好感度が ${loveUpVal} 上がりました！ 現在: ${f.love_level}`);
-                        alertify.success("好感度UP! 現在："+f.love_level);
+                        console.error(`好感度 ${loveUpVal} ！ 現在: ${f.love_level}`);
+                        alertify.log("好感度変化! 現在："+f.love_level);
 
                         if (window.saveLoveLevelToSupabase) {
                             window.saveLoveLevelToSupabase(f.love_level);
@@ -473,8 +473,8 @@
                         var current = parseInt(f.love_level) || 0;
                         f.love_level = current + loveUpVal; 
                         
-                        console.error(`好感度が ${loveUpVal} 上がりました！ 現在: ${f.love_level}`);
-                        alertify.success("好感度UP! 現在："+f.love_level);
+                        console.error(`好感度 ${loveUpVal} ！ 現在: ${f.love_level}`);
+                        alertify.log("好感度："+f.love_level);
 
                         if (window.saveLoveLevelToSupabase) {
                             window.saveLoveLevelToSupabase(f.love_level);
@@ -575,7 +575,7 @@
             if (error) {
                 console.error("好感度の保存に失敗:", error);
             } else {
-                console.error("好感度を保存しました:", newLevel);
+                //console.error("好感度を保存しました:", newLevel);
             }
         } catch (e) {
             console.error("Supabase Error:", e);
