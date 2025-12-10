@@ -21,6 +21,27 @@
 [start_quest  target="*quest5" text="課題5" x="50" y="470"]
 
 [start_story  target="*lecture1" text="講義1" x="500" y="70"]
+; ログアウトボタンを表示
+[button name="logout_btn" graphic="button/close.png" enterimg="button/close2.png" x=1180 y=20 width=80 height=30 role="sleep" fix="true"]
+
+[iscript]
+$(".logout_btn").off("click").on("click", async function() {
+    // 確認ダイアログ
+    if (!confirm("ログアウトしますか？")) return;
+
+    // Supabaseからログアウト
+    if (window.sb) {
+        await window.sb.auth.signOut();
+    }
+
+    // ユーザーID情報をクリア
+    TYRANO.kag.stat.f.user_id = null;
+    TYRANO.kag.stat.f.ai_memory = null;
+
+    // ログイン画面へ戻る
+    tyrano.plugin.kag.ftag.startTag("jump", { storage: "auth.ks" });
+});
+[endscript]
 
 [s]
 

@@ -56,13 +56,26 @@ $("#btn-login").click(async function() {
 
 // 登録ボタン
 $("#btn-signup").click(async function() {
-    $("#auth-msg").text("登録中...");
     const { data, error } = await window.sb.auth.signUp({
         email: $("#email").val(),
         password: $("#password").val(),
+        options: {
+            // メール確認後の戻り先を指定（設定したSite URLと合わせる）
+            emailRedirectTo: 'http://localhost:8088/index.html' 
+        }
     });
-    if (error) $("#auth-msg").text(error.message);
-    else handleAuthSuccess(data.user.id);
+
+    if (error) {
+        $("#auth-msg").text("エラー: " + error.message);
+    } else {
+        // セッションがあるか確認（確認不要設定なら即座にsessionが入る）
+        if (data.session) {
+            handleAuthSuccess(data.user.id);
+        } else {
+            // 確認メールONの場合、ここに来る
+            $("#auth-msg").html("確認メールを送信しました。<br>メール内のリンクをクリックしてから<br>再度ログインしてください。");
+        }
+    }
 });
 [endscript]
 
