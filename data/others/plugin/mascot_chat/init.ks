@@ -97,7 +97,7 @@
                         if(data.love_level && !TYRANO.kag.stat.f.love_level){
                              TYRANO.kag.stat.f.love_level = data.love_level;
                         }
-                        console.log("Memory Loaded:", data);
+                        console.error("Memory Loaded:", data);
                     }
                 });
 
@@ -344,10 +344,15 @@
                     if (loveUpVal !== 0) {
                         var current = parseInt(f.love_level) || 0;
                         f.love_level = current + loveUpVal; 
+                        
                         console.error(`好感度が ${loveUpVal} 上がりました！ 現在: ${f.love_level}`);
                         alertify.success("好感度UP! 現在："+f.love_level);
-                    }
 
+                        if (window.saveLoveLevelToSupabase) {
+                            window.saveLoveLevelToSupabase(f.love_level);
+                        }
+                    }
+                    
                     addMessage("モカ", aiText, false);
                     var imgPath = "./data/fgimage/chara/akane/" + emotion + ".png";
                     $(".ai-chat-sprite-bottom").attr("src", imgPath);
@@ -392,7 +397,7 @@
                 })
                 .then(r => r.json())
                 .then(data => {
-                    console.log("Save complete:", data);
+                    console.error("Save complete:", data);
                     // 履歴クリア
                     TYRANO.kag.stat.f.ai_chat_history = [];
                     // 必要なら最新記憶をロードしておく（次回用）
@@ -448,14 +453,18 @@
                 .then(data => {
                     var aiText = data.text;
                     var emotion = data.emotion || "normal";
-                    
-                    // 好感度変動があれば反映
                     var loveUpVal = parseInt(data.love_up) || 0; 
+
                     if (loveUpVal !== 0) {
-                        f.love_level = (parseInt(f.love_level) || 0) + loveUpVal;
-                        // 画面右上に通知を出す（通常のチャットと同じ演出）
-                        alertify.success("好感度UP! 現在：" + f.love_level);
-                        console.log("System Trigger Love Update:", loveUpVal);
+                        var current = parseInt(f.love_level) || 0;
+                        f.love_level = current + loveUpVal; 
+                        
+                        console.error(`好感度が ${loveUpVal} 上がりました！ 現在: ${f.love_level}`);
+                        alertify.success("好感度UP! 現在："+f.love_level);
+
+                        if (window.saveLoveLevelToSupabase) {
+                            window.saveLoveLevelToSupabase(f.love_level);
+                        }
                     }
 
                     // メッセージ表示
@@ -523,6 +532,27 @@
             console.error("ai-chat-container が見つかりません。");
         }
     } catch (e) { console.error("ai_chat init error", e); }
+
+    // --- 好感度保存関数 ---
+    window.saveLoveLevelToSupabase = async function(newLevel) {
+        // ユーザーIDがない、またはSupabaseが初期化されていない場合は何もしない
+        if (!TYRANO.kag.stat.f.user_id || !window.sb) return;
+
+        try {
+            const { error } = await window.sb
+                .from('profiles')
+                .update({ love_level: newLevel, last_updated: new Date().toISOString() })
+                .eq('id', TYRANO.kag.stat.f.user_id);
+
+            if (error) {
+                console.error("好感度の保存に失敗:", error);
+            } else {
+                console.error("好感度を保存しました:", newLevel);
+            }
+        } catch (e) {
+            console.error("Supabase Error:", e);
+        }
+    };
     [endscript]
 [endmacro]
 [return]
