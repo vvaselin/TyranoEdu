@@ -345,8 +345,12 @@
                         var current = parseInt(f.love_level) || 0;
                         f.love_level = current + loveUpVal; 
                         
-                        console.error(`好感度 ${loveUpVal} ！ 現在: ${f.love_level}`);
-                        alertify.log("好感度変化! 現在："+f.love_level);
+                        console.error(`好感度 ${loveUpVal} 、 現在: ${f.love_level}`);
+                        if(loveUpVal > 0){
+                            alertify.success("好感度UP! 現在："+f.love_level);
+                        } else {
+                            alertify.error("好感度DOWN... 現在："+f.love_level);
+                        }
 
                         if (window.saveLoveLevelToSupabase) {
                             window.saveLoveLevelToSupabase(f.love_level);
@@ -474,7 +478,11 @@
                         f.love_level = current + loveUpVal; 
                         
                         console.error(`好感度 ${loveUpVal} ！ 現在: ${f.love_level}`);
-                        alertify.log("好感度："+f.love_level);
+                        if(loveUpVal > 0){
+                            alertify.success("好感度UP! 現在："+f.love_level);
+                        } else {
+                            alertify.error("好感度DOWN... 現在："+f.love_level);
+                        }
 
                         if (window.saveLoveLevelToSupabase) {
                             window.saveLoveLevelToSupabase(f.love_level);
