@@ -78,7 +78,7 @@
 [endif]
 
 ; ログアウトボタン
-[button name="logout_btn" graphic="button/close.png" enterimg="button/close2.png" x=1180 y=20 width=80 height=30 role="sleep" fix="true"]
+[button name="logout_btn" graphic="../others/plugin/theme_kopanda_22_HD_anim/image/button/title.png" enterimg="../others/plugin/theme_kopanda_22_HD_anim/image/button/title2.png" x=1180 y=20 width=50 height=50 role="sleep" fix="true"]
 
 [iscript]
 $(".logout_btn").off("click").on("click", async function() {
