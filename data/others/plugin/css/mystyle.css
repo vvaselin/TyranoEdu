@@ -430,3 +430,37 @@
   box-shadow: none;
   transform: translateY(4px);
 }
+
+/* -------------------------------------
+ Locked Button (Based on mybtn_10)
+---------------------------------------- */
+.mybtn_locked {
+  position: relative;
+  display: inline-block;
+  padding: .7em 1em;
+  /* グレー背景 */
+  background-color: #888888;
+  color: #DDD; /* 文字色も少し暗く */
+  text-shadow: none;
+  border-radius: 12px;
+  /* 枠線と影もダークグレーに */
+  border: solid 2px #555555;
+  box-shadow: 0 5px 0 #555555;
+  box-sizing: border-box;
+  /* カーソルを「禁止マーク」にする */
+  cursor: not-allowed; 
+}
+
+/* ホバー・クリック時も変化させない（反応しないように見せる） */
+.mybtn_locked:hover,
+.mybtn_locked:active {
+  background-color: #888888;
+  color: #DDD;
+  box-shadow: 0 5px 0 #555555;
+  transform: none; /* 沈み込む動きを無効化 */
+}
+
+/* 模様（斜線）も消すか、控えめにする */
+.mybtn_locked::after {
+  content: none; /* mybtn_10にある斜線エフェクトを消す */
+}

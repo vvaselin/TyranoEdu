@@ -283,6 +283,11 @@ $.ajax({
         
         if(data.score >= 80){
             alertify.success("合格!");
+            if (!TYRANO.kag.stat.f.cleared_tasks) {
+                TYRANO.kag.stat.f.cleared_tasks = {};
+            }
+            // 現在のタスクID (例: "task1") を true にする
+            TYRANO.kag.stat.f.cleared_tasks[TYRANO.kag.stat.f.current_task_id] = true;
         } else {
             alertify.error("不合格...");
         }

@@ -38,7 +38,7 @@
     if (is_locked) {
         // ■ ロック状態のボタン (グレー、押すと警告)
         tyrano.plugin.kag.ftag.startTag("glink", {
-            color: "mybtn_03",
+            color: "mybtn_locked",
             storage: "select.ks",
             target: "*locked",       // 警告ラベルへ
             text: "課題" + i + " (Lock)",
@@ -74,7 +74,7 @@
 [if exp="f.cleared_tasks && f.cleared_tasks['task1']"]
     [glink color="mybtn_10" storage="select.ks" target="*lecture1" text="講義1" width="300" size="30" x="500" y="70"]
 [else]
-    [glink color="mybtn_03" storage="select.ks" target="*locked" text="講義1 (Lock)" width="300" size="30" x="500" y="70"]
+    [glink color="mybtn_locked" storage="select.ks" target="*locked" text="講義1 (Lock)" width="300" size="30" x="500" y="70"]
 [endif]
 
 ; ログアウトボタン
@@ -98,7 +98,6 @@ $(".logout_btn").off("click").on("click", async function() {
 
 ; ロック時の警告メッセージ
 *locked
-[cm]
 [dialog type="alert" text="この課題はまだ解放されていません。<br>前の課題をクリアしてください。"]
 [jump target="*start"]
 
