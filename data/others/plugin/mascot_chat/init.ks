@@ -340,6 +340,8 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
+                        character_id: "mocha",
+                        mode: "thought",
                         message: messageToSend, 
                         code: f['my_code'],
                         task: task_data ? task_data.description : "タスクがありません",
