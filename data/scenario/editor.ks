@@ -1,4 +1,5 @@
 *start
+[mask time=1000]
 [clearfix]
 [bg storage="room.jpg" time="0"]
 @layopt layer="message0" visible=false
@@ -190,6 +191,7 @@ if (task_data) {
     $("#task-content").text(error_msg);
 }
 [endscript]
+[mask_off time=1000]
 
 ; すべてのUI配置が終わったので、進行を停止してボタンクリックを待つ、待機状態
 [s]

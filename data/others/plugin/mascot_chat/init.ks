@@ -34,6 +34,14 @@
 
         <img src="./data/fgimage/chara/mocha/normal.png" class="ai-chat-sprite-bottom">
 
+        <div class="love-gauge-box">
+            <div class="love-icon">♥</div>
+            <div class="love-gauge-track">
+                <div class="love-gauge-fill"></div>
+            </div>
+            <div class="love-text">0</div>
+        </div>
+
         <div class="ai-chat-form">
             <textarea class="ai-chat-input" placeholder="メッセージを入力..." rows="1"></textarea>
             <button class="ai-chat-send-button">送信</button>
@@ -98,6 +106,8 @@
                              TYRANO.kag.stat.f.love_level = data.love_level;
                         }
                         console.error("Memory Loaded:", data);
+
+                        window.updateLoveGaugeUI();
                     }
                 });
 
@@ -356,6 +366,8 @@
                         if (window.saveLoveLevelToSupabase) {
                             window.saveLoveLevelToSupabase(f.love_level);
                         }
+
+                        window.updateLoveGaugeUI();
                     }
                     
                     addMessage("モカ", aiText, false);
@@ -387,6 +399,26 @@
                     inputField.css('height', 'auto'); 
                 });
             }
+
+            window.updateLoveGaugeUI = function() {
+                if (typeof TYRANO.kag.stat.f === "undefined") return;
+                
+                var current = parseInt(TYRANO.kag.stat.f.love_level) || 0;
+                
+                // ゲージの幅を計算 (Max 100 と仮定。100を超えてもバーは満タンのまま)
+                var percent = Math.min(100, Math.max(0, current));
+                
+                // アニメーション付きで反映
+                $(".love-gauge-fill").css("width", percent + "%");
+                $(".love-text").text(current);
+                
+                // 色の変化演出（オプション）
+                if(current >= 80) {
+                    $(".love-icon").css("color", "#ff4757").css("text-shadow", "0 0 10px #ff4757");
+                } else {
+                    $(".love-icon").css("color", "#ff6b81").css("text-shadow", "none");
+                }
+            };
 
             // グローバル関数として公開
             window.mascot_chat_save = function(callback) {
@@ -493,6 +525,8 @@
                         if (window.saveLoveLevelToSupabase) {
                             window.saveLoveLevelToSupabase(f.love_level);
                         }
+
+                        window.updateLoveGaugeUI();
                     }
 
                     // メッセージ表示
