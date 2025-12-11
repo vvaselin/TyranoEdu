@@ -1,90 +1,129 @@
-; ステージ選択
+; select.ks - 課題選択画面
 *start
 [hidemenubutton] 
 [clearfix]
+[cm]
 [bg storage="rouka.jpg" time="0"]
 @layopt layer="message0" visible=false
 [stop_keyconfig]
 
-; 実行ボタンglinkのデザイン用マクロ
-[macro name="start_quest"]
-[glink color=mybtn_08 storage="select.ks" target=%target text=%text width="300" size="30" x=%x y=%y]
-[endmacro]
-[macro name="start_story"]
-[glink color=mybtn_10 storage="select.ks" target=%target text=%text width="300" size="30" x=%x y=%y]
-[endmacro]
+; -----------------------------------------------------------
+; ▼▼▼ [for]プラグインを活用したボタン生成 ▼▼▼
+; 課題1〜5までループしてボタンを表示します
+; -----------------------------------------------------------
 
-[start_quest  target="*quest1" text="課題1" x="50" y="70"]
-[start_quest  target="*quest2" text="課題2" x="50" y="170"]
-[start_quest  target="*quest3" text="課題3" x="50" y="270"]
-[start_quest  target="*quest4" text="課題4" x="50" y="370"]
-[start_quest  target="*quest5" text="課題5" x="50" y="470"]
+[for name="tf.i" from="1" to="5"]
 
-[start_story  target="*lecture1" text="講義1" x="500" y="70"]
-; ログアウトボタンを表示
+    [iscript]
+    // 現在のループ番号（1〜5）
+    var i = parseInt(tf.i);
+    var current_task = "task" + i;
+    var prev_task    = "task" + (i - 1);
+    
+    // Y座標を計算 (70px からスタートし、100pxずつずらす)
+    var y_pos = 70 + (i - 1) * 100;
+    
+    // ロック判定
+    // 1問目は常に解放。2問目以降は「前の課題」がクリア済みなら解放。
+    var is_locked = false;
+    
+    if (i > 1) {
+        // 前の課題がクリアリストにない、または false ならロック
+        if (!f.cleared_tasks || !f.cleared_tasks[prev_task]) {
+            is_locked = true;
+        }
+    }
+
+    // ボタンの生成 (JSからglinkタグを動的に呼び出すことで、変数を正しく埋め込めます)
+    if (is_locked) {
+        // ■ ロック状態のボタン (グレー、押すと警告)
+        tyrano.plugin.kag.ftag.startTag("glink", {
+            color: "mybtn_03",
+            storage: "select.ks",
+            target: "*locked",       // 警告ラベルへ
+            text: "課題" + i + " (Lock)",
+            x: 50,
+            y: y_pos,
+            width: 300,
+            size: 30
+        });
+    } else {
+        // ■ 解放状態のボタン (緑、押すと開始)
+        tyrano.plugin.kag.ftag.startTag("glink", {
+            color: "mybtn_08",
+            storage: "select.ks",
+            target: "*common_task_start", // 共通開始ラベルへ
+            text: "課題" + i,
+            x: 50,
+            y: y_pos,
+            width: 300,
+            size: 30,
+            // ★重要: ここで変数を文字列として埋め込むことで、クリック時に正しいIDが渡ります
+            exp: "f.current_task_id = '" + current_task + "'"
+        });
+    }
+    [endscript]
+
+[nextfor]
+
+; -----------------------------------------------------------
+; その他のボタン（講義、ログアウト）
+; -----------------------------------------------------------
+
+; 講義ボタン（例：課題1クリアで解放）
+[if exp="f.cleared_tasks && f.cleared_tasks['task1']"]
+    [glink color="mybtn_10" storage="select.ks" target="*lecture1" text="講義1" width="300" size="30" x="500" y="70"]
+[else]
+    [glink color="mybtn_03" storage="select.ks" target="*locked" text="講義1 (Lock)" width="300" size="30" x="500" y="70"]
+[endif]
+
+; ログアウトボタン
 [button name="logout_btn" graphic="button/close.png" enterimg="button/close2.png" x=1180 y=20 width=80 height=30 role="sleep" fix="true"]
 
 [iscript]
 $(".logout_btn").off("click").on("click", async function() {
-    // 確認ダイアログ
     if (!confirm("ログアウトしますか？")) return;
-
-    // Supabaseからログアウト
-    if (window.sb) {
-        await window.sb.auth.signOut();
-    }
-
-    // ユーザーID情報をクリア
+    if (window.sb) await window.sb.auth.signOut();
     TYRANO.kag.stat.f.user_id = null;
     TYRANO.kag.stat.f.ai_memory = null;
-
-    // ログイン画面へ戻る
     tyrano.plugin.kag.ftag.startTag("jump", { storage: "auth.ks" });
 });
 [endscript]
 
 [s]
 
-*quest1
-[eval exp="f.current_task_id = 'task1'"]
-[jump target="*common_task_start"]
+; -----------------------------------------------------------
+; ▼▼▼ 共通処理パート ▼▼▼
+; -----------------------------------------------------------
 
-*quest2
-[eval exp="f.current_task_id = 'task2'"]
-[jump target="*common_task_start"]
+; ロック時の警告メッセージ
+*locked
+[cm]
+[dialog type="alert" text="この課題はまだ解放されていません。<br>前の課題をクリアしてください。"]
+[jump target="*start"]
 
-*quest3
-[eval exp="f.current_task_id = 'task3'"]
-[jump target="*common_task_start"]
-
-*quest4
-[eval exp="f.current_task_id = 'task4'"]
-[jump target="*common_task_start"]
-
-*quest5
-[eval exp="f.current_task_id = 'task5'"]
-[jump target="*common_task_start"]
-
+; 講義開始
 *lecture1
 @layopt layer="message0" visible=true
 [start_keyconfig]
-
 [jump storage="lecture/1.ks" target="*start"]
 
+; 課題開始（全課題共通）
 *common_task_start
 [iscript]
 var taskId = TYRANO.kag.stat.f.current_task_id;
-var taskData = TYRANO.kag.stat.f.all_tasks[taskId];
-var inputData = (taskData && taskData.stdin) ? taskData.stdin : "";
-
-if (taskData && taskData.initial_code) {
-    if (Array.isArray(taskData.initial_code)) {
-        TYRANO.kag.stat.f.my_code = taskData.initial_code.join('\n');
+// タスクデータの取得
+if(TYRANO.kag.stat.f.all_tasks){
+    var taskData = TYRANO.kag.stat.f.all_tasks[taskId];
+    if (taskData && taskData.initial_code) {
+        if (Array.isArray(taskData.initial_code)) {
+            TYRANO.kag.stat.f.my_code = taskData.initial_code.join('\n');
+        } else {
+            TYRANO.kag.stat.f.my_code = taskData.initial_code;
+        }
     } else {
-        TYRANO.kag.stat.f.my_code = taskData.initial_code;
+        TYRANO.kag.stat.f.my_code = "// コードが見つかりません: " + taskId;
     }
-} else {
-    TYRANO.kag.stat.f.my_code = "// コードが見つかりません";
 }
 [endscript]
 

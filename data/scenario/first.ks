@@ -10,6 +10,7 @@
 [plugin name="glink_ex"]
 [plugin name="mascot_chat"]
 [plugin name="doc_viewer"]
+[plugin name="for"]
 
 [loadcss file="./tyrano/libs/jquery-ui/jquery-ui.css"]
 [loadcss file="./data/others/css/modal_dark_theme.css"]
@@ -74,17 +75,35 @@ $.ajax({
     success: function(data) {
         TYRANO.kag.stat.f.love_level = data.love_level || 0;
         TYRANO.kag.stat.f.ai_memory = data;
-        // 完了 -> select.ksへ
-        tyrano.plugin.kag.ftag.startTag("jump", { storage: "select.ks", target: "*start" });
     },
     error: function() {
         // エラー時は初期値で進行
         TYRANO.kag.stat.f.love_level = 0;
         TYRANO.kag.stat.f.ai_memory = {};
-        tyrano.plugin.kag.ftag.startTag("jump", { storage: "select.ks", target: "*start" });
     }
 });
+
+// --- クリア済み課題の読み込み ---
+TYRANO.kag.stat.f.cleared_tasks = {};
+
+window.sb.from('task_progress')
+    .select('task_id')
+    .eq('user_id', uid)
+    .eq('is_cleared', true)
+    .then(({ data, error }) => {
+        if (data) {
+            data.forEach(row => {
+                TYRANO.kag.stat.f.cleared_tasks[row.task_id] = true;
+            });
+            console.log("Cleared Tasks:", TYRANO.kag.stat.f.cleared_tasks);
+        }
+        if (error) console.error("Progress Load Error:", error);
+    });
 [endscript]
+
+[wait time=500]
+[jump storage="select.ks" target="*start"]
+
 [s]
 
 *menu_start
