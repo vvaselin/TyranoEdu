@@ -1,5 +1,6 @@
 ; first.ks - 初期化とデータロード
 *start
+@layopt layer="message0" visible=false
 
 ; 初期化済みならメニューへ飛ばす
 [jump target="*menu_start" cond="f.system_initialized == true" ]
@@ -11,6 +12,7 @@
 [plugin name="mascot_chat"]
 [plugin name="doc_viewer"]
 [plugin name="for"]
+[plugin name="theme_kopanda_22_HD_anim"]
 
 [loadcss file="./tyrano/libs/jquery-ui/jquery-ui.css"]
 [loadcss file="./data/others/css/modal_dark_theme.css"]
@@ -65,6 +67,13 @@ sb.auth.getSession().then(({ data: { session } }) => {
 *load_user_data
 
 [iscript]
+
+// ▼▼▼ ローディング画面を表示 ▼▼▼
+if ($("#loading_overlay").length === 0) {
+    $('body').append('<div id="loading_overlay" class="loading-overlay" style="display:none;"><div class="loader">Loading...</div></div>');
+}
+$("#loading_overlay").fadeIn(200);
+
 var uid = TYRANO.kag.stat.f.user_id;
 console.log("Loading Profile for:", uid);
 
@@ -77,28 +86,27 @@ $.ajax({
         TYRANO.kag.stat.f.ai_memory = data;
     },
     error: function() {
-        // エラー時は初期値で進行
         TYRANO.kag.stat.f.love_level = 0;
         TYRANO.kag.stat.f.ai_memory = {};
     }
-});
-
-// --- クリア済み課題の読み込み ---
-TYRANO.kag.stat.f.cleared_tasks = {};
-
-window.sb.from('task_progress')
-    .select('task_id')
-    .eq('user_id', uid)
-    .eq('is_cleared', true)
-    .then(({ data, error }) => {
-        if (data) {
-            data.forEach(row => {
-                TYRANO.kag.stat.f.cleared_tasks[row.task_id] = true;
+}).always(function(){
+    window.sb.from('task_progress')
+        .select('task_id')
+        .eq('user_id', uid)
+        .eq('is_cleared', true)
+        .then(({ data, error }) => {
+            if (data) {
+                TYRANO.kag.stat.f.cleared_tasks = {};
+                data.forEach(row => {
+                    TYRANO.kag.stat.f.cleared_tasks[row.task_id] = true;
+                });
+            }
+            
+            $("#loading_overlay").fadeOut(300, function(){
+                tyrano.plugin.kag.ftag.startTag("jump", { storage: "select.ks", target: "*start" });
             });
-            console.log("Cleared Tasks:", TYRANO.kag.stat.f.cleared_tasks);
-        }
-        if (error) console.error("Progress Load Error:", error);
-    });
+        });
+});
 [endscript]
 
 [wait time=500]

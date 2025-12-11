@@ -388,39 +388,41 @@
                 });
             }
 
-            // グローバル関数として公開 (戻るボタンから呼べるようにする)
+            // グローバル関数として公開
             window.mascot_chat_save = function(callback) {
                 var history = getHistory();
                 
-                // 履歴がない、または短い場合は保存せずに即終了
+                // ▼▼▼ ローディング表示 ▼▼▼
+                if ($("#loading_overlay").length === 0) {
+                    $('body').append('<div id="loading_overlay" class="loading-overlay" style="display:none;"><div class="loader">Loading...</div></div>');
+                }
+                $("#loading_overlay").fadeIn(200);
+
                 if (!history || history.length === 0) {
+                    $("#loading_overlay").fadeOut(200); // 履歴なしなら即消す
                     if (callback) callback();
                     return;
                 }
-                alertify.log("学習記録を保存して終了します...");
+                
+                alertify.log("学習記録を保存...");
 
-                // 現在の好感度を取得 (これをサーバーに送ることで上書き保存させる)
                 var currentLove = TYRANO.kag.stat.f.love_level || 0;
-
-                // アラートなどで「保存中」を出すと親切
-                // alertify.message("学習記録を保存中...");
 
                 fetch('/api/summarize', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        user_id: TYRANO.kag.stat.f.user_id, // ★追加
+                        user_id: TYRANO.kag.stat.f.user_id,
                         chat_history: history,
                         current_love_level: parseInt(currentLove)
                     })
                 })
                 .then(r => r.json())
                 .then(data => {
-                    console.error("Save complete:", data);
-                    // 履歴クリア
+                    console.log("Save complete:", data);
                     TYRANO.kag.stat.f.ai_chat_history = [];
-                    // 必要なら最新記憶をロードしておく（次回用）
-                    return fetch('/api/memory');
+                    // 必要なら最新記憶をロード
+                    return fetch('/api/memory?user_id=' + TYRANO.kag.stat.f.user_id);
                 })
                 .then(r => r.json())
                 .then(data => {
@@ -428,10 +430,12 @@
                 })
                 .catch(e => {
                     console.error("Save Error:", e);
+                    alertify.error("保存に失敗しました");
                 })
                 .finally(() => {
-                    // 完了したらコールバックを実行（画面遷移など）
-                    if (callback) callback();
+                    $("#loading_overlay").fadeOut(300, function() {
+                        if (callback) callback();
+                    });
                 });
             };
 
