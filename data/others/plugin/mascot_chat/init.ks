@@ -345,7 +345,8 @@
                         message: messageToSend, 
                         code: f['my_code'],
                         task: task_data ? task_data.description : "タスクがありません",
-                        love_level:parseInt(currentLove)
+                        love_level:parseInt(currentLove),
+                        user_id: TYRANO.kag.stat.f.user_id
                     }),
                 })
                 .then(r => r.json())
@@ -501,10 +502,13 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
+                        character_id: "mocha",
+                        mode: "thought",
                         message: messageToSend, 
-                        code: f['my_code'], // 現在のコードも送る
-                        task: task_data ? task_data.description : "タスクなし",
-                        love_level:parseInt(currentLove)
+                        code: f['my_code'],
+                        task: task_data ? task_data.description : "タスクがありません",
+                        love_level:parseInt(currentLove),
+                        user_id: TYRANO.kag.stat.f.user_id
                     }),
                 })
                 .then(r => r.json())
