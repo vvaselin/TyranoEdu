@@ -41,7 +41,7 @@
             color: "mybtn_locked",
             storage: "select.ks",
             target: "*locked",       // 警告ラベルへ
-            text: "課題" + i + " (Lock)",
+            text: "課題" + i,
             x: 50,
             y: y_pos,
             width: 300,
@@ -58,7 +58,7 @@
             y: y_pos,
             width: 300,
             size: 30,
-            // ★重要: ここで変数を文字列として埋め込むことで、クリック時に正しいIDが渡ります
+            
             exp: "f.current_task_id = '" + current_task + "'"
         });
     }
