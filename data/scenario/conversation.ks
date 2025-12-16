@@ -184,9 +184,9 @@ if(f.current_act.choices && f.current_act.choices.length > 0){
         tyrano.plugin.kag.ftag.startTag("glink", {
             color: "ts22",
             text: item.label,
-            x: "380",
-            y: 200 + (i * 80),
-            width: "400",
+            x: "100",
+            y: 200 + (i * 100),
+            width: "800",
             target: "*on_select",
             exp: "f.user_input = '" + item.value + "'"
         });
