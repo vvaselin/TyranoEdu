@@ -90,6 +90,9 @@ $(".logout_btn").off("click").on("click", async function() {
 });
 [endscript]
 
+; トークモードへ移動
+[glink color="ts22" text="トークモード" storage="conversation.ks" target="*start" x="850" y="70" width="300" size="30"]
+
 [s]
 
 ; -----------------------------------------------------------
