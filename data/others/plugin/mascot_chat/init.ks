@@ -505,7 +505,7 @@
                 var inputField = container.find(".ai-chat-input");
                 inputField.attr("placeholder", "考え中...").prop("disabled", true);
 
-                var lastEmotionParams = { joy: 0, anger: 0, ... };
+                var lastEmotionParams = { joy: 0, anger: 0, fear: 0, trust: 0, shy: 0, surprise: 0 };
                 var lastExecOutput = "";
 
                 // APIコール
