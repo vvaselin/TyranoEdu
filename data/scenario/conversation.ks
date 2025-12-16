@@ -12,6 +12,27 @@
 [chara_show name="mocha" width=600 top=100]
 @layopt layer="message0" visible=true
 
+[chara_face name="mocha" face="normal" storage="chara/mocha/normal.png" ]
+[chara_face name="mocha" face="oko" storage="chara/mocha/oko.png" ]
+[chara_face name="mocha" face="tere" storage="chara/mocha/tere.png" ]
+[chara_face name="mocha" face="terekomari" storage="chara/mocha/terekomari.png" ]
+[chara_face name="mocha" face="melt" storage="chara/mocha/melt.png" ]
+[chara_face name="mocha" face="surprise" storage="chara/mocha/surprise.png" ]
+[chara_face name="mocha" face="iya" storage="chara/mocha/iya.png" ]
+[chara_face name="mocha" face="kowai" storage="chara/mocha/kowai.png" ]
+[chara_face name="mocha" face="huhun" storage="chara/mocha/huhun.png" ]
+[chara_face name="mocha" face="doubt" storage="chara/mocha/doubt.png" ]
+[chara_face name="mocha" face="doya" storage="chara/mocha/doya.png" ]
+[chara_face name="mocha" face="donbiki" storage="chara/mocha/donbiki.png" ]
+[chara_face name="mocha" face="aseri" storage="chara/mocha/aseri.png" ]
+[chara_face name="mocha" face="komari" storage="chara/mocha/komari.png" ]
+[chara_face name="mocha" face="happy" storage="chara/mocha/happy.png" ]
+[chara_face name="mocha" face="frustration" storage="chara/mocha/frustration.png" ]
+[chara_face name="mocha" face="sad" storage="chara/mocha/sad.png" ]
+[chara_face name="mocha" face="doya" storage="chara/mocha/doya.png" ]
+[chara_face name="mocha" face="iya" storage="chara/mocha/iya.png" ]
+[chara_face name="mocha" face="akire" storage="chara/mocha/akire.png" ]
+
 ; 変数初期化
 [iscript]
 f.talk_history = [];
