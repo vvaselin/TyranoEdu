@@ -336,6 +336,9 @@
                 
                 var messageToSend = userMessage + historyContext + memoryContext + `\n\n(System Info: Current Love Level is ${currentLove})`;
 
+                var lastEmotionParams = { joy: 0, anger: 0, fear: 0, trust: 0, shy: 0, surprise: 0 };
+                var lastExecOutput = "";
+
                 fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -345,7 +348,9 @@
                         code: f['my_code'],
                         task: task_data ? task_data.description : "タスクがありません",
                         love_level:parseInt(currentLove),
-                        user_id: TYRANO.kag.stat.f.user_id
+                        user_id: TYRANO.kag.stat.f.user_id,
+                        prev_params: lastEmotionParams,
+                        prev_output: lastExecOutput
                     }),
                 })
                 .then(r => r.json())
@@ -370,6 +375,10 @@
                         }
 
                         window.updateLoveGaugeUI();
+
+                        if (data.parameters) {
+                            lastEmotionParams = data.parameters;
+                        }
                     }
                     
                     addMessage("モカ", aiText, false);
@@ -496,6 +505,9 @@
                 var inputField = container.find(".ai-chat-input");
                 inputField.attr("placeholder", "考え中...").prop("disabled", true);
 
+                var lastEmotionParams = { joy: 0, anger: 0, ... };
+                var lastExecOutput = "";
+
                 // APIコール
                 fetch('/api/chat', {
                     method: 'POST',
@@ -506,7 +518,9 @@
                         code: f['my_code'],
                         task: task_data ? task_data.description : "タスクがありません",
                         love_level:parseInt(currentLove),
-                        user_id: TYRANO.kag.stat.f.user_id
+                        user_id: TYRANO.kag.stat.f.user_id,
+                        prev_params: lastEmotionParams,
+                        prev_output: lastExecOutput
                     }),
                 })
                 .then(r => r.json())
