@@ -146,6 +146,10 @@ f.talk_history.push({role: "assistant", content: f.current_act.content});
 
 *act_choices
 [iscript]
+if (f.quiz_count >= f.quiz_limit) {
+    f.current_act.choices = [];
+}
+
 // 選択肢表示
 if(f.current_act.choices && f.current_act.choices.length > 0){
     f.current_act.choices.forEach(function(item, i){
@@ -159,9 +163,19 @@ if(f.current_act.choices && f.current_act.choices.length > 0){
             exp: "f.user_input = '" + item.value + "'"
         });
     });
+} else {
+    // 選択肢がない（空配列）場合 = 終了とみなしてループを抜ける
+    // 実際には *play_loop に戻り、キューが空なら終了処理へ飛ぶ
 }
 [endscript]
-[s]
+
+; 選択肢を出した場合は停止[s]するが、
+; 選択肢がない（終了時）場合はそのまま下に流れて *play_loop に戻る必要がある
+[if exp="f.current_act.choices && f.current_act.choices.length > 0"]
+    [s]
+[endif]
+
+[jump target="*play_loop"]
 
 ;--- 選択肢クリック時 ---
 *on_select
