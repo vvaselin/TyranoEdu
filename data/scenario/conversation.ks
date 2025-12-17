@@ -108,15 +108,9 @@ $.ajax({
 *play_loop
 [iscript]
 if (!f.script_queue || f.script_queue.length === 0) {
-    // キュー消化完了
+    // 現在の問題数が3問に達しており、かつキューも消化しきったなら終了
     if (f.quiz_count >= f.quiz_limit) {
-        // 規定回数終わったら終了へ
         tyrano.plugin.kag.ftag.startTag("jump", {target: "*end_session"});
-    } else {
-        // 次の入力を待つ（選択肢待ち）
-        // ※ 本来はAPIからのJSON末尾に選択肢が含まれているはずなので、
-        //   ここに来る＝選択肢表示済みで[s]しているか、次の処理待ち
-        //   何もしなくて良い（選択肢で *on_select に飛ぶため）
     }
 } else {
     // アクション実行
