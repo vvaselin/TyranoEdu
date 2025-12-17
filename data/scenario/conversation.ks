@@ -170,6 +170,7 @@ if (!f.script_queue || f.script_queue.length === 0) {
 [s]
 
 *act_text
+[cm]
 #モカ
 [emb exp="f.current_act.content"]
 [iscript]
@@ -190,7 +191,7 @@ if(f.current_act.choices && f.current_act.choices.length > 0){
         tyrano.plugin.kag.ftag.startTag("glink", {
             color: "ts22",
             text: item.label,
-            x: "100",
+            x: 200,
             y: 200 + (i * 100),
             width: "800",
             target: "*on_select",

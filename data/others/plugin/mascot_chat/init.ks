@@ -362,6 +362,8 @@
                     if (loveUpVal !== 0) {
                         var current = parseInt(f.love_level) || 0;
                         f.love_level = current + loveUpVal; 
+                        if(f.love_level < 0) f.love_level = 0;
+                        if(f.love_level > 100) f.love_level = 100;
                         
                         console.error(`好感度 ${loveUpVal} 、 現在: ${f.love_level}`);
                         if(loveUpVal > 0){
