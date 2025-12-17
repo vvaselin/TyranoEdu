@@ -1,5 +1,5 @@
 ;=========================================
-; 会話モード (Talk Mode) メインシナリオ
+; 会話モード (Talk Mode) - 復習クイズ
 ;=========================================
 *start
 
@@ -8,10 +8,11 @@
 [start_keyconfig]
 
 [bg storage="room.jpg" time="0"]
-; モカの基本定義
 [chara_new name="mocha" storage="chara/mocha/normal.png" jname="宮舞モカ"]
+[chara_show name="mocha" width=600 top=100]
+@layopt layer="message0" visible=true
 
-;表情の定義 
+; 表情定義 
 [chara_face name="mocha" face="normal" storage="chara/mocha/normal.png" ]
 [chara_face name="mocha" face="oko" storage="chara/mocha/oko.png" ]
 [chara_face name="mocha" face="tere" storage="chara/mocha/tere.png" ]
@@ -33,89 +34,47 @@
 [chara_face name="mocha" face="iya" storage="chara/mocha/iya.png" ]
 [chara_face name="mocha" face="akire" storage="chara/mocha/akire.png" ]
 
-[chara_show name="mocha" width=600 top=100]
-@layopt layer="message0" visible=true
-
-; 変数初期化
+;-----------------------------------------
+; 変数初期化 & クイズ開始
+;-----------------------------------------
 [iscript]
 f.talk_history = [];
 f.script_queue = [];
-f.user_input = "";
+f.quiz_count = 0;      // 現在の問題数
+f.quiz_limit = 3;      // 最大問題数
+f.user_input = "QUIZ_START"; // 初回トリガー
 [endscript]
 
-;-----------------------------------------
-; 入力待ち状態 (Wait Input)
-;-----------------------------------------
-*wait_input
-[cm]
-
-[html]
-<div style="position: absolute; 
-    top: 450px; 
-    left: 500px; 
-    transform: 
-    translateX(-50%); 
-    width: 600px; 
-    z-index: 999; 
-    text-align: center;"
->
-    <input type="text" id="user_input_field" placeholder="メッセージを入力..." 
-    style="width: 70%; 
-        padding: 12px; 
-        font-size: 18px; 
-        border-radius: 30px; 
-        border: 2px solid #aaa; 
-        outline: none;">
-    <button id="send_btn" 
-    style="padding: 12px 24px; 
-        font-size: 18px; 
-        cursor: pointer; 
-        background-color: #555; 
-        color: white; border: none; 
-        border-radius: 30px; 
-        margin-left: 10px;">送信</button>
-</div>
-<script>
-    $("#user_input_field").on("keydown", function(e) {
-        if (e.key === 'Enter') $("#send_btn").click();
-    });
-    $("#send_btn").off("click").on("click", function(){
-        var val = $("#user_input_field").val();
-        if(val){
-            tyrano.plugin.kag.stat.f.user_input = val;
-            tyrano.plugin.kag.ftag.startTag("jump", {target:"*send_api"});
-        }
-    });
-    $("#user_input_field").focus();
-</script>
-[endhtml]
-[s]
+; 自動的に送信へジャンプ
+[jump target="*send_api"]
 
 ;-----------------------------------------
 ; API送信処理
 ;-----------------------------------------
 *send_api
 [cm]
-[html]
-<script>
-    $("#user_input_field").remove();
-    $("#send_btn").remove();
-</script>
-[endhtml]
 
-; 履歴に追加
+; 履歴に追加（QUIZ_STARTは見せないが、回答は見せる）
 [iscript]
-f.talk_history.push({role: "user", content: f.user_input});
+if(f.user_input !== "QUIZ_START"){
+    f.talk_history.push({role: "user", content: f.user_input});
+}
 [endscript]
 
-#あなた
-[emb exp="f.user_input"][p]
+; 初回以外はユーザーの回答を表示
+[if exp="f.user_input != 'QUIZ_START'"]
+    #あなた
+    [emb exp="f.user_input"][p]
+    ; カウントアップ
+    [iscript]
+    f.quiz_count += 1;
+    [endscript]
+[endif]
 
 #
 （……）
 
 [iscript]
-// 通信タイムアウト設定を追加してリクエスト
 $.ajax({
     url: "/api/talk",
     type: "POST",
@@ -123,24 +82,21 @@ $.ajax({
         user_id: f.user_id || "guest", 
         message: f.user_input,
         history: f.talk_history,
-        mode: "quiz", // 必要に応じて切り替え
-        love_level: f.love_level || 0
+        mode: "quiz",
+        love_level: f.love_level || 0,
+        quiz_count: f.quiz_count  // 現在の問題数を送信
     }),
     contentType: "application/json",
     dataType: "json",
-    timeout: 30000, // 30秒でタイムアウト
+    timeout: 30000,
     success: function(data) {
         f.script_queue = data.script;
         tyrano.plugin.kag.ftag.startTag("jump", {target:"*play_loop"});
     },
-    error: function(xhr, status, error) {
-        console.error("API Error:", status, error);
-        // エラー時は汎用メッセージを入れる
-        f.script_queue = [
-            {type: "emotion", content: "sad"},
-            {type: "text", content: "（……ごめん、ちょっと調子が悪いみたい……もう一回言ってくれる？）"}
-        ];
-        tyrano.plugin.kag.ftag.startTag("jump", {target:"*play_loop"});
+    error: function(e) {
+        console.error(e);
+        alert("通信エラーが発生しました");
+        tyrano.plugin.kag.ftag.startTag("jump", {target:"*end_session"});
     }
 });
 [endscript]
@@ -152,8 +108,18 @@ $.ajax({
 *play_loop
 [iscript]
 if (!f.script_queue || f.script_queue.length === 0) {
-    tyrano.plugin.kag.ftag.startTag("jump", {target: "*wait_input"});
+    // キュー消化完了
+    if (f.quiz_count >= f.quiz_limit) {
+        // 規定回数終わったら終了へ
+        tyrano.plugin.kag.ftag.startTag("jump", {target: "*end_session"});
+    } else {
+        // 次の入力を待つ（選択肢待ち）
+        // ※ 本来はAPIからのJSON末尾に選択肢が含まれているはずなので、
+        //   ここに来る＝選択肢表示済みで[s]しているか、次の処理待ち
+        //   何もしなくて良い（選択肢で *on_select に飛ぶため）
+    }
 } else {
+    // アクション実行
     f.current_act = f.script_queue.shift();
     
     if (f.current_act.type === "text") {
@@ -169,12 +135,12 @@ if (!f.script_queue || f.script_queue.length === 0) {
 [endscript]
 [s]
 
+;--- 各アクション処理 ---
 *act_text
 [cm]
 #モカ
 [emb exp="f.current_act.content"]
 [iscript]
-// AIの発言も履歴に保存
 f.talk_history.push({role: "assistant", content: f.current_act.content});
 [endscript]
 [p]
@@ -186,24 +152,34 @@ f.talk_history.push({role: "assistant", content: f.current_act.content});
 
 *act_choices
 [iscript]
+// 選択肢表示
 if(f.current_act.choices && f.current_act.choices.length > 0){
     f.current_act.choices.forEach(function(item, i){
         tyrano.plugin.kag.ftag.startTag("glink", {
             color: "ts22",
             text: item.label,
-            x: 200,
-            y: 200 + (i * 100),
-            width: "800",
+            x: "190",
+            y: 200 + (i * 80),
+            width: "1000",
             target: "*on_select",
             exp: "f.user_input = '" + item.value + "'"
         });
     });
-} else {
-    // 万が一選択肢が空ならスキップ
-    tyrano.plugin.kag.ftag.startTag("jump", {target: "*play_loop"});
 }
 [endscript]
 [s]
 
+;--- 選択肢クリック時 ---
 *on_select
+[cm]
 [jump target="*send_api"]
+
+;-----------------------------------------
+; セッション終了 (select.ksへ戻る)
+;-----------------------------------------
+*end_session
+[cm]
+#
+（復習を終了します）[p]
+[chara_hide name="mocha" time="0" ]
+[jump storage="select.ks"]
