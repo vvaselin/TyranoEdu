@@ -2,7 +2,6 @@
 *start
 [hidemenubutton] 
 [clearfix]
-[cm]
 [bg storage="rouka.jpg" time="0"]
 @layopt layer="message0" visible=false
 [stop_keyconfig]
@@ -89,9 +88,6 @@ $(".logout_btn").off("click").on("click", async function() {
     tyrano.plugin.kag.ftag.startTag("jump", { storage: "auth.ks" });
 });
 [endscript]
-
-; トークモードへ移動
-[glink color="ts22" text="トークモード" storage="conversation.ks" target="*start" x="850" y="70" width="300" size="30"]
 
 [s]
 
