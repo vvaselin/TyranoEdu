@@ -1,4 +1,4 @@
-[macro name="ai_chat_show"]
+[macro name="mascot_chat_show"]
 
     ; 必要なCSSを読み込む
     [loadcss file="./data/others/plugin/mascot_chat/mascot.css"]

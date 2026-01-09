@@ -6,7 +6,7 @@
 [stop_keyconfig]
 
 ; AIチャットUIを初期化して表示
-[ai_chat_show]
+[mascot_chat_show]
 
 [show_doc_button file="sample.md"]
 

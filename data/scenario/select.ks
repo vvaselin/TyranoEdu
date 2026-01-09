@@ -19,8 +19,8 @@
     var current_task = "task" + i;
     var prev_task    = "task" + (i - 1);
     
-    // Y座標を計算 (70px からスタートし、100pxずつずらす)
-    var y_pos = 70 + (i - 1) * 100;
+    // Y座標を計算
+    var y_pos = 100 + (i - 1) * 100;
     
     // ロック判定
     // 1問目は常に解放。2問目以降は「前の課題」がクリア済みなら解放。
@@ -76,8 +76,7 @@
     [glink color="mybtn_locked" storage="select.ks" target="*locked" text="講義1 (Lock)" width="300" size="30" x="500" y="70"]
 [endif]
 
-; ログアウトボタン
-[button name="logout_btn" graphic="../others/plugin/theme_kopanda_22_HD_anim/image/button/title.png" enterimg="../others/plugin/theme_kopanda_22_HD_anim/image/button/title2.png" x=1180 y=20 height=50 role="sleep" fix="true"]
+[glink color="mybtn_09" storage="home.ks" text="戻る↩" target="*start" width="200" size="20" x="50" y="10"]
 
 [iscript]
 $(".logout_btn").off("click").on("click", async function() {

@@ -10,6 +10,7 @@
 [plugin name="cpp_executor"]
 [plugin name="glink_ex"]
 [plugin name="mascot_chat"]
+[plugin name="ai_chat"]
 [plugin name="doc_viewer"]
 [plugin name="for"]
 [plugin name="theme_kopanda_22_HD_anim"]
@@ -103,16 +104,16 @@ $.ajax({
             }
             
             $("#loading_overlay").fadeOut(300, function(){
-                tyrano.plugin.kag.ftag.startTag("jump", { storage: "select.ks", target: "*start" });
+                tyrano.plugin.kag.ftag.startTag("jump", { storage: "home.ks", target: "*start" });
             });
         });
 });
 [endscript]
 
 [wait time=500]
-[jump storage="select.ks" target="*start"]
+[jump storage="home.ks" target="*start"]
 
 [s]
 
 *menu_start
-[jump storage="select.ks" target="*start"]
+[jump storage="home.ks" target="*start"]
