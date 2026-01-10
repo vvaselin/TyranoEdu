@@ -19,6 +19,8 @@
 [loadcss file="./data/others/css/modal_dark_theme.css"]
 [loadcss file="./data/others/plugin/css/mystyle.css"]
 
+[chara_new name name="mocha" storage="chara/mocha/normal.png" jname="モカ"]
+
 ; --- 課題データの読み込み (認証チェックの前に移動！) ---
 [eval exp="f.current_task_id = sf.current_task_id || 'task1'"]
 [iscript]

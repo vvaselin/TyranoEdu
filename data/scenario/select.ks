@@ -2,7 +2,7 @@
 *start
 [hidemenubutton] 
 [clearfix]
-[bg storage="rouka.jpg" time="0"]
+[bg storage="room_f.jpg" time="0"]
 @layopt layer="message0" visible=false
 [stop_keyconfig]
 
@@ -66,7 +66,7 @@
 [nextfor]
 
 ; -----------------------------------------------------------
-; その他のボタン（講義、ログアウト）
+; その他のボタン
 ; -----------------------------------------------------------
 
 ; 講義ボタン（例：課題1クリアで解放）
@@ -77,16 +77,6 @@
 [endif]
 
 [glink color="mybtn_09" storage="home.ks" text="戻る↩" target="*start" width="200" size="20" x="50" y="10"]
-
-[iscript]
-$(".logout_btn").off("click").on("click", async function() {
-    if (!confirm("ログアウトしますか？")) return;
-    if (window.sb) await window.sb.auth.signOut();
-    TYRANO.kag.stat.f.user_id = null;
-    TYRANO.kag.stat.f.ai_memory = null;
-    tyrano.plugin.kag.ftag.startTag("jump", { storage: "auth.ks" });
-});
-[endscript]
 
 [s]
 

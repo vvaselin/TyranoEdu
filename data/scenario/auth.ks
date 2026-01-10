@@ -13,19 +13,56 @@
 
 [html]
 <div id="auth-box" style="
-    position: absolute; top: 50%; left: 50%; transform: translate(50%, 50%);
-    width: 360px; padding: 30px; background: rgba(20, 20, 30, 0.9);
-    border: 1px solid #444; border-radius: 8px; color: white; text-align: center; z-index: 10000; font-family: sans-serif;
+    position: absolute; 
+    transform: translate(50%, 40%);
+    width: 640px; 
+    padding:20px; 
+    background: rgba(20, 20, 30, 0.9);
+    border: 1px solid #444; 
+    border-radius: 8px; 
+    color: white; 
+    text-align: center; 
+    z-index: 10000; 
+    font-family: sans-serif;
+    font-size:30px; 
 ">
     <h3 style="margin-top:0;">LOGIN</h3>
-    <input type="email" id="email" placeholder="Email" style="width:100%; padding:10px; margin-bottom:10px; box-sizing:border-box;">
-    <input type="password" id="password" placeholder="Password" style="width:100%; padding:10px; margin-bottom:20px; box-sizing:border-box;">
+    <input type="email" id="email" placeholder="Email" style="width:100%; 
+        padding:10px; 
+        margin-bottom:10px; 
+        box-sizing:border-box;
+        font-size:24px;">
+    <input type="password" id="password" placeholder="Password" 
+        style="width:100%; 
+            padding:10px; 
+            margin-bottom:20px; 
+            box-sizing:border-box;
+            font-size:24px;">
     
     <div style="display:flex; gap:10px;">
-        <button id="btn-login" style="flex:1; padding:10px; cursor:pointer; background:#4CAF50; color:white; border:none;">ログイン</button>
-        <button id="btn-signup" style="flex:1; padding:10px; cursor:pointer; background:#2196F3; color:white; border:none;">新規登録</button>
+        <button id="btn-login" 
+            style="flex:1; 
+                padding:15px; 
+                cursor:pointer; 
+                background:#4CAF50; 
+                color:white; 
+                border:none;
+                border-radius:30px;
+                font-size:20px">ログイン</button>
+        <button id="btn-signup" 
+            style="flex:1; 
+                padding:15px; 
+                cursor:pointer; 
+                background:#2196F3; 
+                color:white; 
+                border:none;
+                border-radius:30px;
+                font-size:20px">新規登録</button>
     </div>
-    <p id="auth-msg" style="margin-top:15px; font-size:12px; color:#ffcc00; min-height:1.5em;"></p>
+    <p id="auth-msg" 
+        style="margin-top:15px;
+        color:#ffcc00; 
+        min-height:1.5em;"></p>
 </div>
 [endhtml]
 

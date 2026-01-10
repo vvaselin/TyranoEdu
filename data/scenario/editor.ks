@@ -1,7 +1,7 @@
 *start
 [mask time=1000]
 [clearfix]
-[bg storage="room.jpg" time="0"]
+[bg storage="黒板.png" time="0"]
 @layopt layer="message0" visible=false
 [stop_keyconfig]
 
