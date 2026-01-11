@@ -1,6 +1,6 @@
 *start
+[mask time=500]
 [hidemenubutton] 
-
 [clearfix]
 [bg storage="rouka.jpg" time="0"]
 @layopt layer="message0" visible=false
@@ -31,6 +31,7 @@ $(".logout_btn").off("click").on("click", async function() {
 });
 [endscript]
 
+[mask_off time=500]
 [s]
 
 *toSelect

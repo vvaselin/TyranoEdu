@@ -1,6 +1,6 @@
 ; select.ks - 課題選択画面
 *start
-[hidemenubutton] 
+[mask time=500]
 [clearfix]
 [bg storage="room_f.jpg" time="0"]
 @layopt layer="message0" visible=false
@@ -78,6 +78,7 @@
 
 [glink color="mybtn_09" storage="home.ks" text="戻る↩" target="*start" width="200" size="20" x="50" y="10"]
 
+[mask_off time=500]
 [s]
 
 ; -----------------------------------------------------------
