@@ -71,9 +71,9 @@
 
 ; 講義ボタン（例：課題1クリアで解放）
 [if exp="f.cleared_tasks && f.cleared_tasks['task1']"]
-    [glink color="mybtn_10" storage="select.ks" target="*lecture1" text="講義1" width="300" size="30" x="500" y="70"]
+    [glink color="mybtn_10" storage="select.ks" target="*lecture1" text="講義1" width="300" size="30" x="500" y="100"]
 [else]
-    [glink color="mybtn_locked" storage="select.ks" target="*locked" text="講義1 (Lock)" width="300" size="30" x="500" y="70"]
+    [glink color="mybtn_locked" storage="select.ks" target="*locked" text="講義1 (Lock)" width="300" size="30" x="500" y="100"]
 [endif]
 
 [glink color="mybtn_09" storage="home.ks" text="戻る↩" target="*start" width="200" size="20" x="50" y="10"]

@@ -68,10 +68,10 @@ if(TG.config.alreadyReadTextColor != "default") {
 
 
 ; Q.Save
-[button name="role_button" role="quicksave" graphic="&tf.sysbtn_img_path + 'qsave.png'" enterimg="&tf.sysbtn_img_path + 'qsave2.png'" activeimg="&tf.sysbtn_img_path + 'qsave3.png'" width="&tf.sysbtn_img_width" height="&tf.sysbtn_img_height" x="&tf.sysbtn_posx[0]" y="&tf.sysbtn_posy"]
+;[button name="role_button" role="quicksave" graphic="&tf.sysbtn_img_path + 'qsave.png'" enterimg="&tf.sysbtn_img_path + 'qsave2.png'" activeimg="&tf.sysbtn_img_path + 'qsave3.png'" width="&tf.sysbtn_img_width" height="&tf.sysbtn_img_height" x="&tf.sysbtn_posx[0]" y="&tf.sysbtn_posy"]
 
 ; Q.Load
-[button name="role_button" role="quickload" graphic="&tf.sysbtn_img_path + 'qload.png'" enterimg="&tf.sysbtn_img_path + 'qload2.png'" activeimg="&tf.sysbtn_img_path + 'qload3.png'" width="&tf.sysbtn_img_width" height="&tf.sysbtn_img_height" x="&tf.sysbtn_posx[1]" y="&tf.sysbtn_posy"]
+;[button name="role_button" role="quickload" graphic="&tf.sysbtn_img_path + 'qload.png'" enterimg="&tf.sysbtn_img_path + 'qload2.png'" activeimg="&tf.sysbtn_img_path + 'qload3.png'" width="&tf.sysbtn_img_width" height="&tf.sysbtn_img_height" x="&tf.sysbtn_posx[1]" y="&tf.sysbtn_posy"]
 
 ; Backlog
 [button name="role_button" role="backlog" graphic="&tf.sysbtn_img_path + 'log.png'" enterimg="&tf.sysbtn_img_path + 'log2.png'" activeimg="&tf.sysbtn_img_path + 'log3.png'" width="&tf.sysbtn_img_width" height="&tf.sysbtn_img_height" x="&tf.sysbtn_posx[2]" y="&tf.sysbtn_posy"]
@@ -89,7 +89,7 @@ if(TG.config.alreadyReadTextColor != "default") {
 [button name="role_button" role="menu" graphic="&tf.sysbtn_img_path + 'menu.png'" enterimg="&tf.sysbtn_img_path + 'menu2.png'" activeimg="&tf.sysbtn_img_path + 'menu3.png'" width="80" height="84" x="1176" y="24"]
 
 ; Close
-[button name="role_button" role="window" graphic="&tf.sysbtn_img_path + 'close.png'" enterimg="&tf.sysbtn_img_path + 'close2.png'" width="24" height="24" x="1198" y="564"]
+;[button name="role_button" role="window" graphic="&tf.sysbtn_img_path + 'close.png'" enterimg="&tf.sysbtn_img_path + 'close2.png'" width="24" height="24" x="1198" y="564"]
 
 [endmacro]
 
@@ -100,10 +100,10 @@ if(TG.config.alreadyReadTextColor != "default") {
 
 ;=================================================================================
 ; セーブ画面
-[sysview type="save" storage="./data/others/plugin/theme_kopanda_22_HD_anim/html/save.html"]
+;[sysview type="save" storage="./data/others/plugin/theme_kopanda_22_HD_anim/html/save.html"]
 
 ; ロード画面
-[sysview type="load" storage="./data/others/plugin/theme_kopanda_22_HD_anim/html/load.html"]
+;[sysview type="load" storage="./data/others/plugin/theme_kopanda_22_HD_anim/html/load.html"]
 
 ; バックログ画面
 [sysview type="backlog" storage="./data/others/plugin/theme_kopanda_22_HD_anim/html/backlog.html"]

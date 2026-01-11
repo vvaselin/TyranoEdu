@@ -1,5 +1,6 @@
 *start
 [hidemenubutton] 
+
 [clearfix]
 [bg storage="rouka.jpg" time="0"]
 @layopt layer="message0" visible=false
@@ -12,7 +13,7 @@
 [glink color="mybtn_perspective mybtn_R" text="課題" target="*toSelect" x="600" y="100" width="300" size="50"]
 
 ; 資料
-[glink color="mybtn_perspective mybtn_R" text="資料" x="850" y="235" width="140" size="30"]
+[glink color="mybtn_perspective mybtn_R" text="資料" target="*toDocment" x="850" y="235" width="140" size="30"]
 
 [chara_show name="mocha" left=80  width=680 top =90]
 
@@ -37,3 +38,8 @@ $(".logout_btn").off("click").on("click", async function() {
 [clearfix]
 [chara_hide name="mocha" time=0]
 [jump storage="select.ks" target="*start"]
+
+*toDocment
+[clearfix]
+[chara_hide name="mocha" time=0]
+[jump storage="doc.ks" target="*start"]

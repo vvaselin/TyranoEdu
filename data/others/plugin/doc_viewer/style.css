@@ -256,3 +256,62 @@
 .doc-content li { margin-bottom: 8px; }
 .doc-content a { color: #66b3ff; text-decoration: none; }
 .doc-content a:hover { text-decoration: underline; }
+
+/* --- フルスクリーンモード用の追加 --- */
+.doc-viewer-container.full-mode {
+    top: 0px;
+    left: 0px;
+    width: 1280px;
+    height: 720px;
+    pointer-events: auto;
+}
+
+/* フルモード時はハンバーガーボタンと閉じるボタンを隠す（必要に応じて） */
+.doc-viewer-container.full-mode .doc-hamburger {
+    display: none;
+}
+
+/* パネル内部を横並びにする準備 */
+.doc-viewer-container.full-mode .doc-panel {
+    display: flex;
+    flex-direction: column;
+    transform: translateX(0);
+}
+
+/* ヘッダーの下のコンテンツエリアを横並びに */
+.doc-viewer-container.full-mode .doc-panel-body {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* サイドバーを固定表示に変更 */
+.doc-viewer-container.full-mode .doc-sidebar {
+    position: static; /* 絶対配置を解除 */
+    width: 300px;     /* メニュー幅を少し広めに */
+    height: 100%;
+    transform: translateX(0);
+    border-right: 2px solid #444;
+    background-color: #252525;
+    flex-shrink: 0;
+}
+
+/* 記事エリアのフォントサイズアップ */
+.doc-viewer-container.full-mode .doc-content {
+    font-size: 22px; /* 全体の文字を大きく */
+    padding: 40px;
+}
+
+.doc-viewer-container.full-mode .doc-content h1 { font-size: 32px; }
+.doc-viewer-container.full-mode .doc-content h2 { font-size: 26px; }
+.doc-viewer-container.full-mode .doc-content p  { font-size: 22px; }
+
+/* メニュー項目のフォントサイズも調整 */
+.doc-viewer-container.full-mode .doc-menu-item {
+    font-size: 20px;
+    padding: 17px 22px;
+}
+.doc-viewer-container.full-mode .doc-menu-category {
+    font-size: 20px;
+}
