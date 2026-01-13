@@ -8,7 +8,7 @@
 [stop_keyconfig]
 
 ; トークモードへ移動
-[glink color="ts22" text="トークモード" target="*developing" x="850" y="570" width="300" size="30"]
+[glink color="ts22" text="トークモード" target="*developing" x="850" y="570" width="300" size="30" cond="f.user_role == 'experimental' "]
 
 ; 課題選択画面へ移動
 [glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>edit_note</span> 課題" target="*toSelect" x="600" y="100" width="350" size="55"]
