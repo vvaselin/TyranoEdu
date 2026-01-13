@@ -117,4 +117,4 @@ if(TYRANO.kag.stat.f.all_tasks){
 [endscript]
 
 ; エディタ画面へ移動
-[jump storage="editor.ks" target="*start"]
+[jump storage="editor_control.ks" target="*start"]
