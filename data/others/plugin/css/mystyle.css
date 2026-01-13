@@ -525,7 +525,7 @@
 
 /* 1. ボタンが乗る親要素（レイヤー）に遠近感を持たせる */
 .layer_free, .layer_fix {
-  perspective: 700px;
+  perspective: 600px;
   perspective-origin: center; /* 画面中央が焦点になる */
 }
 
@@ -534,7 +534,7 @@
   display: inline-flex !important; /* glinkの指定を上書き */
   align-items: center;
   justify-content: center;
-  gap: 10px; /* アイコンと文字の間隔 */
+  gap: 15px; /* アイコンと文字の間隔 */
   
   position: relative;
   padding: .6em 2em;
@@ -547,7 +547,7 @@
 }
 
 .mybtn_perspective .material-icons {
-  font-size: 1.2em;
+  font-size: 1.6em;
   vertical-align: middle;
 }
 

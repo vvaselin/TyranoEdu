@@ -7,15 +7,15 @@
 [stop_keyconfig]
 
 ; トークモードへ移動
-[glink color="ts22" text="トークモード" storage="conversation.ks" target="*start" x="850" y="570" width="300" size="30"]
+[glink color="ts22" text="トークモード" target="*developing" x="850" y="570" width="300" size="30"]
 
 ; 課題選択画面へ移動
-[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>assignment</span> 課題" target="*toSelect" x="600" y="100" width="350" size="55"]
+[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>edit_note</span> 課題" target="*toSelect" x="600" y="100" width="350" size="55"]
 
 ; 資料
-[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>description</span> 資料" target="*toDocment" x="890" y="255" width="140" size="30"]
+[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>description</span> 資料" target="*toDocment" x="895" y="265" width="140" size="30"]
 ;キャラ情報
-[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>person</span> キャラ" x="630" y="270" width="135" size="26"]
+[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>person</span> キャラ" target="*developing"  x="630" y="280" width="135" size="26"]
 
 [chara_show name="mocha" left=80  width=680 top =90]
 
@@ -46,3 +46,9 @@ $(".logout_btn").off("click").on("click", async function() {
 [clearfix]
 [chara_hide name="mocha" time=0]
 [jump storage="doc.ks" target="*start"]
+
+*developing
+[iscript]
+alert("ただいま開発中です。");
+[endscript]
+[jump target="*start" ]
