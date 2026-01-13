@@ -1,5 +1,6 @@
 *start
 [mask time=1000]
+[hidemenubutton]
 [clearfix]
 [bg storage="黒板.png" time="0"]
 @layopt layer="message0" visible=false
@@ -213,13 +214,12 @@ if (task_data) {
 *execute_code
 ; モーダルウィンドウに「実行中...」と表示
 [iscript]
+    window.ai_chat_set_busy(true);
     var $dialog = $("#result_modal");
     // コピーボタン無効化
     $("#modal_copy_button_id").button("disable");
-    
     // 中身を更新
     $("#result_modal_content").text("実行中...");
-    
     // ダイアログが閉じていたら開く
     if (!$dialog.dialog("isOpen")) {
         $dialog.dialog("open");
@@ -235,7 +235,7 @@ if (task_data) {
 ; 完了後、モーダルウィンドウの結果を上書きする
 [iscript]
     // 実行結果を変数から取得
-    var result_text = f.execution_result || "（何も出力されなかったよ）";
+    var result_text = f.execution_result || "（出力なし）";
     
     // モーダルの中身を更新
     $("#result_modal_content").text(result_text);
@@ -244,12 +244,15 @@ if (task_data) {
     
     // 実行時間
     console.error("実行時間：", (performance.now() - f.starttime), "ms");
+    window.ai_chat_send("[SYSTEM] コードの実行が完了しました。結果: " + result.substring(0, 100), true);
+    window.ai_chat_set_busy(false);
 [endscript]
 
 [return]
 
 *submit
 [iscript]
+    window.ai_chat_set_busy(true);
     $("#grade-result-area").show();
     $("#grade-content").html("<span style='color:gray;'>採点中...</span>");
 [endscript]
@@ -259,21 +262,18 @@ if (task_data) {
 [iscript]
 // 課題データ
 var task = TYRANO.kag.stat.f.all_tasks[TYRANO.kag.stat.f.current_task_id];
-var payload = {
-    user_id: TYRANO.kag.stat.f.user_id,
-    task_id: TYRANO.kag.stat.f.current_task_id,
-    code: TYRANO.kag.stat.f['my_code'],     
-    output: TYRANO.kag.stat.f.execution_result,
-    task_desc: task.description,               
-    expected_output: task.expected_output || ""
-};
 
 $.ajax({
     url: "/api/grade",
     type: "POST",
-    data: JSON.stringify(payload),
+    data: JSON.stringify({
+        user_id: TYRANO.kag.stat.f.user_id,
+        task_id: TYRANO.kag.stat.f.current_task_id,
+        code: TYRANO.kag.stat.f['my_code'],
+        output: TYRANO.kag.stat.f.execution_result,
+        task_desc: task.description
+    }),
     contentType: "application/json",
-    dataType: "json",
     
     success: function(data) {
         var html = "";
@@ -294,27 +294,12 @@ $.ajax({
             alertify.error("不合格...");
         }
 
-        var bonusMsg = "";
-        if (data.is_new_record) {
-             bonusMsg = " (自己ベスト更新！)";
-             // ここでクライアント側の好感度も増やしておく
-             if(data.bonus_love > 0) {
-                var current = parseInt(TYRANO.kag.stat.f.love_level) || 0;
-                TYRANO.kag.stat.f.love_level = current + data.bonus_love;
-                alertify.success("ハイスコアボーナス! 好感度+" + data.bonus_love);
-             }
-        }
-
-        // ここで採点結果だけを話させる 
-        if (window.mascot_chat_trigger) {
-             // 点数と理由をAIに伝えて、プロンプトの指示通りに反応してもらう
-             var msg = "[SYSTEM] 採点結果: " + data.score + "点。\n評価コメント: " + data.reason;
-             window.mascot_chat_trigger(msg);
-        }
+        var report = "[SYSTEM] 採点結果は " + data.score + " 点でした。評価: " + data.reason;
+        window.ai_chat_set_busy(false);
     },
     error: function() {
         $("#grade-content").text("採点サーバーとの通信に失敗しました。");
-        // 通信エラー時もAIに反応させたい場合はここに追記
+        window.ai_chat_set_busy(false);
     }
 });
 [endscript]
@@ -328,15 +313,7 @@ if ($dialog.dialog("isOpen")) $dialog.dialog("close");
 
 $(".ai-chat-container").css("pointer-events", "none");
 
-// 保存処理を実行し、完了後に *back_real へジャンプ
-if (window.mascot_chat_save) {
-    window.mascot_chat_save(function() {
-        tyrano.plugin.kag.ftag.startTag("jump", {target: "*back_real"});
-    });
-} else {
-    // 関数がない場合のフォールバック
-    tyrano.plugin.kag.ftag.startTag("jump", {target: "*back_real"});
-}
+tyrano.plugin.kag.ftag.startTag("jump", {target: "*back_real"});
 [endscript]
 [s]
 
