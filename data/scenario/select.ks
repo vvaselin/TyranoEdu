@@ -2,6 +2,7 @@
 *start
 [mask time=500]
 [clearfix]
+[wait time=500]
 [bg storage="room_f.jpg" time="0"]
 @layopt layer="message0" visible=false
 [stop_keyconfig]

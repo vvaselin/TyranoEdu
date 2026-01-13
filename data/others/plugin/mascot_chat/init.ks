@@ -5,6 +5,8 @@
     [loadjs storage="./data/others/js/marked.min.js"] 
     [loadjs storage="./data/others/js/purify.min.js"] 
 
+    [chara_show name="mocha" left=950  width=430 top =420]
+
     ; [html]タグでUIの骨格を生成する
     [html]
     <div class="ai-chat-container" style="display:none;">
@@ -32,7 +34,6 @@
             </div>
         </div>
 
-        <img src="./data/fgimage/chara/mocha/normal.png" class="ai-chat-sprite-bottom">
 
         <div class="love-gauge-box">
             <div class="love-icon">♥</div>
@@ -393,18 +394,12 @@
 
                     var imgPath = charaDir + emotion + ".png";
 
-                    // 画像が存在しない場合の対策（jQueryのerrorイベントはimgタグに使う）
-                    var $img = $(".ai-chat-sprite-bottom");
-                    $img.off("error").on("error", function() {
-                        // 指定した感情画像がない場合は normal.png に戻す
-                        $(this).attr("src", charaDir + "normal.png");
-                    });
-                    $img.attr("src", imgPath);
+                    tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:emotion, time:200});
                 })
                 .catch(error => {
                     console.error("AIチャットエラー:", error);
                     addMessage("エラー", "上手くお話出来ませんでした。", false);
-                    $(".ai-chat-sprite-bottom").attr("src", "./data/fgimage/chara/mocha/sad.png");
+                    tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:"sad", time:200});
                 })
                 .finally(() => {
                     inputField.prop("disabled", false).attr("placeholder", "メッセージを入力...").focus();
@@ -436,6 +431,7 @@
             // グローバル関数として公開
             window.mascot_chat_save = function(callback) {
                 var history = getHistory();
+                tyrano.plugin.kag.ftag.startTag("chara_hide", {name:"mocha", time:200});
                 
                 // ▼▼▼ ローディング表示 ▼▼▼
                 if ($("#loading_overlay").length === 0) {
@@ -562,13 +558,7 @@
 
                     var imgPath = charaDir + emotion + ".png";
 
-                    // 画像が存在しない場合の対策（jQueryのerrorイベントはimgタグに使う）
-                    var $img = $(".ai-chat-sprite-bottom");
-                    $img.off("error").on("error", function() {
-                        // 指定した感情画像がない場合は normal.png に戻す
-                        $(this).attr("src", charaDir + "normal.png");
-                    });
-                    $img.attr("src", imgPath);
+                    tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:emotion, time:200});
                 })
                 .catch(error => {
                     console.error("Trigger Error:", error);
