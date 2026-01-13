@@ -1,5 +1,6 @@
 *start
-[mask time=500]
+[mask time=1000]
+[wait time=1000]
 [hidemenubutton] 
 [clearfix]
 [bg storage="rouka.jpg" time="0"]
@@ -15,9 +16,9 @@
 ; 資料
 [glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>description</span> 資料" target="*toDocment" x="895" y="265" width="140" size="30"]
 ;キャラ情報
-[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>person</span> キャラ" target="*developing"  x="630" y="280" width="135" size="26"]
+[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>person</span> キャラ" target="*developing"  x="630" y="280" width="135" size="26" cond="f.user_role == 'experimental' "]
 
-[chara_show name="mocha" left=80  width=680 top =90]
+[chara_show name="mocha" left=80  width=680 top =90 cond="f.user_role == 'experimental' "]
 
 ; ログアウトボタン
 [button name="logout_btn" graphic="../others/plugin/theme_kopanda_22_HD_anim/image/button/title.png" enterimg="../others/plugin/theme_kopanda_22_HD_anim/image/button/title2.png" x=1180 y=20 height=50 role="sleep" fix="true"]

@@ -87,7 +87,6 @@ sb.auth.getSession().then(({ data: { session } }) => {
 ; 判定待ち
 [s]
 
-
 ; --- ユーザープロフィール読み込み ---
 *load_user_data
 
@@ -108,6 +107,8 @@ $.ajax({
     dataType: 'json',
     success: function(data) {
         TYRANO.kag.stat.f.love_level = data.love_level || 0;
+        TYRANO.kag.stat.f.user_role = data.role || "experimental";
+        console.error("User Role:", TYRANO.kag.stat.f.user_role);
         TYRANO.kag.stat.f.ai_memory = data;
     },
     error: function() {
