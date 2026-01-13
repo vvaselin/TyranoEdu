@@ -11,12 +11,12 @@
 [glink color="ts22" text="トークモード" target="*developing" x="850" y="570" width="300" size="30" cond="f.user_role == 'experimental' "]
 
 ; 課題選択画面へ移動
-[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>edit_note</span> 課題" target="*toSelect" x="600" y="100" width="350" size="55"]
+[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xf88c;</span> 課題" target="*toSelect" x="600" y="100" width="350" size="55"]
 
 ; 資料
-[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>description</span> 資料" target="*toDocment" x="895" y="265" width="140" size="30"]
+[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xe0e0;</span> 資料" target="*toDocment" x="910" y="265" width="135" size="30"]
 ;キャラ情報
-[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>person</span> キャラ" target="*developing"  x="630" y="280" width="135" size="26" cond="f.user_role == 'experimental' "]
+[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xe7fd;</span> キャラ" target="*developing"  x="625" y="280" width="135" size="26" cond="f.user_role == 'experimental' "]
 
 [chara_show name="mocha" left=80  width=680 top =90 cond="f.user_role == 'experimental' "]
 

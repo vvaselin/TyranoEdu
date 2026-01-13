@@ -525,7 +525,7 @@
 
 /* 1. ボタンが乗る親要素（レイヤー）に遠近感を持たせる */
 .layer_free, .layer_fix {
-  perspective: 600px;
+  perspective: 500px;
   perspective-origin: center; /* 画面中央が焦点になる */
 }
 
@@ -561,11 +561,22 @@
   pointer-events: none;
 }
 
-/* 3. 配置によって回転方向を変える（これで焦点が合う） */
-.mybtn_L { transform-origin: left center; transform: rotateY(25deg); }
-.mybtn_R { transform-origin: right center; transform: rotateY(-25deg); }
-
-.mybtn_L:hover, .mybtn_R:hover {
+/* 左配置用：元の 25deg を維持しつつ拡大 */
+.mybtn_L { 
+  transform-origin: left center; 
+  transform: rotateY(25deg); 
+}
+.mybtn_L:hover {
   background-color: #2c2c2c;
-  transform: rotateY(inherit) scale(1.01); 
+  transform: rotateY(25deg) scale(1.05); /* inheritではなく数値を直接書く */
+}
+
+/* 右配置用：元の -25deg を維持しつつ拡大 */
+.mybtn_R { 
+  transform-origin: right center; 
+  transform: rotateY(-25deg); 
+}
+.mybtn_R:hover {
+  background-color: #2c2c2c;
+  transform: rotateY(-25deg) scale(1.05); /* inheritではなく数値を直接書く */
 }
