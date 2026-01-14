@@ -244,64 +244,75 @@ if (task_data) {
     
     // 実行時間
     console.error("実行時間：", (performance.now() - f.starttime), "ms");
-    window.ai_chat_send("[SYSTEM] コードの実行が完了しました。結果: " + result.substring(0, 100), true);
-    window.ai_chat_set_busy(false);
 [endscript]
 
 [return]
 
 *submit
 [iscript]
-    window.ai_chat_set_busy(true);
     $("#grade-result-area").show();
     $("#grade-content").html("<span style='color:gray;'>採点中...</span>");
 [endscript]
-;コード実行
+
+; コード実行 (silent="true" でAIが実行結果を喋らないように制御)
 [execute_cpp code=&f.my_code silent="true"]
-; 採点処理
+
 [iscript]
-// 課題データ
-var task = TYRANO.kag.stat.f.all_tasks[TYRANO.kag.stat.f.current_task_id];
-
-$.ajax({
-    url: "/api/grade",
-    type: "POST",
-    data: JSON.stringify({
-        user_id: TYRANO.kag.stat.f.user_id,
-        task_id: TYRANO.kag.stat.f.current_task_id,
-        code: TYRANO.kag.stat.f['my_code'],
-        output: TYRANO.kag.stat.f.execution_result,
-        task_desc: task.description
-    }),
-    contentType: "application/json",
+(function(){
     
-    success: function(data) {
-        var html = "";
-        var scoreColor = (data.score >= 80) ? "#00ff00" : "#ff4444";
-        html += "<strong style='font-size:18px; color:" + scoreColor + ";'>" + data.score + "点</strong><br>";
-        html += "<strong>理由:</strong> " + data.reason + "<br>";
-        html += "<strong style='color:#ffffaa;'>アドバイス:</strong> " + data.improvement;      
-        $("#grade-content").html(html);
-        
-        if(data.score >= 80){
-            alertify.success("合格!");
-            if (!TYRANO.kag.stat.f.cleared_tasks) {
-                TYRANO.kag.stat.f.cleared_tasks = {};
-            }
-            // 現在のタスクID (例: "task1") を true にする
-            TYRANO.kag.stat.f.cleared_tasks[TYRANO.kag.stat.f.current_task_id] = true;
-        } else {
-            alertify.error("不合格...");
-        }
 
-        var report = "[SYSTEM] 採点結果は " + data.score + " 点でした。評価: " + data.reason;
-        window.ai_chat_set_busy(false);
-    },
-    error: function() {
-        $("#grade-content").text("採点サーバーとの通信に失敗しました。");
-        window.ai_chat_set_busy(false);
-    }
-});
+    var f = TYRANO.kag.stat.f;
+    var taskId = f.current_task_id;
+    
+    // --- 修正：安全策。tasksデータがない場合にクラッシュするのを防ぐ ---
+    var tasks = f.all_tasks || {};
+    var task = (taskId && tasks[taskId]) ? tasks[taskId] : { description: "課題なし", expected_output: "" };
+
+    var payload = {
+        user_id: f.user_id,
+        task_id: taskId,
+        code: f['my_code'] || "",     
+        output: f.execution_result || "",
+        task_desc: task.description,               
+        expected_output: task.expected_output || ""
+    };
+
+    $.ajax({
+        url: "/api/grade",
+        type: "POST",
+        data: JSON.stringify(payload),
+        contentType: "application/json",
+        dataType: "json",
+        success: function(data) {
+            // --- 1. 課題表示欄（HTML）の更新処理 ---
+            var html = "";
+            var scoreColor = (data.score >= 80) ? "#00ff00" : "#ff4444";
+            html += "<strong style='font-size:18px; color:" + scoreColor + ";'>" + data.score + "点</strong><br>";
+            html += "<strong>理由:</strong> " + (data.reason || "なし") + "<br>";
+            html += "<strong style='color:#ffffaa;'>アドバイス:</strong> " + (data.improvement || "なし");      
+            $("#grade-content").html(html);
+            
+            // 合否通知
+            if(data.score >= 80){
+                alertify.success("合格!");
+                if (!TYRANO.kag.stat.f.cleared_tasks) TYRANO.kag.stat.f.cleared_tasks = {};
+                TYRANO.kag.stat.f.cleared_tasks[TYRANO.kag.stat.f.current_task_id] = true;
+            } else {
+                alertify.error("不合格...");
+            }
+
+            // --- 2. AIチャットへの通知（トリガーを叩くのみ） ---
+            // マスコットチャット側と同じメッセージ形式にする
+            if (window.ai_chat_trigger) {
+                var msg = "採点結果: " + data.score + "点。\n評価コメント: " + (data.reason || "");
+                window.ai_chat_trigger(msg);
+            }
+        },
+        error: function() {
+            $("#grade-content").text("採点サーバーとの通信に失敗しました。");
+        }
+    });
+})();
 [endscript]
 
 [return]
