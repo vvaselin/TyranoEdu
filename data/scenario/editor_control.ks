@@ -250,6 +250,7 @@ if (task_data) {
 
 *submit
 [iscript]
+    console.error("採点処理開始");
     $("#grade-result-area").show();
     $("#grade-content").html("<span style='color:gray;'>採点中...</span>");
 [endscript]
@@ -259,8 +260,6 @@ if (task_data) {
 
 [iscript]
 (function(){
-    
-
     var f = TYRANO.kag.stat.f;
     var taskId = f.current_task_id;
     
