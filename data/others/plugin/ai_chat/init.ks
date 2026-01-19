@@ -9,7 +9,6 @@
     [loadjs storage="./data/others/js/purify.min.js"] 
 
     ; 2. [html]タグでUIの骨格を生成する
-    ; この時点では通常レイヤーに一時的に配置される
     [html]
     <div class="ai-chat-container" style="display:none;">
         <div class="ai-chat-messages">
@@ -34,8 +33,6 @@
         var fix_layer = $(".fixlayer").first();
         fix_layer.append(chat_container); 
 
-        // JavaScriptでUIの位置とサイズを「ピクセル単位」で明示的に設定する
-
         const scWidth = parseInt(TYRANO.kag.config.scWidth);
         const scHeight = parseInt(TYRANO.kag.config.scHeight); 
 
@@ -43,8 +40,7 @@
         const marginRight = scWidth * 0.01;
         const leftPosition = scWidth - chatWidth - marginRight;
         
-        const chatHeight = scHeight * 0.95; 
-
+        const chatHeight = scHeight * 0.95;
         chat_container.css({
             "position": "absolute",
             "top": "2%",
@@ -53,66 +49,24 @@
             "height": chatHeight + "px",
             "z-index": "200"
         });
-
         const formHeight = 75;
         const messagesHeight = chatHeight - formHeight;
 
         const messagesArea = $(".ai-chat-messages");
         const formArea = $(".ai-chat-form");
-        
         messagesArea.css("height", messagesHeight + "px");
         formArea.css("height", formHeight + "px");
 
         chat_container.show();
 
         const inputField = $(".ai-chat-input");
-        const sendButton = $(".ai-chat-send-button"); // ボタン要素を取得
+        const sendButton = $(".ai-chat-send-button");
         const messagesContainer = $(".ai-chat-messages");
-        
-        function addMessage(sender, text, avatar) {
-            const cleanHtml = DOMPurify.sanitize(marked.parse(text));
-            const messageHTML = `
-                <div class="ai-chat-message">
-                    <img src="${avatar}" class="avatar">
-                    <div class="message-content">
-                        <span class="username">${sender}</span>
-                        <span>${cleanHtml}</span>
-                    </div>
-                </div>`;
-                
-            const messageElement = $(messageHTML);
 
-            messageElement.find("pre").each(function () {
-                const preBlock = $(this);
-                
-                // コピーボタンのHTML要素を作成します
-                const copyButton = $('<button class="copy-code-button">コピー</button>');
-                
-                // ボタンを<pre>タグの「中」に追加します
-                preBlock.append(copyButton);
-
-                messageElement.find("pre code").each(function(i, block) {
-                    var $block = $(block);
-                    var $pre = $block.parent("pre");
-                    if ($pre.find('.copy-code-button').length > 0) return; 
-                    $pre.css("position", "relative"); 
-                    var copyButton = $('<button class="copy-code-button">コピー</button>');
-                    copyButton.on("click", function() {
-                        var codeText = $block.text();
-                        navigator.clipboard.writeText(codeText).then(() => {
-                            copyButton.text("コピー完了!");
-                            setTimeout(() => { copyButton.text("コピー"); }, 2000);
-                        }, (err) => {
-                            copyButton.text("失敗");
-                            setTimeout(() => { copyButton.text("コピー"); }, 2000);
-                        });
-                    });
-                    $pre.append(copyButton);
-                });
-            });
-            
-            messagesContainer.append(messageElement);
-            messagesContainer.scrollTop(messagesContainer[0].scrollHeight);
+        function getHistory() {
+            if (typeof TYRANO.kag.stat.f === "undefined") TYRANO.kag.stat.f = {};
+            if (!TYRANO.kag.stat.f.ai_chat_history) TYRANO.kag.stat.f.ai_chat_history = [];
+            return TYRANO.kag.stat.f.ai_chat_history;
         }
 
         window.ai_chat_set_busy = function(isBusy) {
@@ -127,175 +81,162 @@
             }
         };
 
-        // メッセージ送信処理を関数にまとめる
         function sendMessage() {
             const inputField = $(".ai-chat-input");
             const userMessage = inputField.val().trim();
             if (userMessage === "") return;
 
-            // --- 追加: 必要なデータをティラノの変数から取得 ---
+            var history = getHistory();
+            var recentHistory = history.slice(-10);
+            var historyContext = "";
+            if (recentHistory.length > 0) {
+                historyContext = "\n\n[Conversation History]\n";
+                recentHistory.forEach(function(item) {
+                    var role = (item.username === "あなた") ? "User" : "Advisor";
+                    historyContext += role + ": " + item.message + "\n";
+                });
+            }
+
             const CodeContent = TYRANO.kag.stat.f['my_code'] || "";
-            const current_id = TYRANO.kag.stat.f.current_task_id || "";
-            const tasks = TYRANO.kag.stat.f.all_tasks || {};
-            const task_data = tasks[current_id] || { description: "課題情報なし" };
-            // ----------------------------------------------
+            const task_data = (TYRANO.kag.stat.f.all_tasks && TYRANO.kag.stat.f.current_task_id) ? 
+                            TYRANO.kag.stat.f.all_tasks[TYRANO.kag.stat.f.current_task_id] : { description: "課題情報なし" };
 
             window.ai_chat_add_message("あなた", userMessage, "./data/fgimage/chat/akane/normal.png");
             window.ai_chat_set_busy(true);
-            
+            inputField.val("");
+
             fetch('/api/advisor', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                    message: userMessage,
+                    message: userMessage + historyContext,
                     code: CodeContent, 
                     task: task_data.description,
                 }),
             })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => { throw new Error(text) });
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                addMessage("あかね", data.text, "./data/fgimage/chat/akane/normal.png");
+                window.ai_chat_add_message("あかね", data.text, "./data/fgimage/chat/akane/normal.png");
             })
             .catch(error => {
-                console.error("AIチャットエラー:", error);
-                addMessage("エラー", "AIとの通信に失敗しました。", "./data/fgimage/chat/akane/naki.png");
+                window.ai_chat_add_message("エラー", "通信に失敗しました。", "./data/fgimage/chat/akane/naki.png");
             })
             .finally(() => {
                 window.ai_chat_set_busy(false);
             });
         }
 
-        // イベントリスナーを設定
-        sendButton.on("click", sendMessage); 
+        sendButton.on("click", sendMessage);
         inputField.on("keydown", function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault(); 
                 sendMessage();
             }
         });
-
         inputField.on('input', function() {
-            this.style.height = 'auto'; // 高さを一旦リセット
-            this.style.height = (this.scrollHeight) + 'px'; // 内容の高さに合わせて自身の高さを変更
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
         });
 
-        window.ai_chat_add_message = function(sender, text, avatar) {
-        const messagesContainer = $(".ai-chat-messages");
-        const cleanHtml = DOMPurify.sanitize(marked.parse(text));
-        const messageHTML = `
-            <div class="ai-chat-message">
-                <img src="${avatar}" class="avatar">
-                <div class="message-content">
-                    <span class="username">${sender}</span>
-                    <span>${cleanHtml}</span>
-                </div>
-            </div>`;
-        const $msg = $(messageHTML);
-        
-        // コードコピーボタンの付与 (既存のロジックをここに集約)
-        $msg.find("pre code").each(function(i, block) {
-            var $block = $(block);
-            var $pre = $block.parent("pre");
-            $pre.css("position", "relative");
-            var $btn = $('<button class="copy-code-button">コピー</button>');
-            $btn.on("click", function() {
-                navigator.clipboard.writeText($block.text()).then(() => {
-                    $btn.text("完了!");
-                    setTimeout(() => $btn.text("コピー"), 2000);
+        window.ai_chat_add_message = function(sender, text, avatar, is_history_load = false) {
+            const messagesContainer = $(".ai-chat-messages");
+            const cleanHtml = DOMPurify.sanitize(marked.parse(text));
+            const messageHTML = `
+                <div class="ai-chat-message">
+                    <img src="${avatar}" class="avatar">
+                    <div class="message-content">
+                        <span class="username">${sender}</span>
+                        <span>${cleanHtml}</span>
+                    </div>
+                </div>`;
+            const $msg = $(messageHTML);
+            
+            $msg.find("pre code").each(function(i, block) {
+                var $block = $(block);
+                var $pre = $block.parent("pre");
+                $pre.css("position", "relative");
+                var $btn = $('<button class="copy-code-button">コピー</button>');
+                $btn.on("click", function() {
+                    navigator.clipboard.writeText($block.text()).then(() => {
+                        $btn.text("完了!");
+                        setTimeout(() => $btn.text("コピー"), 2000);
+                    });
                 });
+                $pre.append($btn);
             });
-            $pre.append($btn);
-        });
+            messagesContainer.append($msg);
+            messagesContainer.scrollTop(messagesContainer[0].scrollHeight);
 
-        messagesContainer.append($msg);
-        messagesContainer.scrollTop(messagesContainer[0].scrollHeight);
-    };
-
-    // --- AI通信の本体 (mascot_chat_triggerに相当する仕組み) ---
-    window.ai_chat_send = function(text, isSystem = false) {
-        if (!text) return;
-        if (!isSystem) {
-            window.ai_chat_add_message("あなた", text, "./data/fgimage/chat/akane/normal.png");
-            $(".ai-chat-input").val("");
-        }
-
-        window.ai_chat_set_busy(true);
-
-        const f = TYRANO.kag.stat.f;
-        // 修正：タスクデータが存在しない場合の安全なプロパティ参照
-        const taskObj = (f.all_tasks && f.current_task_id) ? f.all_tasks[f.current_task_id] : null;
-        const taskDesc = taskObj ? (taskObj.description || "") : "課題情報なし";
-
-        fetch('/api/advisor', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                message: text,
-                code: f['my_code'] || "",
-                task: taskDesc
-            }),
-        })
-        .then(res => {
-            if (!res.ok) throw new Error("Server Error");
-            return res.json();
-        })
-        .then(data => {
-            // 修正：レスポンスが空の場合のフォールバック
-            const replyText = data.text || "採点結果を確認しました。次に進みましょう。";
-            window.ai_chat_add_message("あかね", replyText, "./data/fgimage/chat/akane/normal.png");
-        })
-        .catch(err => {
-            console.error("Advisor API Error:", err);
-            window.ai_chat_add_message("エラー", "通信に失敗しました。", "./data/fgimage/chat/akane/naki.png");
-        })
-        .finally(() => {
-            window.ai_chat_set_busy(false);
-        });
-    };
-
-    window.ai_chat_trigger = function(systemMessage) {
-        if (typeof TYRANO.kag.stat.f === "undefined") return;
-        var f = TYRANO.kag.stat.f;
-
-        // UIの無効化
-        var container = $(".ai-chat-container");
-        var inputField = container.find(".ai-chat-input");
-        inputField.attr("placeholder", "考え中...").prop("disabled", true);
-
-        // コンテキスト準備 (履歴があれば含める)
-        var historyContext = "";
-        if (f.ai_chat_history && f.ai_chat_history.length > 0) {
-            historyContext = "\n\n[Conversation History]\n" + 
-                f.ai_chat_history.slice(-5).map(h => `${h.username}: ${h.message}`).join("\n");
-        }
-
-        var task_desc = (f.all_tasks && f.current_task_id) ? f.all_tasks[f.current_task_id].description : "課題情報なし";
-        var messageToSend = "[SYSTEM] " + systemMessage + historyContext;
-
-        fetch('/api/advisor', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                message: messageToSend, 
-                code: f['my_code'] || "",
-                task: task_desc
-            }),
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (window.ai_chat_add_message) {
-                window.ai_chat_add_message("あかね", data.text, "./data/fgimage/chat/akane/normal.png");
+            if (!is_history_load) {
+                var history = getHistory();
+                history.push({ username: sender, message: text });
+                if (history.length > 50) history.shift();
             }
-        })
-        .finally(() => {
-            inputField.prop("disabled", false).attr("placeholder", "メッセージを入力...");
-        });
-    };
+        };
+
+        window.ai_chat_trigger = function(systemMessage) {
+            if (typeof TYRANO.kag.stat.f === "undefined") return;
+            var f = TYRANO.kag.stat.f;
+
+            var container = $(".ai-chat-container");
+            var inputField = container.find(".ai-chat-input");
+            inputField.attr("placeholder", "考え中...").prop("disabled", true);
+
+            var historyContext = "";
+            if (f.ai_chat_history && f.ai_chat_history.length > 0) {
+                historyContext = "\n\n[Conversation History]\n" + 
+                    f.ai_chat_history.slice(-5).map(h => `${h.username}: ${h.message}`).join("\n");
+            }
+
+            var task_desc = (f.all_tasks && f.current_task_id) ? f.all_tasks[f.current_task_id].description : "課題情報なし";
+            var messageToSend = "[SYSTEM] " + systemMessage + historyContext;
+
+            fetch('/api/advisor', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    message: messageToSend, 
+                    code: f['my_code'] || "",
+                    task: task_desc
+                }),
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (window.ai_chat_add_message) {
+                    window.ai_chat_add_message("あかね", data.text, "./data/fgimage/chat/akane/normal.png");
+                }
+            })
+            .finally(() => {
+                inputField.prop("disabled", false).attr("placeholder", "メッセージを入力...");
+            });
+        };
+
+        window.ai_chat_save = function(callback) {
+            var history = getHistory();
+            if (!history || history.length === 0) {
+                if (callback) callback();
+                return;
+            }
+            
+            alertify.log("学習記録を保存...");
+            fetch('/api/summarize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    user_id: TYRANO.kag.stat.f.user_id,
+                    chat_history: history
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                TYRANO.kag.stat.f.ai_chat_history = [];
+                if (callback) callback();
+            })
+            .catch(e => {
+                console.error("Save Error:", e);
+                if (callback) callback();
+            });
+        };
     [endscript]
 
 [endmacro]

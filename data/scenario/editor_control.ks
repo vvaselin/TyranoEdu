@@ -250,7 +250,6 @@ if (task_data) {
 
 *submit
 [iscript]
-    console.error("採点処理開始");
     $("#grade-result-area").show();
     $("#grade-content").html("<span style='color:gray;'>採点中...</span>");
 [endscript]
@@ -323,7 +322,14 @@ if ($dialog.dialog("isOpen")) $dialog.dialog("close");
 
 $(".ai-chat-container").css("pointer-events", "none");
 
-tyrano.plugin.kag.ftag.startTag("jump", {target: "*back_real"});
+if (window.ai_chat_save) {
+    window.ai_chat_save(function() {
+        tyrano.plugin.kag.ftag.startTag("jump", {target: "*back_real"});
+    });
+} else {
+    // 関数がない場合のフォールバック
+    tyrano.plugin.kag.ftag.startTag("jump", {target: "*back_real"});
+}
 [endscript]
 [s]
 
