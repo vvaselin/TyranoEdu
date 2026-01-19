@@ -107,13 +107,13 @@ $("#modal_copy_button_id").button("disable");
 [endscript]
 
 ; 実行ボタン
-[glink fix="true" color="mybtn_06" storage="editor.ks" text="コードを実行" target="*execute_code" width="400" size="20" x="240" y="650"]
+[glink fix="true" color="mybtn_06" storage="editor_control.ks" text="コードを実行" target="*execute_code" width="400" size="20" x="240" y="650"]
 ; 実行結果モーダル表示ボタン
-[glink fix="true" color="mybtn_01" storage="editor.ks" text="コンソール" target="*open_result_window" width="140" size="20" x="645" y="650"]
+[glink fix="true" color="mybtn_01" storage="editor_control.ks" text="コンソール" target="*open_result_window" width="140" size="20" x="645" y="650"]
 ; 採点
-[glink fix="true" color="mybtn_07" storage="editor.ks" text="提出" target="*submit" width="200" size="20" x="15" y="655"]
+[glink fix="true" color="mybtn_07" storage="editor_control.ks" text="提出" target="*submit" width="200" size="20" x="15" y="655"]
 ; 課題選択に戻る
-[glink color="mybtn_09" storage="editor.ks" text="戻る↩" target="*exit_chat" width="200" size="20" x="20" y="10"]
+[glink color="mybtn_09" storage="editor_control.ks" text="戻る↩" target="*exit_chat" width="200" size="20" x="20" y="10"]
 
 ; 課題表示UI
 [layopt layer=fix visible=true page=fore]

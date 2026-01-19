@@ -247,7 +247,7 @@
         .then(data => {
             // 修正：レスポンスが空の場合のフォールバック
             const replyText = data.text || "採点結果を確認しました。次に進みましょう。";
-            window.ai_chat_add_message("アドバイザー", replyText, "./data/fgimage/chat/akane/normal.png");
+            window.ai_chat_add_message("あかね", replyText, "./data/fgimage/chat/akane/normal.png");
         })
         .catch(err => {
             console.error("Advisor API Error:", err);
@@ -259,24 +259,24 @@
     };
 
     window.ai_chat_trigger = function(systemMessage) {
-        // 1. 必須チェック
         if (typeof TYRANO.kag.stat.f === "undefined") return;
         var f = TYRANO.kag.stat.f;
 
-        // 2. UI要素の取得 (ai_chatのクラス名に合わせる)
+        // UIの無効化
         var container = $(".ai-chat-container");
         var inputField = container.find(".ai-chat-input");
-        var sendButton = container.find(".ai-chat-send-button");
+        inputField.attr("placeholder", "考え中...").prop("disabled", true);
 
-        // 3. AIチャット中状態にする（入力無効化）
-        inputField.attr("placeholder", "アドバイザーが考え中...").prop("disabled", true);
-        sendButton.prop("disabled", true);
+        // コンテキスト準備 (履歴があれば含める)
+        var historyContext = "";
+        if (f.ai_chat_history && f.ai_chat_history.length > 0) {
+            historyContext = "\n\n[Conversation History]\n" + 
+                f.ai_chat_history.slice(-5).map(h => `${h.username}: ${h.message}`).join("\n");
+        }
 
-        // 4. コンテキストの準備
         var task_desc = (f.all_tasks && f.current_task_id) ? f.all_tasks[f.current_task_id].description : "課題情報なし";
-        var messageToSend = "[SYSTEM] " + systemMessage;
+        var messageToSend = "[SYSTEM] " + systemMessage + historyContext;
 
-        // 5. APIコール (統制群なので /api/advisor を使用)
         fetch('/api/advisor', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -286,24 +286,14 @@
                 task: task_desc
             }),
         })
-        .then(res => {
-            if (!res.ok) throw new Error("Server Error");
-            return res.json();
-        })
+        .then(res => res.json())
         .then(data => {
-            // メッセージ表示 (既存の add_message 関数を利用)
             if (window.ai_chat_add_message) {
-                window.ai_chat_add_message("アドバイザー", data.text, "./data/fgimage/chat/akane/normal.png");
+                window.ai_chat_add_message("あかね", data.text, "./data/fgimage/chat/akane/normal.png");
             }
         })
-        .catch(error => {
-            console.error("AI Advisor Trigger Error:", error);
-            // 必要に応じてエラーメッセージを表示
-        })
         .finally(() => {
-            // 6. UI状態を元に戻す
             inputField.prop("disabled", false).attr("placeholder", "メッセージを入力...");
-            sendButton.prop("disabled", false);
         });
     };
     [endscript]
