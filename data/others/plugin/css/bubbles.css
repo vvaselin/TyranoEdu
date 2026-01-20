@@ -7,7 +7,7 @@
     height: 720px;
     overflow: hidden;
     pointer-events: none; /* クリックを邪魔しない */
-    z-index: 10;
+    z-index: 0!important;
 }
 
 /* 泡の共通スタイル */
