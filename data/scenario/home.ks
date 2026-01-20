@@ -37,6 +37,7 @@ $(".logout_btn").off("click").on("click", async function() {
 [endscript]
 
 [mask_off time=500]
+
 [s]
 
 *toSelect

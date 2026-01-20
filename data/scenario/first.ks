@@ -18,6 +18,7 @@
 [loadcss file="./tyrano/libs/jquery-ui/jquery-ui.css"]
 [loadcss file="./data/others/css/modal_dark_theme.css"]
 [loadcss file="./data/others/plugin/css/mystyle.css"]
+[loadcss file="./data/others/plugin/css/bubbles.css"]
 
 ; キャラ定義
 [chara_new name name="mocha" storage="chara/mocha/normal.png" jname="モカ"]
