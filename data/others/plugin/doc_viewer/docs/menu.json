@@ -1,19 +1,19 @@
 [
-  { "title": "トップページ",         "file": "sample.md" },
-  
+  { "title": "トップページ",         "file": "top.md" },
+  { "title": "プログラムの基本",         "file": "kihon.md" },
   {
     "category": "第1章: 入出力",
     "items": [
-       { "title": "プログラムの基本", "file": "chap1_1.md" },
-       { "title": "文字の出力",       "file": "chap1_2.md" },
+       { "title": "文字の出力", "file": "chap1_1.md" },
+       { "title": "文字の入力",       "file": "chap1_2.md" },
        { "title": "課題: Hello World", "file": "task1.md" }
     ]
   },
   {
     "category": "第2章: 変数",
     "items": [
-       { "title": "変数とは",         "file": "chap2_1.md" },
-       { "title": "入力の受け取り",   "file": "chap2_2.md" },
+       { "title": "変数の宣言と型", "file": "chap2_1.md" },
+       { "title": "変数の使い方",   "file": "chap2_2.md" },
        { "title": "課題: 入力の基本", "file": "task2.md" }
     ]
   },

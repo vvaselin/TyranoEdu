@@ -248,14 +248,57 @@
 /* Markdown装飾 */
 .doc-content h1 { font-size: 22px; border-bottom: 2px solid #007acc; padding-bottom: 5px; margin-bottom: 20px; color: #fff; }
 .doc-content h2 { font-size: 18px; border-left: 5px solid #007acc; padding-left: 15px; margin-top: 30px; margin-bottom: 15px; color: #fff; background: rgba(255,255,255,0.05); padding-top:5px; padding-bottom:5px;}
-.doc-content h3 { font-size: 15px; margin-top: 20px; color: #ddd; font-weight: bold; }
+.doc-content h3 { 
+    font-size: 17px; /* 15pxから引き上げ。本文(推定16px)より大きく */
+    margin-top: 25px; 
+    margin-bottom: 10px;
+    color: #eee; 
+    font-weight: bold;
+    border-bottom: 1px solid #444; /* 境目をわかりやすく */
+    display: inline-block; /* 下線を文字の長さに合わせる場合 */
+    width: 100%;
+}
 .doc-content p { margin-bottom: 11px; color: #ccc; }
-.doc-content code { background-color: #444; padding: 2px 6px; border-radius: 4px; font-family: monospace; color: #ffdddd; }
-.doc-content pre { background-color: #1e1e1e; padding: 11px; border-radius: 6px; overflow-x: auto; margin-bottom: 20px; border: 1px solid #333; }
+.doc-content code {
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    background-color: #2d2d2d; /* 少し明るいグレー */
+    color: #9cdcfe; /* ライトブルー */
+}
+.doc-content pre {
+    background-color: #1e1e1e !important; /* VS Code背景色 */
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin-bottom: 24px;
+    border: 1px solid #3c3c3c;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.doc-content pre code {
+    background-color: transparent;
+    padding: 0;
+    color: #d4d4d4; /* 基本の文字色（薄いグレー） */
+    font-size: 14px;
+    line-height: 1.5;
+}
+.doc-content .keyword { color: #569cd6; }      /* int, return, if, while */
+.doc-content .control { color: #c586c0; }      /* include, define */
+.doc-content .string  { color: #ce9178; }      /* "Hello World" */
+.doc-content .comment { color: #6a9955; }      /* // コメント */
+.doc-content .number  { color: #b5cea8; }      /* 10, 3.14 */
+.doc-content .function { color: #dcdcaa; }     /* main(), printf() */
+.doc-content .type    { color: #4ec9b0; }      /* 自作クラス名など */
+.doc-content .operator { color: #d4d4d4; }     /* <<, >>, +, - */
 .doc-content ul, .doc-content ol { margin-left: 25px; margin-bottom: 20px; }
 .doc-content li { margin-bottom: 8px; }
 .doc-content a { color: #66b3ff; text-decoration: none; }
 .doc-content a:hover { text-decoration: underline; }
+.doc-content strong, .doc-content b {
+    font-weight: bold;
+    color: #ffffff; /* 本文(ccc)より明るくして強調 */
+}
 
 /* --- フルスクリーンモード用の追加 --- */
 .doc-viewer-container.full-mode {
@@ -314,4 +357,18 @@
 }
 .doc-viewer-container.full-mode .doc-menu-category {
     font-size: 20px;
+}
+
+.doc-viewer-container.full-mode .doc-content h3 { 
+    font-size: 24px; /* 本文(22px)より大きく設定 */
+    margin-top: 35px;
+}
+
+/* ついでにリストの間隔なども調整すると読みやすくなります */
+.doc-viewer-container.full-mode .doc-content li {
+    margin-bottom: 12px;
+}
+
+.doc-viewer-container.full-mode .doc-content pre code {
+    font-size: 18px;
 }

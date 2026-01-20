@@ -9,7 +9,7 @@
 ; AIチャットUIを初期化して表示
 [mascot_chat_show]
 
-[show_doc_button file="sample.md"]
+[show_doc_button file="top.md"]
 
 ; ■■■ 初期設定（UIをfixレイヤーに一度だけ配置） ■■■
 

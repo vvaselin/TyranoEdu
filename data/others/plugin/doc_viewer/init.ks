@@ -459,7 +459,7 @@
 
             },
             error: function() {
-                contentArea.html("<p>読み込みエラー：<br>" + filePath + "</p>");
+                contentArea.html("<p>準備中</p>");
             }
         });
     };
