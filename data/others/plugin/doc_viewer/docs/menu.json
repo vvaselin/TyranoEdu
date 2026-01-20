@@ -5,39 +5,34 @@
     "category": "第1章: 入出力",
     "items": [
        { "title": "文字の出力", "file": "chap1_1.md" },
-       { "title": "文字の入力",       "file": "chap1_2.md" },
-       { "title": "課題: Hello World", "file": "task1.md" }
+       { "title": "文字の入力",       "file": "chap1_2.md" }
     ]
   },
   {
     "category": "第2章: 変数",
     "items": [
        { "title": "変数の宣言と型", "file": "chap2_1.md" },
-       { "title": "変数の使い方",   "file": "chap2_2.md" },
-       { "title": "課題: 入力の基本", "file": "task2.md" }
+       { "title": "変数の使い方",   "file": "chap2_2.md" }
     ]
   },
   {
     "category": "第3章: 演算",
     "items": [
-       { "title": "四則演算",         "file": "chap3_1.md" },
-       { "title": "課題: 足し算",     "file": "task3.md" }
+       { "title": "四則演算",         "file": "chap3_1.md" }
     ]
   },
   {
     "category": "第4章: 条件分岐",
     "items": [
        { "title": "if文の使いかた",   "file": "chap4_1.md" },
-       { "title": "比較演算子",       "file": "chap4_2.md" },
-       { "title": "課題: 合格判定",   "file": "task4.md" }
+       { "title": "比較演算子",       "file": "chap4_2.md" }
     ]
   },
   {
     "category": "第5章: 繰り返し",
     "items": [
        { "title": "for文",           "file": "chap5_1.md" },
-       { "title": "while文",         "file": "chap5_2.md" },
-       { "title": "課題: カウント",   "file": "task5.md" }
+       { "title": "while文",         "file": "chap5_2.md" }
     ]
   }
 ]

@@ -283,14 +283,13 @@
     font-size: 14px;
     line-height: 1.5;
 }
-.doc-content .keyword { color: #569cd6; }      /* int, return, if, while */
-.doc-content .control { color: #c586c0; }      /* include, define */
-.doc-content .string  { color: #ce9178; }      /* "Hello World" */
-.doc-content .comment { color: #6a9955; }      /* // コメント */
-.doc-content .number  { color: #b5cea8; }      /* 10, 3.14 */
-.doc-content .function { color: #dcdcaa; }     /* main(), printf() */
-.doc-content .type    { color: #4ec9b0; }      /* 自作クラス名など */
-.doc-content .operator { color: #d4d4d4; }     /* <<, >>, +, - */
+/* style.css の修正例 */
+.doc-content .hljs-keyword, .doc-content .hljs-selector-tag { color: #569cd6; } /* int, return, if */
+.doc-content .hljs-string { color: #ce9178; }    /* "Hello World" */
+.doc-content .hljs-comment { color: #6a9955; }   /* // コメント */
+.doc-content .hljs-number { color: #b5cea8; }    /* 10, 3.14 */
+.doc-content .hljs-title.function_, .doc-content .hljs-function { color: #dcdcaa; } /* main() */
+.doc-content .hljs-type { color: #4ec9b0; }      /* 型名 */
 .doc-content ul, .doc-content ol { margin-left: 25px; margin-bottom: 20px; }
 .doc-content li { margin-bottom: 8px; }
 .doc-content a { color: #66b3ff; text-decoration: none; }

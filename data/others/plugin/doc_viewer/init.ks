@@ -1,4 +1,5 @@
 [loadjs storage="./data/others/js/marked.min.js"]
+[loadjs storage="./data/others/js/highlight.min.js"]
 [loadjs storage="./data/others/js/purify.min.js"]
 [loadcss file="./data/others/plugin/doc_viewer/style.css"]
 
@@ -418,30 +419,33 @@
     // 読み込み関数
     TYRANO.kag.stat.f.loadDocMarkdown = function(file) {
         var filePath = file;
+        // URLチェック
         if (file.indexOf("http") === -1 && file.indexOf("./") === -1) {
-             filePath = "./data/others/plugin/doc_viewer/docs/" + file;
+            filePath = "./data/others/plugin/doc_viewer/docs/" + file;
         }
+
         $.ajax({
             url: filePath,
-            dataType: 'text', // 明示的にtextとして取得
+            dataType: 'text',
             cache: false,
             success: function(data) {
+                // 1. MarkdownをHTMLに変換
                 var html = DOMPurify.sanitize(marked.parse(data));
                 contentArea.html(html);
                 contentArea.scrollTop(0);
 
-                // コピーボタン
+                // 2. highlight.jsの適用とコピーボタンの設置
                 contentArea.find("pre code").each(function(i, block) {
+                    // シンタックスハイライトを実行
+                    hljs.highlightElement(block);
+
+                    // ボタンの設置準備
                     var $block = $(block);
                     var $pre = $block.parent("pre");
-                    
-                    // ボタンの配置基準にするため relative を設定
-                    $pre.css("position", "relative"); 
+                    $pre.css("position", "relative");
 
-                    // ボタン生成
                     var copyButton = $('<button class="copy-code-button">コピー</button>');
                     
-                    // クリックイベント
                     copyButton.on("click", function() {
                         var codeText = $block.text();
                         navigator.clipboard.writeText(codeText).then(() => {
@@ -453,13 +457,11 @@
                         });
                     });
 
-                    // preタグの中にボタンを追加
                     $pre.append(copyButton);
                 });
-
             },
             error: function() {
-                contentArea.html("<p>準備中</p>");
+                contentArea.html("<p>読み込みエラー：<br>" + filePath + "</p>");
             }
         });
     };
