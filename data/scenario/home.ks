@@ -3,7 +3,7 @@
 [wait time=1000]
 [hidemenubutton] 
 [clearfix]
-[bg storage="rouka.jpg" time="0"]
+[bg storage="standard.png" time="0"]
 @layopt layer="message0" visible=false
 [stop_keyconfig]
 
