@@ -1,5 +1,5 @@
 *start
-[mask time=1000]
+[mask time=500]
 [wait time=1000]
 [hidemenubutton] 
 [clearfix]
