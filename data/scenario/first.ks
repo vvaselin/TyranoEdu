@@ -108,13 +108,14 @@ $.ajax({
     dataType: 'json',
     success: function(data) {
         TYRANO.kag.stat.f.love_level = data.love_level || 0;
-        TYRANO.kag.stat.f.user_role = data.role || "experimental";
+        TYRANO.kag.stat.f.user_role = data.role || "control";
         console.error("User Role:", TYRANO.kag.stat.f.user_role);
         TYRANO.kag.stat.f.ai_memory = data;
     },
     error: function() {
         TYRANO.kag.stat.f.love_level = 0;
         TYRANO.kag.stat.f.ai_memory = {};
+        TYRANO.kag.stat.f.user_role = "control";
     }
 }).always(function(){
     window.sb.from('task_progress')
