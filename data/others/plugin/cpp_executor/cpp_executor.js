@@ -6,7 +6,7 @@
         
         pm: {
             code: "",         // 実行するC++コード（文字列）
-            url: "/execute",   // GoサーバーのAPIエンドポイント
+            url: "/api/execute",   // GoサーバーのAPIエンドポイント
             silent: "false" // デフォルトは喋る
         },
         
