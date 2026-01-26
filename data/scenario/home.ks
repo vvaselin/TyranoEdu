@@ -5,6 +5,8 @@
 [clearfix]
 [bg storage="bunkabu.jpg" time="0"]
 [filter layer="base" blur=2]
+
+[layopt layer="0" visible="true"]
 @layopt layer="message0" visible=false
 [stop_keyconfig]
 
@@ -42,6 +44,7 @@ $(".logout_btn").off("click").on("click", async function() {
 
 ; ユーザー情報
 [ptext layer="fix" x="100" y="15" color="white" text="&TYRANO.kag.stat.f.user_name" size="30" align="left"  bold="bold" ]
+
 [ptext layer="fix" x="30" y="13" color="0xF4E511" text="Lv." size="25" align="center" bold="bold"  cond="f.user_role == 'experimental' "]
 [ptext layer="fix" x="23" y="33" color="white" text="&TYRANO.kag.stat.f.love_level" size="50" align="center" bold="bold"  cond="f.user_role == 'experimental' "]
 
@@ -51,15 +54,16 @@ $(".logout_btn").off("click").on("click", async function() {
 
 *toSelect
 [free_filter]
-[freeimage layer="0"]
+[freeimage layer="0" ]
 ; 課題選択画面へ移動
 [clearfix]
+
 [chara_hide name="mocha" time=0]
 [jump storage="select.ks" target="*start"]
 
 *toDocment
 [free_filter]
-[freeimage layer="0"]
+[freeimage layer="0" ]
 [clearfix]
 [chara_hide name="mocha" time=0]
 [jump storage="doc.ks" target="*start"]
