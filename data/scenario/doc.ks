@@ -2,7 +2,7 @@
 [mask time=500]
 
 [clearfix]
-[bg storage="黒板.png" time="0"]
+[bg storage="standard.png" time="0"]
 @layopt layer="message0" visible=false
 [stop_keyconfig]
 
