@@ -1,6 +1,6 @@
 *start
 [mask time=500]
-[wait time=1000]
+[wait time=500]
 [hidemenubutton] 
 [clearfix]
 [bg storage="bunkabu.jpg" time="0"]
