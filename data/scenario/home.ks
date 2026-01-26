@@ -42,8 +42,8 @@ $(".logout_btn").off("click").on("click", async function() {
 
 ; ユーザー情報
 [ptext layer="fix" x="100" y="15" color="white" text="&TYRANO.kag.stat.f.user_name" size="30" align="left"  bold="bold" ]
-[ptext layer="fix" x="30" y="13" color="0xF4E511" text="Lv." size="25" align="center" bold="bold"]
-[ptext layer="fix" x="23" y="33" color="white" text="&TYRANO.kag.stat.f.love_level" size="50" align="center" bold="bold"]
+[ptext layer="fix" x="30" y="13" color="0xF4E511" text="Lv." size="25" align="center" bold="bold"  cond="f.user_role == 'experimental' "]
+[ptext layer="fix" x="23" y="33" color="white" text="&TYRANO.kag.stat.f.love_level" size="50" align="center" bold="bold"  cond="f.user_role == 'experimental' "]
 
 [mask_off time=500]
 
