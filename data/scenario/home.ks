@@ -3,7 +3,7 @@
 [wait time=1000]
 [hidemenubutton] 
 [clearfix]
-[bg storage="standard.png" time="0"]
+[bg storage="bunkabu.jpg" time="0"]
 @layopt layer="message0" visible=false
 [stop_keyconfig]
 
@@ -35,6 +35,13 @@ $(".logout_btn").off("click").on("click", async function() {
     tyrano.plugin.kag.ftag.startTag("jump", { storage: "auth.ks" });
 });
 [endscript]
+
+[image name="ネームプレート" storage="NamePlate.png" layer="fix" x=0 y=10 time="0"  height="100" ]
+
+; ユーザー情報
+[ptext layer="fix" x="100" y="15" color="white" text="&TYRANO.kag.stat.f.user_name" size="30" align="left"  bold="bold" ]
+[ptext layer="fix" x="30" y="13" color="0xF4E511" text="Lv." size="25" align="center" bold="bold"]
+[ptext layer="fix" x="23" y="33" color="white" text="&TYRANO.kag.stat.f.love_level" size="50" align="center" bold="bold"]
 
 [mask_off time=500]
 

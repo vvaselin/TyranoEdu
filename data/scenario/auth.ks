@@ -84,7 +84,7 @@
     <h3 style="margin-top:0;">詳細設定</h3>
     <p style="font-size:18px; color:#ccc; margin-bottom:15px;">名前とモードを設定してください</p>
     
-    <input type="text" id="reg-name" placeholder="ユーザー名" style="width:100%; padding:10px; margin-bottom:20px; box-sizing:border-box; font-size:24px;">
+    <input type="text" id="reg-name" maxlength="10" placeholder="ユーザー名(2〜10文字)" style="width:100%; padding:10px; margin-bottom:20px; box-sizing:border-box; font-size:24px;">
     
     <div class="switch-container">
         <span>親密度モード:</span>
@@ -95,7 +95,7 @@
         <span id="mode-label" style="width:200px; text-align:left;">オフ (統制群)</span>
     </div>
 
-    <button id="btn-reg-confirm" style="width:100%; padding:15px; cursor:pointer; background:#2196F3; color:white; border:none; border-radius:30px; font-size:20px">登録を完了する</button>
+    <button id="btn-reg-confirm" style="width:100%; padding:15px; cursor:pointer; background:#2196F3; color:white; border:none; border-radius:30px; font-size:20px">認証メール送信</button>
     <button id="btn-reg-cancel" style="background:none; border:none; color:#888; cursor:pointer; margin-top:15px; font-size:16px;">キャンセル</button>
 </div>
 [endhtml]
@@ -140,9 +140,21 @@ $("#btn-login").click(async function() {
 
 // 最終的な登録処理
 $("#btn-reg-confirm").click(async function() {
+
+    const userName = $("#reg-name").val().trim();
+
+    if (userName.length < 2) {
+        alert("ユーザー名は2文字以上で入力してください");
+        return;
+    }
+    const validPattern = /^[a-zA-Z0-9あ-んア-ン一-龠々]+$/;
+    if (!validPattern.test(userName)) {
+        alert("ユーザー名に記号やスペースは使用できません");
+        return;
+    }
+
     const email = $("#email").val();
     const password = $("#password").val();
-    const userName = $("#reg-name").val().trim();
     const roleValue = $("#mode-toggle").prop("checked") ? "experimental" : "control";
 
     if (!userName) {

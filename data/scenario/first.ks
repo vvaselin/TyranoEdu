@@ -111,6 +111,7 @@ $.ajax({
         TYRANO.kag.stat.f.user_role = data.role || "control";
         console.error("User Role:", TYRANO.kag.stat.f.user_role);
         TYRANO.kag.stat.f.ai_memory = data;
+        TYRANO.kag.stat.f.user_name = data.name || "ゲスト";
     },
     error: function() {
         TYRANO.kag.stat.f.love_level = 0;
