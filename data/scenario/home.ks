@@ -26,6 +26,7 @@
 ; ログアウトボタン
 [button name="logout_btn" graphic="../others/plugin/theme_kopanda_22_HD_anim/image/button/title.png" enterimg="../others/plugin/theme_kopanda_22_HD_anim/image/button/title2.png" x=1180 y=20 height=50 role="sleep" fix="true"]
 
+
 [iscript]
 $(".logout_btn").off("click").on("click", async function() {
     if (!confirm("ログアウトしますか？")) return;
@@ -37,7 +38,7 @@ $(".logout_btn").off("click").on("click", async function() {
 });
 [endscript]
 
-[image name="ネームプレート" storage="NamePlate.png" layer="0" x=0 y=10 time="0"  height="100" ]
+[image name="ネームプレート" storage="NamePlate.png" layer="0" x=-10 y=10 time="0"  height="100" width="450" ]
 
 ; ユーザー情報
 [ptext layer="fix" x="100" y="15" color="white" text="&TYRANO.kag.stat.f.user_name" size="30" align="left"  bold="bold" ]
