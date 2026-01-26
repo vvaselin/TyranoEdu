@@ -3,6 +3,7 @@
 [hidemenubutton]
 [clearfix]
 @layopt layer="message0" visible=false
+[bg storage="standard.png" time="0"]
 [stop_keyconfig]
 
 ; AIチャットUIを初期化して表示
