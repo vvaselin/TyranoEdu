@@ -1,7 +1,7 @@
 *start
 [mask time=500]
 [wait time=500]
-[hidemenubutton] 
+[hidemenubutton]
 [clearfix]
 [bg storage="bunkabu.jpg" time="0"]
 [filter layer="base" blur=2]
@@ -10,6 +10,8 @@
 @layopt layer="message0" visible=false
 [stop_keyconfig]
 
+*menu_loop
+[chara_mod name="mocha" face="normal" wait=false]
 ; トークモードへ移動
 [glink color="ts22" text="トークモード" target="*developing" x="850" y="570" width="300" size="30" cond="f.user_role == 'experimental' "]
 
@@ -50,6 +52,7 @@ $(".logout_btn").off("click").on("click", async function() {
 
 [mask_off time=500]
 
+[clickable x=260 y=100 width=300 height=620 target="*mocha_reaction" cond="f.user_role == 'experimental'"]
 [s]
 
 *toSelect
@@ -73,3 +76,14 @@ $(".logout_btn").off("click").on("click", async function() {
 alert("ただいま開発中です。");
 [endscript]
 [jump target="*start" ]
+
+
+*mocha_reaction
+@layopt layer="message0" visible=true
+[chara_mod name="mocha" face="happy" wait=false]
+#モカ
+あっ、お…おはよう…！[wait time=3000]
+[er]
+@layopt layer="message0" visible=false
+#
+[jump target="*menu_loop"]
