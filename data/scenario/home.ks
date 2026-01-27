@@ -80,7 +80,7 @@ alert("ただいま開発中です。");
 
 *mocha_reaction
 @layopt layer="message0" visible=true
-[chara_mod name="mocha" face="happy" wait=false]
+[chara_mod name="mocha" face="surprise" wait=false]
 #モカ
 あっ、お…おはよう…！[wait time=1000]
 [er]
