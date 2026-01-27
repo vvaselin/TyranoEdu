@@ -1,7 +1,7 @@
 *start
 [mask time=500]
-[wait time=500]
 [hidemenubutton]
+[wait time=500]
 [clearfix]
 [bg storage="bunkabu.jpg" time="0"]
 [filter layer="base" blur=2]
@@ -26,6 +26,9 @@
 
 
 [chara_show name="mocha" left=80  width=680 top =90 cond="f.user_role == 'experimental' "]
+[clickable x=260 y=110 width=300 height=540 target="*mocha_reaction" cond="f.user_role == 'experimental'" ]
+
+[image name="バー" storage="bar.png" layer="0" x=10 y=650 time="0" width="1000" height="50" ]
 
 ; ログアウトボタン
 [button name="logout_btn" graphic="../others/plugin/theme_kopanda_22_HD_anim/image/button/title.png" enterimg="../others/plugin/theme_kopanda_22_HD_anim/image/button/title2.png" x=1180 y=20 height=50 role="sleep" fix="true"]
@@ -52,9 +55,18 @@ $(".logout_btn").off("click").on("click", async function() {
 [ptext layer="fix" x="30" y="13" color="0xF4E511" text="Lv." size="25" align="center" bold="bold"  cond="f.user_role == 'experimental' "]
 [ptext layer="fix" x="25" y="33" color="white" text="&TYRANO.kag.stat.f.love_level" size="50" align="center" bold="bold"  cond="f.user_role == 'experimental' "]
 
+; アンケートボタン
+[button name="question_before" graphic="../fgimage/icons/quiz_blue.svg" x=100 y=610 height="80" ]
+[button_ex name="question_before" enter_fade=100 tip="../fgimage/tiptools/事前アンケート.png" tip_pos="top"]
+[button name="test_before" graphic="../fgimage/icons/edit_square_blue.svg" x=250 y=610 height="80" ]
+[button_ex name="test_before" enter_fade=100 tip="../fgimage/tiptools/事前アンケート.png" tip_pos="top"]
+[button name="test_after" graphic="../fgimage/icons/edit_square_red.svg" x=400 y=610 height="80" ]
+[button_ex name="test_after" enter_fade=100 tip="../fgimage/tiptools/事前アンケート.png" tip_pos="top"]
+[button name="question_after" graphic="../fgimage/icons/quiz_red.svg" x=550 y=610 height="80" ]
+[button_ex name="question_after" enter_fade=100 tip="../fgimage/tiptools/事前アンケート.png" tip_pos="top"]
+
 [mask_off time=500]
 
-[clickable x=260 y=100 width=300 height=620 target="*mocha_reaction" cond="f.user_role == 'experimental'"]
 [s]
 
 *toSelect

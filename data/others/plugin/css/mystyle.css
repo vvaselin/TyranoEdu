@@ -597,3 +597,16 @@
   background-color: #2c2c2c;
   transform: rotateY(-25deg) scale(1.05); /* inheritではなく数値を直接書く */
 }
+
+.question_before{
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+}
+.test_before{
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+}
+.test_after{
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+}
+.question_after{
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+}
