@@ -8,6 +8,7 @@
 
 ; 背景
 [bg storage="room.jpg" time="100"]
+[filter layer="base" blur=5]
 
 [html]
 <style>
@@ -200,5 +201,6 @@ const handleAuthSuccess = (userId) => {
     TYRANO.kag.stat.f.user_id = userId;
     $("#auth-box, #reg-modal").remove();
     tyrano.plugin.kag.ftag.startTag("jump", { storage: "first.ks", target: "*load_user_data" });
+    tyrano.plugin.kag.ftag.startTag("free_filter");
 };
 [endscript]

@@ -1,4 +1,9 @@
 *start
+
+[iscript]
+tf.system.backlog=[];
+[endscript]
+
 [clearfix]
 [start_keyconfig]
 [add_theme_button]

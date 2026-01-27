@@ -39,6 +39,8 @@ $(".logout_btn").off("click").on("click", async function() {
     TYRANO.kag.stat.f.ai_memory = null;
     tyrano.plugin.kag.ftag.startTag("chara_hide", { name: "mocha", time: 0 });
     tyrano.plugin.kag.ftag.startTag("jump", { storage: "auth.ks" });
+    tyrano.plugin.kag.ftag.startTag("free_filter");
+    tyrano.plugin.kag.ftag.startTag("freeimage", { layer: "0" });
 });
 [endscript]
 
@@ -48,7 +50,7 @@ $(".logout_btn").off("click").on("click", async function() {
 [ptext layer="fix" x="100" y="15" color="white" text="&TYRANO.kag.stat.f.user_name" size="30" align="left"  bold="bold" ]
 
 [ptext layer="fix" x="30" y="13" color="0xF4E511" text="Lv." size="25" align="center" bold="bold"  cond="f.user_role == 'experimental' "]
-[ptext layer="fix" x="23" y="33" color="white" text="&TYRANO.kag.stat.f.love_level" size="50" align="center" bold="bold"  cond="f.user_role == 'experimental' "]
+[ptext layer="fix" x="25" y="33" color="white" text="&TYRANO.kag.stat.f.love_level" size="50" align="center" bold="bold"  cond="f.user_role == 'experimental' "]
 
 [mask_off time=500]
 
@@ -75,8 +77,7 @@ $(".logout_btn").off("click").on("click", async function() {
 [iscript]
 alert("ただいま開発中です。");
 [endscript]
-[jump target="*start" ]
-
+[jump target="*menu_loop" ]
 
 *mocha_reaction
 @layopt layer="message0" visible=true
@@ -84,6 +85,7 @@ alert("ただいま開発中です。");
 #モカ
 あっ、お…おはよう…！[wait time=1000]
 [er]
+
 @layopt layer="message0" visible=false
 #
 [jump target="*menu_loop"]
