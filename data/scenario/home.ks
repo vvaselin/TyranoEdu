@@ -82,7 +82,7 @@ alert("ただいま開発中です。");
 @layopt layer="message0" visible=true
 [chara_mod name="mocha" face="happy" wait=false]
 #モカ
-あっ、お…おはよう…！[wait time=3000]
+あっ、お…おはよう…！[wait time=1000]
 [er]
 @layopt layer="message0" visible=false
 #
