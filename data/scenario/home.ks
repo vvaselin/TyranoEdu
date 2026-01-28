@@ -19,7 +19,7 @@
 [glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xf88c;</span> 課題" target="*toSelect" x="600" y="100" height="100" width="510" size="60"]
 
 ; サンドボックスモード
-[glink color="mybtn_perspective mybtn_R" text="サンドボックス" target="*toSanbox" x="610" y="280" height="60" width="515" size="40"]
+[glink color="mybtn_perspective mybtn_R" text="サンドボックス" target="*toSanbox" x="610" y="280" height="60" width="520" size="40"]
 
 ;キャラ情報
 [glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xe7fd;</span> キャラ" target="*developing"  x="630" y="390" height="80" width="230" size="35" cond="f.user_role == 'experimental' "]
@@ -161,7 +161,19 @@ $(".edit_name_btn").off("click").on("click", function() {
 
 [chara_hide name="mocha" time=0]
 
-[eval exp="f.Isandbox = true"]
+[eval exp="f.is_sandbox = true"]
+[eval exp="f.current_task_id = 'sandbox'"]
+
+[iscript]
+var taskData = TYRANO.kag.stat.f.all_tasks["sandbox"];
+if (taskData && taskData.initial_code) {
+    if (Array.isArray(taskData.initial_code)) {
+        TYRANO.kag.stat.f.my_code = taskData.initial_code.join('\n');
+    } else {
+        TYRANO.kag.stat.f.my_code = taskData.initial_code;
+    }
+}
+[endscript]
 
 [if exp="f.user_role == 'experimental' "]
 [jump storage="editor.ks" target="*start"]

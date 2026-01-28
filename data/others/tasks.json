@@ -82,5 +82,19 @@
       "    return 0;",
       "}"
     ]
+  },
+  "sandbox": {
+    "title": "サンドボックスモード",
+    "description":"自由にコードを書いて実行してみよう。",
+    "stdin": "",
+    "expected_output": "",
+    "initial_code": [
+      "#include <iostream>",
+      "",
+      "int main() {",
+      "    std::cout << \"Hello, Wasabi!\" << std::endl;",
+      "    return 0;",
+      "}"
+    ]
   }
 }

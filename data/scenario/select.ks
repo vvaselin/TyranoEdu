@@ -116,7 +116,7 @@ if(TYRANO.kag.stat.f.all_tasks){
 }
 [endscript]
 
-[eval exp="f.Isandbox = false' "]
+[eval exp="f.is_sandbox = false"]
 
 ; エディタ画面へ移動
 [if exp="f.user_role == 'experimental' "]

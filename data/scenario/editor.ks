@@ -16,6 +16,7 @@
 ; --- Monaco Editorを生成し、fixレイヤーに移動 ---
 @monaco_show storage="f.my_code"
 [iscript]
+console.error(f.current_task_id);
 var editor_wrapper = $("#monaco-iframe").parent();
 var fix_layer = $(".fixlayer").first();
 fix_layer.append(editor_wrapper);
@@ -32,10 +33,14 @@ $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
 
 ; --- 結果表示用モーダル---
 [iscript]
+// 明示的に読み込む
+tyrano.plugin.kag.ftag.startTag("loadcss", {file: "./data/others/css/modal_dark_theme.css"});
 // ティラノの変数 f を参照
 var f = TYRANO.kag.stat.f;
 // fixレイヤーを取得
 var fix_layer = $(".fixlayer").first();
+// 二重生成防止のため、既存のモーダルがあれば削除
+$("#result_modal").remove();
 
 // --- モーダルウィンドウのHTMLを定義 ---
 var modal_html = `
@@ -62,6 +67,9 @@ $modal.dialog({
     maxHeight: 600,
     position: { my: "center", at: "center", of: window },
     dialogClass: "dialog-dark",
+    classes: {
+        "ui-dialog": "dialog-dark"
+    },
     helper: "ui-resizable-helper",
     buttons: [
         {
@@ -104,6 +112,7 @@ $modal.dialog({
 });
 // コピーボタン無効化
 $("#modal_copy_button_id").button("disable");
+
 [endscript]
 
 ; 実行ボタン
@@ -111,7 +120,9 @@ $("#modal_copy_button_id").button("disable");
 ; 実行結果モーダル表示ボタン
 [glink fix="true" color="mybtn_01" storage="editor.ks" text="コンソール" target="*open_result_window" width="140" size="20" x="645" y="650"]
 ; 採点
-[glink fix="true" color="mybtn_07" storage="editor.ks" text="提出" target="*submit" width="200" size="20" x="15" y="655" cond="f.Isandbox == true" ]
+[if exp="f.is_sandbox == false"]
+    [glink fix="true" color="mybtn_07" storage="editor.ks" text="提出" target="*submit" width="200" size="20" x="15" y="655" ]
+[endif]
 ; 課題選択に戻る
 [glink color="mybtn_09" storage="editor.ks" text="戻る↩" target="*exit_chat" width="200" size="20" x="20" y="10"]
 
@@ -151,6 +162,30 @@ $("#modal_copy_button_id").button("disable");
         "></div>
     </div>
 
+    <div id="custom-stdin-area" style="
+    display:none;
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 15px;
+">
+    <div style="font-size:12px; color:#aaa; margin-bottom:5px;">▼ 標準入力 (stdin)</div>
+        <textarea id="custom-stdin-text" style="
+            width: 100%;
+            height: 60px;
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            border-radius: 4px;
+            box-sizing: border-box;
+            padding: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+        "></textarea>
+    </div>
+
     <div id="grade-result-area" style="
         display:none; 
         margin-top:15px; 
@@ -176,11 +211,26 @@ if (task_data) {
     $("#task-title").text(task_data.title);
     $("#task-content").text(task_data.description);
 
-    if (task_data.expected_output && task_data.expected_output !== "") {
-        $("#expected-output-area").show();
-        $("#expected-output-text").text(task_data.expected_output);
+    if (TYRANO.kag.stat.f.is_sandbox) {
+        $("#expected-output-area").hide(); // 期待される出力を隠す
+        $("#custom-stdin-area").show();    // 自由入力欄を表示
+
+        // 入力欄の内容を tasks["sandbox"].stdin に反映させる
+        $("#custom-stdin-text").on("input", function() {
+            tasks["sandbox"].stdin = $(this).val();
+        });
+        
+        // 初期値をセット（tasks.jsonに記述がある場合）
+        $("#custom-stdin-text").val(task_data.stdin || "");
     } else {
-        $("#expected-output-area").hide();
+        // 通常の課題モード
+        $("#custom-stdin-area").hide();
+        if (task_data.expected_output && task_data.expected_output !== "") {
+            $("#expected-output-area").show();
+            $("#expected-output-text").text(task_data.expected_output);
+        } else {
+            $("#expected-output-area").hide();
+        }
     }
 } else {
     // 失敗: 課題IDが見つからない
@@ -343,7 +393,7 @@ if (window.mascot_chat_save) {
 
 *back_real
 ; 元の画面に戻る
-[if exp="f.Isandbox == true"]
+[if exp="f.is_sandbox == true"]
     [jump storage="home.ks" target="*start"]
 [else]
     [jump storage="select.ks" target="*start"]

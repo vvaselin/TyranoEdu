@@ -360,7 +360,8 @@
                     var emotion = data.emotion || "normal";
                     var loveUpVal = parseInt(data.love_up) || 0; 
 
-                    if (loveUpVal !== 0) {
+                    // サンドボックスモードでは好感度変動を無効化
+                    if (!TYRANO.kag.stat.f.is_sandbox&&loveUpVal !== 0) {
                         var current = parseInt(f.love_level) || 0;
                         f.love_level = current + loveUpVal; 
                         if(f.love_level < 0) f.love_level = 0;
@@ -527,7 +528,8 @@
                     var emotion = data.emotion || "normal";
                     var loveUpVal = parseInt(data.love_up) || 0; 
 
-                    if (loveUpVal !== 0) {
+                    // サンドボックスモードでは好感度変動を無効化
+                    if (!TYRANO.kag.stat.f.is_sandbox&&loveUpVal !== 0) {
                         var current = parseInt(f.love_level) || 0;
                         f.love_level = current + loveUpVal; 
                         

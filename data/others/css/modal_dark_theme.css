@@ -56,8 +56,8 @@
 
 /* フッター（ボタン領域） */
 .dialog-dark .ui-dialog-buttonpane {
-    background: #2b2d31; /* メイン背景と同じ */
-    border-top: 1px solid #3a3a3a;
+    background: #2b2d31 !important; /* メイン背景と同じ */
+    border-top: 1px solid #3a3a3a !important;
     padding: 5px 5px;
     padding-top: 2px;
     padding-bottom: 2px;
@@ -68,23 +68,23 @@
 
 /* コピーボタン */
 .dialog-dark .ui-dialog-buttonpane .ui-button {
-    background: #4c4c4c;
-    color: #ffffff;
-    border: none;
-    font-weight: bold;
-    border-radius: 4px;
-    margin: 0;
-    padding: 5px 5px; /* 上下5px、左右15px */
-    font-size: 10px;
+    background: #3a3d44 !important;
+    color: #ffffff !important;
+    border: 1px solid #4f545c !important;
+    padding: 4px 12px !important;
+    border-radius: 4px !important;
+    font-size: 14px !important;
+    box-shadow: none !important;
+    transform: none !important;
 }
 .dialog-dark .ui-dialog-buttonpane .ui-button:hover {
-    background: #212121;
+    background: #212121 !important;
 }
 /* 実行中(disabled)のボタン */
 .dialog-dark .ui-dialog-buttonpane .ui-button:disabled {
-    background: #4e5058;
-    color: #96989d;
-    opacity: 1;
+    background: #4e5058!important;
+    color: #96989d!important;
+    opacity: 1 !important;
 }
 
 /* リサイズハンドル */
