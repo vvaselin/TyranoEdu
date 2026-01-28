@@ -41,7 +41,7 @@ $(".logout_btn").off("click").on("click", async function() {
     TYRANO.kag.stat.f.user_id = null;
     TYRANO.kag.stat.f.ai_memory = null;
     tyrano.plugin.kag.ftag.startTag("chara_hide", { name: "mocha", time: 0 });
-    tyrano.plugin.kag.ftag.startTag("jump", { storage: "auth.ks" });
+    tyrano.plugin.kag.ftag.startTag("jump", { storage: "auth_google.ks" });
     tyrano.plugin.kag.ftag.startTag("free_filter");
     tyrano.plugin.kag.ftag.startTag("freeimage", { layer: "0" });
 });
@@ -59,11 +59,11 @@ $(".logout_btn").off("click").on("click", async function() {
 [button name="question_before" graphic="../fgimage/icons/quiz_blue.svg" x=100 y=610 height="80" ]
 [button_ex name="question_before" enter_fade=100 tip="../fgimage/tiptools/事前アンケート.png" tip_pos="top"]
 [button name="test_before" graphic="../fgimage/icons/edit_square_blue.svg" x=250 y=610 height="80" ]
-[button_ex name="test_before" enter_fade=100 tip="../fgimage/tiptools/事前アンケート.png" tip_pos="top"]
+[button_ex name="test_before" enter_fade=100 tip="../fgimage/tiptools/事前テスト.png" tip_pos="top"]
 [button name="test_after" graphic="../fgimage/icons/edit_square_red.svg" x=400 y=610 height="80" ]
-[button_ex name="test_after" enter_fade=100 tip="../fgimage/tiptools/事前アンケート.png" tip_pos="top"]
+[button_ex name="test_after" enter_fade=100 tip="../fgimage/tiptools/事後テスト.png" tip_pos="top"]
 [button name="question_after" graphic="../fgimage/icons/quiz_red.svg" x=550 y=610 height="80" ]
-[button_ex name="question_after" enter_fade=100 tip="../fgimage/tiptools/事前アンケート.png" tip_pos="top"]
+[button_ex name="question_after" enter_fade=100 tip="../fgimage/tiptools/事後アンケート.png" tip_pos="top"]
 
 [mask_off time=500]
 

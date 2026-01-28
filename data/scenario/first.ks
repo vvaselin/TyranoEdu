@@ -81,7 +81,7 @@ sb.auth.getSession().then(({ data: { session } }) => {
         tyrano.plugin.kag.ftag.startTag("jump", { target: "*load_user_data" });
     } else {
         // 未ログイン -> ログイン画面へ移動
-        tyrano.plugin.kag.ftag.startTag("jump", { storage: "auth.ks" });
+        tyrano.plugin.kag.ftag.startTag("jump", { storage: "auth_google.ks" });
     }
 });
 [endscript]
