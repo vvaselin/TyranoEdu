@@ -50,7 +50,10 @@ $(".logout_btn").off("click").on("click", async function() {
 [image name="ネームプレート" storage="NamePlate.png" layer="0" x=-10 y=10 time="0"  height="100" width="450" ]
 
 ; ユーザー情報
-[ptext layer="fix" x="100" y="15" color="white" text="&TYRANO.kag.stat.f.user_name" size="30" align="left"  bold="bold" ]
+[ptext name="user_name_display" layer="fix" x="100" y="15" color="white" text="&TYRANO.kag.stat.f.user_name" size="30" align="left"  bold="bold" ]
+
+[button name="edit_name_btn" graphic="../fgimage/icons/edit.svg" x="400" y="15" height="40" fix="true" role="none"]
+[button_ex name="edit_name_btn" enter_fade=100 tip="../fgimage/tiptools/ユーザー名変更.png" tip_pos="static" tip_x="300" tip_y="50"]
 
 [ptext layer="fix" x="30" y="13" color="0xF4E511" text="Lv." size="25" align="center" bold="bold"  cond="f.user_role == 'experimental' "]
 [ptext layer="fix" x="25" y="33" color="white" text="&TYRANO.kag.stat.f.love_level" size="50" align="center" bold="bold"  cond="f.user_role == 'experimental' "]
@@ -64,6 +67,68 @@ $(".logout_btn").off("click").on("click", async function() {
 [button_ex name="test_after" enter_fade=100 tip="../fgimage/tiptools/事後テスト.png" tip_pos="top"]
 [button name="question_after" graphic="../fgimage/icons/quiz_red.svg" x=550 y=610 height="80" ]
 [button_ex name="question_after" enter_fade=100 tip="../fgimage/tiptools/事後アンケート.png" tip_pos="top"]
+
+[html]
+<div id="dialog-confirm" title="名前の変更" style="display:none;">
+    <p style="font-size:16px; margin-bottom:10px; color: white;">新しいユーザー名（2〜10文字）</p>
+    <input type="text" id="new-user-name" maxlength="10">
+</div>
+[endhtml]
+
+[iscript]
+// 編集ボタンのクリックイベント
+$(".edit_name_btn").off("click").on("click", function() {
+    // 現在の名前をインプットにセット
+    $("#new-user-name").val(TYRANO.kag.stat.f.user_name);
+    
+    $("#dialog-confirm").dialog({
+        resizable: false,
+        height: "auto",
+        width: 400,
+        modal: true,
+        draggable: false,
+        dialogClass: "name-edit-dialog",
+        buttons: {
+            "保存": async function() {
+                const newName = $("#new-user-name").val().trim();
+                
+                // バリデーション
+                if (newName.length < 2) {
+                    alert("ユーザー名は2文字以上で入力してください");
+                    return;
+                }
+                const validPattern = /^[a-zA-Z0-9あ-んア-ン一-龠々]+$/;
+                if (!validPattern.test(newName)) {
+                    alert("記号やスペースは使用できません");
+                    return;
+                }
+
+                // Supabase更新
+                if (window.sb) {
+                    const { error } = await window.sb
+                        .from('profiles')
+                        .update({ name: newName })
+                        .eq('id', TYRANO.kag.stat.f.user_id);
+
+                    if (error) {
+                        alert("エラー: " + error.message);
+                        return;
+                    }
+                }
+
+                // ティラノ変数の更新と表示のリフレッシュ
+                TYRANO.kag.stat.f.user_name = newName;
+                $(".user_name_display").text(newName);
+                
+                $(this).dialog("close");
+            },
+            "キャンセル": function() {
+                $(this).dialog("close");
+            }
+        }
+    });
+});
+[endscript]
 
 [mask_off time=500]
 

@@ -610,3 +610,54 @@
 .question_after{
   filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
 }
+
+/* 名前編集ダイアログのスタイル */
+.ui-dialog.name-edit-dialog {
+    background: rgba(20, 20, 30, 0.95) !important;
+    border: 2px solid #2196F3 !important;
+    border-radius: 8px !important;
+    color: white !important;
+    z-index: 10005 !important;
+}
+
+.ui-dialog.name-edit-dialog .ui-dialog-titlebar {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid #444 !important;
+    color: #2196F3 !important;
+    font-weight: bold;
+}
+.name-edit-dialog p {
+    color: white !important;
+}
+
+.name-edit-dialog input {
+    width: 100%;
+    padding: 10px;
+    font-size: 20px;
+    color: white !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid #444 !important;
+    box-sizing: border-box;
+}
+
+.ui-dialog-buttonpane {
+    background: transparent !important;
+    border-top: 1px solid #444 !important;
+}
+
+.ui-dialog-buttonset button {
+    background: #2196F3 !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px 20px !important;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.user_name_display{
+  width: 300px !important;
+  border-bottom: 2px solid white !important;
+  padding-bottom: 2px;
+  display: inline-block !important;
+}
