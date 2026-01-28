@@ -111,7 +111,7 @@ $("#modal_copy_button_id").button("disable");
 ; 実行結果モーダル表示ボタン
 [glink fix="true" color="mybtn_01" storage="editor.ks" text="コンソール" target="*open_result_window" width="140" size="20" x="645" y="650"]
 ; 採点
-[glink fix="true" color="mybtn_07" storage="editor.ks" text="提出" target="*submit" width="200" size="20" x="15" y="655"]
+[glink fix="true" color="mybtn_07" storage="editor.ks" text="提出" target="*submit" width="200" size="20" x="15" y="655" cond="f.Isandbox == true" ]
 ; 課題選択に戻る
 [glink color="mybtn_09" storage="editor.ks" text="戻る↩" target="*exit_chat" width="200" size="20" x="20" y="10"]
 
@@ -343,4 +343,8 @@ if (window.mascot_chat_save) {
 
 *back_real
 ; 元の画面に戻る
-[jump storage="select.ks" target="*start"]
+[if exp="f.Isandbox == true"]
+    [jump storage="home.ks" target="*start"]
+[else]
+    [jump storage="select.ks" target="*start"]
+[endif]

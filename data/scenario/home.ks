@@ -16,17 +16,20 @@
 [glink color="ts22" text="トークモード" target="*developing" x="850" y="570" width="300" size="30" cond="f.user_role == 'experimental' "]
 
 ; 課題選択画面へ移動
-[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xf88c;</span> 課題" target="*toSelect" x="600" y="100" height="130" width="510" size="60"]
+[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xf88c;</span> 課題" target="*toSelect" x="600" y="100" height="100" width="510" size="60"]
+
+; サンドボックスモード
+[glink color="mybtn_perspective mybtn_R" text="サンドボックス" target="*toSanbox" x="610" y="280" height="60" width="515" size="40"]
 
 ;キャラ情報
-[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xe7fd;</span> キャラ" target="*developing"  x="630" y="320" height="80" width="230" size="35" cond="f.user_role == 'experimental' "]
+[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xe7fd;</span> キャラ" target="*developing"  x="630" y="390" height="80" width="230" size="35" cond="f.user_role == 'experimental' "]
 
 ; 資料
-[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xe0e0;</span> 資料" target="*toDocment" x="935" y="312" height="105" width="200" size="35"]
+[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xe0e0;</span> 資料" target="*toDocment" x="935" y="395" height="105" width="200" size="35"]
 
 
-[chara_show name="mocha" left=80  width=680 top =90 cond="f.user_role == 'experimental' "]
-[clickable x=260 y=110 width=300 height=540 target="*mocha_reaction" cond="f.user_role == 'experimental'" ]
+[chara_show name="mocha" left=40  width=680 top =90 cond="f.user_role == 'experimental' "]
+[clickable x=220 y=110 width=300 height=540 target="*mocha_reaction" cond="f.user_role == 'experimental'" ]
 
 [image name="バー" storage="bar.png" layer="0" x=10 y=650 time="0" width="1000" height="50" ]
 
@@ -149,6 +152,22 @@ $(".edit_name_btn").off("click").on("click", function() {
 [clearfix]
 [chara_hide name="mocha" time=0]
 [jump storage="doc.ks" target="*start"]
+
+*toSanbox
+[free_filter]
+[freeimage layer="0" ]
+; エディタ画面(サンドボックスモード)へ移動
+[clearfix]
+
+[chara_hide name="mocha" time=0]
+
+[eval exp="f.Isandbox = true"]
+
+[if exp="f.user_role == 'experimental' "]
+[jump storage="editor.ks" target="*start"]
+[else]
+[jump storage="editor_control.ks" target="*start"]
+[endif]
 
 *developing
 [iscript]

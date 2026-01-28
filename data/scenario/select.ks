@@ -116,9 +116,11 @@ if(TYRANO.kag.stat.f.all_tasks){
 }
 [endscript]
 
+[eval exp="f.Isandbox = false' "]
+
 ; エディタ画面へ移動
 [if exp="f.user_role == 'experimental' "]
-[jump storage="editor.ks" target="*start"]
+    [jump storage="editor.ks" target="*start"]
 [else]
-[jump storage="editor_control.ks" target="*start"]
+    [jump storage="editor_control.ks" target="*start"]
 [endif]
