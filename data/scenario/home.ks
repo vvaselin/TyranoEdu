@@ -55,21 +55,25 @@ $(".logout_btn").off("click").on("click", async function() {
 ; ユーザー情報
 [ptext name="user_name_display" layer="fix" x="100" y="15" color="white" text="&TYRANO.kag.stat.f.user_name" size="30" align="left"  bold="bold" ]
 
-[button name="edit_name_btn" graphic="../fgimage/icons/edit.svg" x="400" y="15" height="40" fix="true" role="none"]
-[button_ex name="edit_name_btn" enter_fade=100 tip="../fgimage/tiptools/ユーザー名変更.png" tip_pos="static" tip_x="300" tip_y="50"]
+; ユーザー名編集ボタン
+[glink name="btn-svg-icon btn-size-s btn-icon-edit tooltip-bottom" text=""  x="400" y="15" ]
 
 [ptext layer="fix" x="30" y="13" color="0xF4E511" text="Lv." size="25" align="center" bold="bold"  cond="f.user_role == 'experimental' "]
 [ptext layer="fix" x="25" y="33" color="white" text="&TYRANO.kag.stat.f.love_level" size="50" align="center" bold="bold"  cond="f.user_role == 'experimental' "]
 
 ; アンケートボタン
-[button name="question_before" graphic="../fgimage/icons/quiz_blue.svg" x=100 y=610 height="80" ]
-[button_ex name="question_before" enter_fade=100 tip="../fgimage/tiptools/事前アンケート.png" tip_pos="top"]
-[button name="test_before" graphic="../fgimage/icons/edit_square_blue.svg" x=250 y=610 height="80" ]
-[button_ex name="test_before" enter_fade=100 tip="../fgimage/tiptools/事前テスト.png" tip_pos="top"]
-[button name="test_after" graphic="../fgimage/icons/edit_square_red.svg" x=400 y=610 height="80" ]
-[button_ex name="test_after" enter_fade=100 tip="../fgimage/tiptools/事後テスト.png" tip_pos="top"]
-[button name="question_after" graphic="../fgimage/icons/quiz_red.svg" x=550 y=610 height="80" ]
-[button_ex name="question_after" enter_fade=100 tip="../fgimage/tiptools/事後アンケート.png" tip_pos="top"]
+[glink name="btn-svg-icon btn-quiz-blue" text="" target="*pre_test" x=100 y=600 ]
+[glink name="btn-svg-icon btn-edit-blue" text="" target="*pre_survey" x=250 y=600 ]
+[glink name="btn-svg-icon btn-edit-red" text="" target="*post_survey" x=400 y=600 ]
+[glink name="btn-svg-icon btn-quiz-red" text="" target="*post_test" x=550 y=600 ]
+
+[iscript]
+$(".btn-icon-edit").attr("data-tooltip", "ユーザー名変更");
+$(".btn-quiz-blue").attr("data-tooltip", "事前テスト");
+$(".btn-edit-blue").attr("data-tooltip", "事前アンケート");
+$(".btn-edit-red").attr("data-tooltip", "事後アンケート");
+$(".btn-quiz-red").attr("data-tooltip", "事後テスト");
+[endscript]
 
 [html]
 <div id="dialog-confirm" title="名前の変更" style="display:none;">
@@ -80,7 +84,7 @@ $(".logout_btn").off("click").on("click", async function() {
 
 [iscript]
 // 編集ボタンのクリックイベント
-$(".edit_name_btn").off("click").on("click", function() {
+$(".btn-size-s").off("click").on("click", function() {
     // 現在の名前をインプットにセット
     $("#new-user-name").val(TYRANO.kag.stat.f.user_name);
     
@@ -196,4 +200,24 @@ alert("ただいま開発中です。");
 
 @layopt layer="message0" visible=false
 #
+[jump target="*menu_loop"]
+
+*pre_survey
+; 事前アンケート
+[web url="https://forms.cloud.microsoft/r/SF5yeuaADx" ]
+[jump target="*menu_loop"]
+
+*pre_test
+; 事前テスト
+[web url="https://forms.cloud.microsoft/r/SF5yeuaADx" ]
+[jump target="*menu_loop"]
+
+*post_test
+; 事後テスト
+[web url="https://forms.cloud.microsoft/r/SF5yeuaADx" ]
+[jump target="*menu_loop"]
+
+*post_survey
+; 事後アンケート
+[web url="https://forms.cloud.microsoft/r/SF5yeuaADx" ]
 [jump target="*menu_loop"]

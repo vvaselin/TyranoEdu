@@ -1,0 +1,87 @@
+
+/* --- SVGアイコンボタンの共通ベーススタイル --- */
+.btn-svg-icon {
+    position: absolute; /* 位置を固定 */
+    display: block !important;
+    width: 90px !important;
+    height: 90px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background-size: 100% 100% !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    cursor: pointer;
+    box-sizing: border-box !important;
+    line-height: 0 !important; /* テキスト用の行間を排除 */
+    font-size: 0 !important;   /* テキストサイズを0にして判定への影響を消す */
+}
+
+.btn-svg-icon:hover {
+    transform: scale(1.1); /* ホバー時に少し大きくする */
+}
+
+/* --- ツールチップ本体の修正 --- */
+.btn-svg-icon::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%; /* ボタンから少し離す */
+    left: 50%;
+    transform: translateX(-50%);
+    
+    /* ボックスのスタイル：角丸長方形 */
+    background: rgba(0, 0, 0, 0.9) !important; /* 透過を抑えた濃い黒 */
+    color: #ffffff !important;
+    padding: 8px 14px !important; /* 上下左右に適切な余白 */
+    border-radius: 8px !important;  /* 角丸を強調 */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* 境界をくっきりさせる */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);   /* 浮遊感 */
+    
+    /* テキストのスタイル：中央配置と高さの復元 */
+    font-size: 24px !important;
+    font-weight: bold !important; 
+    line-height: 1.2 !important; /* ←【重要】親の 0 を上書きして中央に配置 */
+    text-align: center;
+    white-space: nowrap;
+    
+    /* 表示・アニメーションの制御 */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* --- ホバー時に少し浮き上がる演出を追加 --- */
+.btn-svg-icon:hover::after {
+    opacity: 1;
+    visibility: visible;
+    /* 左右中央(50%)を維持しつつ、上に5pxスライド */
+    transform: translateX(-50%) translateY(-5px);
+}
+
+/* --- 各ボタン専用のスタイル（SVGパスの指定） --- */
+/* パスは mystyle.css から見た相対パス ../../fgimage/icons/ になります */
+.btn-quiz-blue { background-image: url(../../../fgimage/icons/quiz_blue.svg) !important; }
+.btn-edit-blue { background-image: url(../../../fgimage/icons/edit_square_blue.svg) !important; }
+.btn-edit-red  { background-image: url(../../../fgimage/icons/edit_square_red.svg) !important; }
+.btn-quiz-red  { background-image: url(../../../fgimage/icons/quiz_red.svg) !important; }
+
+/* --- 小さいボタン（40px）用のサイズ --- */
+.btn-size-s {
+    width: 40px !important;
+    height: 40px !important;
+}
+.tooltip-bottom::after {
+    bottom: auto !important;
+    left: 300% !important; 
+}
+
+.tooltip-bottom:hover::after {
+    transform: translateX(-50%) translateY(5px) !important;
+}
+.btn-icon-edit { 
+    background-image: url(../../../fgimage/icons/edit.svg) !important; 
+}
