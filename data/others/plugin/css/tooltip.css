@@ -1,26 +1,44 @@
 
 /* --- SVGアイコンボタンの共通ベーススタイル --- */
 .btn-svg-icon {
-    position: absolute; /* 位置を固定 */
+    position: absolute;
     display: block !important;
     width: 90px !important;
     height: 90px !important;
     padding: 0 !important;
     margin: 0 !important;
-    background-size: 100% 100% !important;
-    background-repeat: no-repeat !important;
-    background-position: center !important;
+    
+    /* 重要：glinkのデフォルト背景（画像や色）を完全に消去する */
+    background-image: none !important; 
     background-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
+    
     cursor: pointer;
     box-sizing: border-box !important;
-    line-height: 0 !important; /* テキスト用の行間を排除 */
-    font-size: 0 !important;   /* テキストサイズを0にして判定への影響を消す */
+    z-index: 10;
 }
 
-.btn-svg-icon:hover {
-    transform: scale(1.1); /* ホバー時に少し大きくする */
+.btn-svg-icon::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    
+    /* 修正：100% 100% だと画像が歪むため contain に変更 */
+    background-size: contain !important; 
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    
+    /* 縁取り設定 */
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8));
+    transition: transform 0.2s ease;
+}
+
+.btn-svg-icon:hover::before {
+    transform: scale(1.1);
 }
 
 /* --- ツールチップ本体の修正 --- */
@@ -52,6 +70,7 @@
     transition: opacity 0.2s ease, transform 0.2s ease;
     pointer-events: none;
     z-index: 9999;
+    filter: none !important;
 }
 
 /* --- ホバー時に少し浮き上がる演出を追加 --- */
@@ -64,24 +83,31 @@
 
 /* --- 各ボタン専用のスタイル（SVGパスの指定） --- */
 /* パスは mystyle.css から見た相対パス ../../fgimage/icons/ になります */
-.btn-quiz-blue { background-image: url(../../../fgimage/icons/quiz_blue.svg) !important; }
-.btn-edit-blue { background-image: url(../../../fgimage/icons/edit_square_blue.svg) !important; }
-.btn-edit-red  { background-image: url(../../../fgimage/icons/edit_square_red.svg) !important; }
-.btn-quiz-red  { background-image: url(../../../fgimage/icons/quiz_red.svg) !important; }
+.btn-quiz-blue::before { background-image: url(../../../fgimage/icons/quiz_blue.svg) !important; }
+.btn-edit-blue::before { background-image: url(../../../fgimage/icons/edit_square_blue.svg) !important; }
+.btn-edit-red::before { background-image: url(../../../fgimage/icons/edit_square_red.svg) !important; }
+.btn-quiz-red::before { background-image: url(../../../fgimage/icons/quiz_red.svg) !important; }
 
 /* --- 小さいボタン（40px）用のサイズ --- */
 .btn-size-s {
     width: 40px !important;
     height: 40px !important;
 }
+.btn-size-s::before {
+    background-size: 100% !important; 
+}
+.btn-svg-icon:hover::before {
+    transform: scale(1.1);
+}
+
 .tooltip-bottom::after {
     bottom: auto !important;
     left: 300% !important; 
 }
 
 .tooltip-bottom:hover::after {
-    transform: translateX(-50%) translateY(5px) !important;
+    transform: translateX(-50%) translateY(calc(-5px * var(--dir, 1)));
 }
-.btn-icon-edit { 
+.btn-icon-edit::before { 
     background-image: url(../../../fgimage/icons/edit.svg) !important; 
 }

@@ -21,6 +21,7 @@
 [loadcss file="./data/others/plugin/css/button.css"]
 [loadcss file="./data/others/plugin/css/tooltip.css"]
 [loadcss file="./data/others/plugin/css/bubbles.css"]
+[loadcss file="./data/others/plugin/css/perse_btn.css"]
 
 ; キャラ定義
 [chara_new name name="mocha" storage="chara/mocha/normal.png" jname="モカ"]

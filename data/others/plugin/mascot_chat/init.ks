@@ -405,7 +405,7 @@
                 .finally(() => {
                     inputField.prop("disabled", false).attr("placeholder", "メッセージを入力...").focus();
                     sendButton.prop("disabled", false);
-                    inputField.css('height', 'auto'); 
+                    inputField.css('height', '45px');
                 });
             }
 

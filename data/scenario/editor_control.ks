@@ -383,4 +383,8 @@ if (window.ai_chat_save) {
 
 *back_real
 ; 元の画面に戻る
-[jump storage="select.ks" target="*start"]
+[if exp="f.is_sandbox == true"]
+    [jump storage="home.ks" target="*start"]
+[else]
+    [jump storage="select.ks" target="*start"]
+[endif]
