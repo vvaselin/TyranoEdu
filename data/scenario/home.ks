@@ -67,17 +67,17 @@ $(".logout_btn").off("click").on("click", async function() {
 
 ; アンケートボタン
 [image name="バー" storage="bar.png" layer="0" x=10 y=650 time="0" width="1000" height="50" ]
-[glink name="btn-svg-icon btn-quiz-blue" text="" target="*pre_test" x=100 y=600 ]
-[glink name="btn-svg-icon btn-edit-blue" text="" target="*pre_survey" x=250 y=600 ]
-[glink name="btn-svg-icon btn-edit-red" text="" target="*post_survey" x=400 y=600 ]
-[glink name="btn-svg-icon btn-quiz-red" text="" target="*post_test" x=550 y=600 ]
+[glink name="btn-svg-icon btn-quiz-blue" text="" target="*pre_survey" x=100 y=600 ]
+[glink name="btn-svg-icon btn-edit-blue" text="" target="*pre_test" x=250 y=600 ]
+[glink name="btn-svg-icon btn-edit-red" text="" target="*post_test" x=400 y=600 ]
+[glink name="btn-svg-icon btn-quiz-red" text="" target="*post_survey" x=550 y=600 ]
 
 [iscript]
 $(".btn-icon-edit").attr("data-tooltip", "ユーザー名変更");
-$(".btn-quiz-blue").attr("data-tooltip", "事前テスト");
-$(".btn-edit-blue").attr("data-tooltip", "事前アンケート");
-$(".btn-edit-red").attr("data-tooltip", "事後アンケート");
-$(".btn-quiz-red").attr("data-tooltip", "事後テスト");
+$(".btn-quiz-blue").attr("data-tooltip", "事前アンケート");
+$(".btn-edit-blue").attr("data-tooltip", "事前テスト");
+$(".btn-edit-red").attr("data-tooltip", "事後テスト");
+$(".btn-quiz-red").attr("data-tooltip", "事後アンケート");
 [endscript]
 
 [html]
@@ -216,15 +216,15 @@ alert("ただいま開発中です。");
 
 *pre_test
 ; 事前テスト
-[web url="https://forms.cloud.microsoft/r/SF5yeuaADx" ]
+[web url="https://forms.cloud.microsoft/r/8R55L3ec0M" ]
 [jump target="*menu_loop"]
 
 *post_test
 ; 事後テスト
-[web url="https://forms.cloud.microsoft/r/SF5yeuaADx" ]
+[web url="https://forms.cloud.microsoft/r/1sXxwRviJM" ]
 [jump target="*menu_loop"]
 
 *post_survey
 ; 事後アンケート
-[web url="https://forms.cloud.microsoft/r/SF5yeuaADx" ]
+[web url="https://forms.cloud.microsoft/r/EMPTPmkMMp" ]
 [jump target="*menu_loop"]
