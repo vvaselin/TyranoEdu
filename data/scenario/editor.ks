@@ -6,6 +6,14 @@
 [bg storage="standard.png" time="0"]
 [stop_keyconfig]
 
+[iscript]
+TYRANO.kag.stat.f.prev_params = {joy:0, trust:0, fear:0, anger:0, shy:0, surprise:0};
+TYRANO.kag.stat.f.prev_output = "";
+if (window.clearMascotChatHistory) {
+    window.clearMascotChatHistory();
+}
+[endscript]
+
 ; AIチャットUIを初期化して表示
 [mascot_chat_show]
 

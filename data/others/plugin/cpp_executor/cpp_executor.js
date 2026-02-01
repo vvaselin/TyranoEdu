@@ -61,6 +61,7 @@
                     var shortResult = data.result.substring(0, 100); 
                     trigger("ユーザーがコードを実行しました。実行結果: " + shortResult);
                 }
+                TYRANO.kag.stat.f.prev_output = data.result;
             })
             .catch(error => {
                 // 失敗した結果を変数に格納
@@ -70,6 +71,7 @@
                 if (pm.silent !== "true" && trigger) {
                     trigger("コード実行時にエラーが発生しました: " + error.message);
                 }
+                TYRANO.kag.stat.f.prev_output = "エラー:\n" + error.message;
             })
             .finally(() => {
                 // API通信が完了したら、ティラノスクリプトの次のタグに進ませる
