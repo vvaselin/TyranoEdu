@@ -1,0 +1,32 @@
+.scroll_scrollable {
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scroll_scrollable::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll_adjustment {
+  position: relative;
+}
+
+.scroll_scrollbar {
+  position: absolute;
+  pointer-events: none;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.scrollbar-tumami {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 50px;
+}

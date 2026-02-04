@@ -36,11 +36,12 @@
 
 
         <div class="love-gauge-box">
+            <div class="love-level-display">Lv.<span class="love-level-num">1</span></div>
             <div class="love-icon">♥</div>
             <div class="love-gauge-track">
                 <div class="love-gauge-fill"></div>
             </div>
-            <div class="love-text">0</div>
+            <div class="love-text">0 / 16</div>
         </div>
 
         <div class="ai-chat-form">
@@ -357,6 +358,11 @@
                     var emotion = data.emotion || "normal";
                     var loveUpVal = parseInt(data.love_up) || 0; 
 
+                    // 前回の感情パラメータと出力を保存
+                    if (data.parameters) {
+                        TYRANO.kag.stat.f.prev_params = data.parameters;
+                    }
+
                     // サンドボックスモードでは好感度変動を無効化
                     if (!TYRANO.kag.stat.f.is_sandbox&&loveUpVal !== 0) {
                         var current = parseInt(f.love_level) || 0;
@@ -377,9 +383,7 @@
 
                         window.updateLoveGaugeUI();
 
-                        if (data.parameters) {
-                            TYRANO.kag.stat.f.prev_params = data.parameters;
-                        }
+                        
                     }
                     
                     addMessage("モカ", aiText, false);
@@ -409,20 +413,57 @@
             window.updateLoveGaugeUI = function() {
                 if (typeof TYRANO.kag.stat.f === "undefined") return;
                 
-                var current = parseInt(TYRANO.kag.stat.f.love_level) || 0;
+                // 現在の総親密度
+                var totalLove = parseInt(TYRANO.kag.stat.f.love_level) || 0;
                 
-                // ゲージの幅を計算 (Max 100 と仮定。100を超えてもバーは満タンのまま)
-                var percent = Math.min(100, Math.max(0, current));
+                // レベル境界値（サーバー側の判定ロジックと同期）
+                var thresholds = [0, 16, 31, 51, 71, 100]; 
+                var currentLv = 1;
+                var minLove = 0;
+                var maxLove = 16;
+
+                // 現在のレベルを判定
+                for (var i = 0; i < thresholds.length - 1; i++) {
+                    if (totalLove >= thresholds[i]) {
+                        currentLv = i + 1;
+                        minLove = thresholds[i];
+                        maxLove = thresholds[i+1]-1;
+                    }
+                }
+
+                // レベル内での進捗率計算
+                var percent = 0;
+                var displayStr = "";
                 
-                // アニメーション付きで反映
-                $(".love-gauge-fill").css("width", percent + "%");
-                $(".love-text").text(current);
+                // Lv.5 (71以上) の場合も同様に 71~100 の間で計算
+                if (currentLv <= 5) {
+                    // 分母が0にならないようチェック（100-100など）
+                    var range = maxLove - minLove;
+                    if (range > 0) {
+                        percent = ((totalLove - minLove) / range) * 100;
+                    } else {
+                        percent = 100;
+                    }
+
+                    displayStr = totalLove + " / " + maxLove;
+                    
+                    if (totalLove >= 100) {
+                        displayStr = totalLove + " (MAX)";
+                        percent = 100;
+                    }
+                }
+
+                // UIへの反映（コンテナ内から確実に探す）
+                var $container = $(".ai-chat-container");
+                $container.find(".love-level-num").text(currentLv);
+                $container.find(".love-gauge-fill").css("width", Math.min(100, Math.max(0, percent)) + "%");
+                $container.find(".love-text").text(displayStr);
                 
-                // 色の変化演出（オプション）
-                if(current >= 80) {
-                    $(".love-icon").css("color", "#ff4757").css("text-shadow", "0 0 10px #ff4757");
+                // アイコンの色演出
+                if(currentLv >= 4) {
+                    $container.find(".love-icon").css("color", "#ff4757").css("text-shadow", "0 0 10px #ff4757");
                 } else {
-                    $(".love-icon").css("color", "#ff6b81").css("text-shadow", "none");
+                    $container.find(".love-icon").css("color", "#ff6b81").css("text-shadow", "none");
                 }
             };
 
@@ -524,6 +565,11 @@
                     var aiText = data.text;
                     var emotion = data.emotion || "normal";
                     var loveUpVal = parseInt(data.love_up) || 0; 
+
+                    // 前回の感情パラメータと出力を保存
+                    if (data.parameters) {
+                        TYRANO.kag.stat.f.prev_params = data.parameters;
+                    }
 
                     // サンドボックスモードでは好感度変動を無効化
                     if (!TYRANO.kag.stat.f.is_sandbox&&loveUpVal !== 0) {

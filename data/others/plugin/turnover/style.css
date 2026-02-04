@@ -1,0 +1,10 @@
+.turn_start{
+  -webkit-transition: transform .8s ease-out;
+  transition: transform .8s ease-out;
+  transform: rotateY(90deg);
+}
+.turn_end{
+  -webkit-transition: transform .8s ease-out;
+  transition: transform .8s ease-out;
+  transform: rotateY(0deg);
+}
