@@ -38,11 +38,11 @@
 
     [if exp="tf.is_locked == false"]
         ; --- 解放状態 ---
-        [glink name="&tf.l_name" color="mybtn_08" text="&'講義 '+tf.i" x="&tf.x_lecture" y=300 width=250 target="*lecture_jump" exp="&'tf.target_lecture_num='+tf.i"]
+        [glink name="&tf.l_name" color="mybtn_08" text="&'ep. '+tf.i" x="&tf.x_lecture" y=300 width=250 target="*lecture_jump" exp="&'tf.target_lecture_num='+tf.i"]
         [glink name="&tf.t_name" color="mybtn_09" text="&'課題 '+tf.i" x="&tf.x_task" y=300 width=250 target="*common_task_start" exp="&'f.current_task_id=\'task'+tf.i+'\''"]
     [else]
         ; --- ロック状態 ---
-        [glink name="&tf.l_name" color="mybtn_locked" text="&'講義 '+tf.i+' (Lock)'" x="&tf.x_lecture" y=300 width=250 target="*locked"]
+        [glink name="&tf.l_name" color="mybtn_locked" text="&'ep. '+tf.i+' (Lock)'" x="&tf.x_lecture" y=300 width=250 target="*locked"]
         [glink name="&tf.t_name" color="mybtn_locked" text="&'課題 '+tf.i+' (Lock)'" x="&tf.x_task" y=300 width=250 target="*locked"]
     [endif]
 
@@ -71,6 +71,7 @@
 ; ロック時の警告
 *locked
 [dialog type="alert" text="前の課題をクリアすると解放されます。"]
+[scroll_area_del id="select_screen"]
 [jump target="*start"]
 
 ; ホームに戻る
