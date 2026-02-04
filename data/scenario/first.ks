@@ -13,6 +13,7 @@
 [plugin name="ai_chat"]
 [plugin name="doc_viewer"]
 [plugin name="for"]
+[plugin name="scroll_area"]
 [plugin name="theme_kopanda_22_HD_anim"]
 
 [loadcss file="./tyrano/libs/jquery-ui/jquery-ui.css"]

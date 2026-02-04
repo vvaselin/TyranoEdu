@@ -1,32 +1,60 @@
+/* --- スクロールエリア本体 --- */
 .scroll_scrollable {
-  width: 100%;
-  overflow-x: hidden;
-  overflow-y: scroll;
-  -webkit-overflow-scrolling: touch;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  overflow-x: scroll !important; 
+  overflow-y: hidden !important;
+  scrollbar-width: auto !important;
+  /* Firefox用（緑 / 薄灰） */
+  scrollbar-color: #27ae60 #dcdde1; 
 }
+
+/* --- Webkit系（Chrome/Safari）カスタマイズ --- */
 
 .scroll_scrollable::-webkit-scrollbar {
-  display: none;
+  display: block !important;
+  height: 24px !important; /* バーをかなり太めに設定 */
 }
 
-.scroll_adjustment {
-  position: relative;
+.scroll_scrollable::-webkit-scrollbar-track {
+  background: #dcdde1 !important; /* トラックを不透明にして非表示化を防ぐ */
+  border-radius: 12px;
 }
 
-.scroll_scrollbar {
+.scroll_scrollable::-webkit-scrollbar-thumb {
+  background: #27ae60 !important; /* 緑色 */
+  border-radius: 12px;
+  border: 4px solid #dcdde1;      /* トラックと同色の縁取りで浮かす */
+}
+
+.scroll_scrollable::-webkit-scrollbar-thumb:hover {
+  background: #2ecc71 !important;
+}
+
+/* --- ◀ ▶ ボタン --- */
+.scroll_arrow_btn {
   position: absolute;
-  pointer-events: none;
   top: 0;
-  right: 0;
-  bottom: 0;
+  width: 40px;
+  height: calc(100% - 20px); /* バーの分を引く */
+  background: rgba(0, 0, 0, 0.4);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 50px;
+  cursor: pointer;
+  z-index: 20000005;
+  transition: background 0.2s;
+  user-select: none;
 }
 
-.scrollbar-tumami {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  min-height: 50px;
+.scroll_arrow_btn:hover {
+  background: rgba(39, 174, 96, 0.6);
 }
+
+.scroll_arrow_btn:active {
+  background: rgba(39, 174, 96, 0.9);
+}
+
+.scroll_arrow_btn.left { left: 0; border-radius: 0 15px 15px 0; }
+.scroll_arrow_btn.right { right: 0; border-radius: 15px 0 0 15px; }
+.scroll_arrow_btn span { pointer-events: none; }
