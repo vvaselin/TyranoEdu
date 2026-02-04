@@ -181,45 +181,64 @@
     // 読み込み関数
     TYRANO.kag.stat.f.loadDocMarkdown = function(file) {
         var filePath = file;
+        // 1. 基本パスの解決
         if (file.indexOf("http") === -1 && file.indexOf("./") === -1) {
              filePath = "./data/others/plugin/doc_viewer/docs/" + file;
         }
+
+        var baseDir = filePath.substring(0, filePath.lastIndexOf("/") + 1);
+
         $.ajax({
             url: filePath,
-            dataType: 'text', // 明示的にtextとして取得
+            dataType: 'text',
             cache: false,
             success: function(data) {
-                var html = DOMPurify.sanitize(marked.parse(data));
+                // --- 3. 画像パスを強制的に変換するレンダラーの設定 ---
+                var renderer = new marked.Renderer();
+                renderer.image = function(token, title, text) {
+                    var href, altText;
+
+                    if (typeof token === 'object' && token !== null) {
+                        href = token.href;
+                        altText = token.text;
+                        title = token.title;
+                    } else {
+                        href = token;
+                        altText = text;
+                    }
+
+                    var fullHref = href;
+
+                    // href が存在し、かつ文字列であることを確認してから indexOf を実行
+                    if (href && typeof href === 'string') {
+                        if (href.indexOf("http") === -1 && href.indexOf("/") !== 0) {
+                            fullHref = baseDir + href;
+                        }
+                    }
+
+                    return '<img src="' + fullHref + '" alt="' + (altText || '') + '" title="' + (title || '') + '" class="doc-img">';
+                };
+
+                var html = DOMPurify.sanitize(marked.parse(data, { renderer: renderer }));
                 contentArea.html(html);
                 contentArea.scrollTop(0);
 
-                // コピーボタン
+                // --- highlight.jsとコピーボタンの処理 ---
                 contentArea.find("pre code").each(function(i, block) {
+                    hljs.highlightElement(block);
                     var $block = $(block);
                     var $pre = $block.parent("pre");
-                    
-                    // ボタンの配置基準にするため relative を設定
-                    $pre.css("position", "relative"); 
-
-                    // ボタン生成
+                    $pre.css("position", "relative");
                     var copyButton = $('<button class="copy-code-button">コピー</button>');
-                    
-                    // クリックイベント
                     copyButton.on("click", function() {
                         var codeText = $block.text();
                         navigator.clipboard.writeText(codeText).then(() => {
-                            copyButton.text("コピー完了!");
-                            setTimeout(() => { copyButton.text("コピー"); }, 2000);
-                        }, (err) => {
-                            copyButton.text("失敗");
+                            copyButton.text("コピー完了!"); 
                             setTimeout(() => { copyButton.text("コピー"); }, 2000);
                         });
                     });
-
-                    // preタグの中にボタンを追加
                     $pre.append(copyButton);
                 });
-
             },
             error: function() {
                 contentArea.html("<p>読み込みエラー：<br>" + filePath + "</p>");
@@ -419,44 +438,62 @@
     // 読み込み関数
     TYRANO.kag.stat.f.loadDocMarkdown = function(file) {
         var filePath = file;
-        // URLチェック
+        // 1. 基本パスの解決
         if (file.indexOf("http") === -1 && file.indexOf("./") === -1) {
-            filePath = "./data/others/plugin/doc_viewer/docs/" + file;
+             filePath = "./data/others/plugin/doc_viewer/docs/" + file;
         }
+
+        var baseDir = filePath.substring(0, filePath.lastIndexOf("/") + 1);
 
         $.ajax({
             url: filePath,
             dataType: 'text',
             cache: false,
             success: function(data) {
-                // 1. MarkdownをHTMLに変換
-                var html = DOMPurify.sanitize(marked.parse(data));
+                // --- 3. 画像パスを強制的に変換するレンダラーの設定 ---
+                var renderer = new marked.Renderer();
+                renderer.image = function(token, title, text) {
+                    var href, altText;
+
+                    if (typeof token === 'object' && token !== null) {
+                        href = token.href;
+                        altText = token.text;
+                        title = token.title;
+                    } else {
+                        href = token;
+                        altText = text;
+                    }
+
+                    var fullHref = href;
+
+                    // href が存在し、かつ文字列であることを確認してから indexOf を実行
+                    if (href && typeof href === 'string') {
+                        if (href.indexOf("http") === -1 && href.indexOf("/") !== 0) {
+                            fullHref = baseDir + href;
+                        }
+                    }
+
+                    return '<img src="' + fullHref + '" alt="' + (altText || '') + '" title="' + (title || '') + '" class="doc-img">';
+                };
+
+                var html = DOMPurify.sanitize(marked.parse(data, { renderer: renderer }));
                 contentArea.html(html);
                 contentArea.scrollTop(0);
 
-                // 2. highlight.jsの適用とコピーボタンの設置
+                // --- highlight.jsとコピーボタンの処理 ---
                 contentArea.find("pre code").each(function(i, block) {
-                    // シンタックスハイライトを実行
                     hljs.highlightElement(block);
-
-                    // ボタンの設置準備
                     var $block = $(block);
                     var $pre = $block.parent("pre");
                     $pre.css("position", "relative");
-
                     var copyButton = $('<button class="copy-code-button">コピー</button>');
-                    
                     copyButton.on("click", function() {
                         var codeText = $block.text();
                         navigator.clipboard.writeText(codeText).then(() => {
-                            copyButton.text("コピー完了!");
-                            setTimeout(() => { copyButton.text("コピー"); }, 2000);
-                        }, (err) => {
-                            copyButton.text("失敗");
+                            copyButton.text("コピー完了!"); 
                             setTimeout(() => { copyButton.text("コピー"); }, 2000);
                         });
                     });
-
                     $pre.append(copyButton);
                 });
             },

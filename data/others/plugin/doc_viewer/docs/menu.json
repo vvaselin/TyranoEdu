@@ -4,35 +4,35 @@
   {
     "category": "第1章: 入出力",
     "items": [
-       { "title": "文字の出力", "file": "chap1_1.md" },
-       { "title": "文字の入力",       "file": "chap1_2.md" }
+       { "title": "文字の出力", "file": "chap1/1.md" },
+       { "title": "文字の入力",       "file": "chap1/2.md" }
     ]
   },
   {
     "category": "第2章: 変数",
     "items": [
-       { "title": "変数の宣言と型", "file": "chap2_1.md" },
-       { "title": "変数の使い方",   "file": "chap2_2.md" }
+       { "title": "変数の宣言と型", "file": "chap2/1.md" },
+       { "title": "変数の使い方",   "file": "chap2/2.md" }
     ]
   },
   {
     "category": "第3章: 演算",
     "items": [
-       { "title": "四則演算",         "file": "chap3_1.md" }
+       { "title": "四則演算",         "file": "chap3/1.md" }
     ]
   },
   {
     "category": "第4章: 条件分岐",
     "items": [
-       { "title": "if文の使いかた",   "file": "chap4_1.md" },
-       { "title": "比較演算子",       "file": "chap4_2.md" }
+       { "title": "if文の使いかた",   "file": "chap4/1.md" },
+       { "title": "比較演算子",       "file": "chap4/2.md" }
     ]
   },
   {
     "category": "第5章: 繰り返し",
     "items": [
-       { "title": "for文",           "file": "chap5_1.md" },
-       { "title": "while文",         "file": "chap5_2.md" }
+       { "title": "for文",           "file": "chap5/1.md" },
+       { "title": "while文",         "file": "chap5/2.md" }
     ]
   }
 ]

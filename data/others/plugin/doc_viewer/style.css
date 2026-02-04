@@ -298,6 +298,12 @@
     font-weight: bold;
     color: #ffffff; /* 本文(ccc)より明るくして強調 */
 }
+.doc-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 10px 0;
+}
 
 /* --- フルスクリーンモード用の追加 --- */
 .doc-viewer-container.full-mode {
