@@ -336,7 +336,7 @@
                     memoryContext = `\n\n[Long Term Memory Info]\nSummary: ${summary}\nWeaknesses: ${weak}\n`;
                 }
                 
-                var messageToSend = userMessage + historyContext + memoryContext + `\n\n(System Info: Current Love Level is ${currentLove})`;
+                var messageToSend = userMessage + historyContext + memoryContext;
 
                 fetch('/api/chat', {
                     method: 'POST',
@@ -363,8 +363,11 @@
                         TYRANO.kag.stat.f.prev_params = data.parameters;
                     }
 
+                    // 前回クリア済みかどうか
+                    var AlreadyCleared = TYRANO.kag.stat.f.cleared_tasks[TYRANO.kag.stat.f.current_task_id];
+
                     // サンドボックスモードでは好感度変動を無効化
-                    if (!TYRANO.kag.stat.f.is_sandbox&&loveUpVal !== 0) {
+                    if (!AlreadyCleared&&!TYRANO.kag.stat.f.is_sandbox&&loveUpVal !== 0) {
                         var current = parseInt(f.love_level) || 0;
                         f.love_level = current + loveUpVal; 
                         if(f.love_level < 0) f.love_level = 0;
@@ -520,7 +523,7 @@
             };
 
             // window.mascot_chat_trigger としてグローバル公開
-            window.mascot_chat_trigger = function(systemMessage) {
+            window.mascot_chat_trigger = function(systemMessage, is_new_record) {
                 // 必須チェック
                 if (typeof TYRANO.kag.stat.f === "undefined") return;
                 var f = TYRANO.kag.stat.f;
@@ -535,7 +538,7 @@
                 var currentLove = f.love_level || 0;
                 
                 // システム通知であることを明示するプレフィックスを付ける
-                var messageToSend = "[SYSTEM] " + systemMessage + `\n\n(System Info: Current Love Level is ${currentLove})`;
+                var messageToSend = "[SYSTEM] " + systemMessage;
 
                 // AIチャット中状態にする（入力無効化など）
                 var container = $(".ai-chat-container");
@@ -572,7 +575,7 @@
                     }
 
                     // サンドボックスモードでは好感度変動を無効化
-                    if (!TYRANO.kag.stat.f.is_sandbox&&loveUpVal !== 0) {
+                    if (is_new_record&&!TYRANO.kag.stat.f.is_sandbox&&loveUpVal !== 0) {
                         var current = parseInt(f.love_level) || 0;
                         f.love_level = current + loveUpVal; 
                         

@@ -316,66 +316,66 @@ if (task_data) {
 [execute_cpp code=&f.my_code silent="true"]
 ; 採点処理
 [iscript]
-// 課題データ
-var task = TYRANO.kag.stat.f.all_tasks[TYRANO.kag.stat.f.current_task_id];
-var payload = {
-    user_id: TYRANO.kag.stat.f.user_id,
-    task_id: TYRANO.kag.stat.f.current_task_id,
-    code: TYRANO.kag.stat.f['my_code'],     
-    output: TYRANO.kag.stat.f.execution_result,
-    task_desc: task.description,               
-    expected_output: task.expected_output || ""
-};
+    // 課題データ
+    var task = TYRANO.kag.stat.f.all_tasks[TYRANO.kag.stat.f.current_task_id];
+    var payload = {
+        user_id: TYRANO.kag.stat.f.user_id,
+        task_id: TYRANO.kag.stat.f.current_task_id,
+        code: TYRANO.kag.stat.f['my_code'],     
+        output: TYRANO.kag.stat.f.execution_result,
+        task_desc: task.description,               
+        expected_output: task.expected_output || ""
+    };
 
-$.ajax({
-    url: "/api/grade",
-    type: "POST",
-    data: JSON.stringify(payload),
-    contentType: "application/json",
-    dataType: "json",
-    
-    success: function(data) {
-        var html = "";
-        var scoreColor = (data.score >= 80) ? "#00ff00" : "#ff4444";
-        html += "<strong style='font-size:18px; color:" + scoreColor + ";'>" + data.score + "点</strong><br>";
-        html += "<strong>理由:</strong> " + data.reason + "<br>";
-        html += "<strong style='color:#ffffaa;'>アドバイス:</strong> " + data.improvement;      
-        $("#grade-content").html(html);
+    $.ajax({
+        url: "/api/grade",
+        type: "POST",
+        data: JSON.stringify(payload),
+        contentType: "application/json",
+        dataType: "json",
         
-        if(data.score >= 80){
-            alertify.success("合格!");
-            if (!TYRANO.kag.stat.f.cleared_tasks) {
-                TYRANO.kag.stat.f.cleared_tasks = {};
+        success: function(data) {
+            var html = "";
+            var scoreColor = (data.score >= 80) ? "#00ff00" : "#ff4444";
+            html += "<strong style='font-size:18px; color:" + scoreColor + ";'>" + data.score + "点</strong><br>";
+            html += "<strong>理由:</strong> " + data.reason + "<br>";
+            html += "<strong style='color:#ffffaa;'>アドバイス:</strong> " + data.improvement;      
+            $("#grade-content").html(html);
+            
+            var bonusMsg = "";
+            if (data.is_new_record) {
+                bonusMsg = " (自己ベスト更新！)";
+                // ここでクライアント側の好感度も増やしておく
+                if(data.bonus_love > 0) {
+                    var current = parseInt(TYRANO.kag.stat.f.love_level) || 0;
+                    TYRANO.kag.stat.f.love_level = current + data.bonus_love;
+                    alertify.success("ハイスコアボーナス! 好感度+" + data.bonus_love);
+                }
             }
-            // 現在のタスクID (例: "task1") を true にする
-            TYRANO.kag.stat.f.cleared_tasks[TYRANO.kag.stat.f.current_task_id] = true;
-        } else {
-            alertify.error("不合格...");
-        }
 
-        var bonusMsg = "";
-        if (data.is_new_record) {
-             bonusMsg = " (自己ベスト更新！)";
-             // ここでクライアント側の好感度も増やしておく
-             if(data.bonus_love > 0) {
-                var current = parseInt(TYRANO.kag.stat.f.love_level) || 0;
-                TYRANO.kag.stat.f.love_level = current + data.bonus_love;
-                alertify.success("ハイスコアボーナス! 好感度+" + data.bonus_love);
-             }
-        }
+            // ここで採点結果だけを話させる 
+            if (window.mascot_chat_trigger) {
+                // 点数と理由をAIに伝えて、プロンプトの指示通りに反応してもらう
+                var msg = "[SYSTEM] 採点結果: " + data.score + "点。\n評価コメント: " + data.reason;
+                window.mascot_chat_trigger(msg, data.is_new_record);
+            }
 
-        // ここで採点結果だけを話させる 
-        if (window.mascot_chat_trigger) {
-             // 点数と理由をAIに伝えて、プロンプトの指示通りに反応してもらう
-             var msg = "[SYSTEM] 採点結果: " + data.score + "点。\n評価コメント: " + data.reason;
-             window.mascot_chat_trigger(msg);
+            if(data.score >= 80){
+                alertify.success("合格!");
+                if (!TYRANO.kag.stat.f.cleared_tasks) {
+                    TYRANO.kag.stat.f.cleared_tasks = {};
+                }
+                // 現在のタスクID (例: "task1") を true にする
+                TYRANO.kag.stat.f.cleared_tasks[TYRANO.kag.stat.f.current_task_id] = true;
+            } else {
+                alertify.error("不合格...");
+            }
+        },
+        error: function() {
+            $("#grade-content").text("採点サーバーとの通信に失敗しました。");
+            // 通信エラー時もAIに反応させたい場合はここに追記
         }
-    },
-    error: function() {
-        $("#grade-content").text("採点サーバーとの通信に失敗しました。");
-        // 通信エラー時もAIに反応させたい場合はここに追記
-    }
-});
+    });
 [endscript]
 
 [return]

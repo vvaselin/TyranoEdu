@@ -29,6 +29,7 @@
 
     ; 3. [iscript]でUIをfixレイヤーに移動し、イベントを設定する
     [iscript]
+    try{
         var chat_container = $(".ai-chat-container");
         var fix_layer = $(".fixlayer").first();
         fix_layer.append(chat_container); 
@@ -71,13 +72,10 @@
 
         window.ai_chat_set_busy = function(isBusy) {
             const inputField = $(".ai-chat-input");
-            const sendButton = $(".ai-chat-send-button");
             if (isBusy) {
-                inputField.prop("disabled", true).attr("placeholder", "処理中です...");
-                sendButton.prop("disabled", true);
+                inputField.attr("placeholder", "考え中...").prop("disabled", true);
             } else {
-                inputField.prop("disabled", false).attr("placeholder", "メッセージを入力...");
-                sendButton.prop("disabled", false);
+                inputField.attr("placeholder", "メッセージを入力...");
             }
         };
 
@@ -101,7 +99,7 @@
             const task_data = (TYRANO.kag.stat.f.all_tasks && TYRANO.kag.stat.f.current_task_id) ? 
                             TYRANO.kag.stat.f.all_tasks[TYRANO.kag.stat.f.current_task_id] : { description: "課題情報なし" };
 
-            window.ai_chat_add_message("あなた", userMessage, "./data/fgimage/chat/akane/normal.png");
+            ai_chat_add_message("あなた", userMessage, "./data/fgimage/chat/akane/normal.png");
             window.ai_chat_set_busy(true);
             inputField.val("");
 
@@ -116,10 +114,10 @@
             })
             .then(response => response.json())
             .then(data => {
-                window.ai_chat_add_message("あかね", data.text, "./data/fgimage/chat/akane/normal.png");
+                ai_chat_add_message("あかね", data.text, "./data/fgimage/chat/akane/normal.png");
             })
             .catch(error => {
-                window.ai_chat_add_message("エラー", "通信に失敗しました。", "./data/fgimage/chat/akane/naki.png");
+                ai_chat_add_message("エラー", "通信に失敗しました。", "./data/fgimage/chat/akane/naki.png");
             })
             .finally(() => {
                 window.ai_chat_set_busy(false);
@@ -138,7 +136,10 @@
             this.style.height = (this.scrollHeight) + 'px';
         });
 
-        window.ai_chat_add_message = function(sender, text, avatar, is_history_load = false) {
+        function ai_chat_add_message(sender, text, avatar, is_history_load = false) {
+            if (text) {
+                text = text.replace(/\\n/g, '\n');
+            }
             const messagesContainer = $(".ai-chat-messages");
             const cleanHtml = DOMPurify.sanitize(marked.parse(text));
             const messageHTML = `
@@ -179,17 +180,15 @@
             var f = TYRANO.kag.stat.f;
 
             var container = $(".ai-chat-container");
-            var inputField = container.find(".ai-chat-input");
-            inputField.attr("placeholder", "考え中...").prop("disabled", true);
+            window.ai_chat_set_busy(true);
+            inputField.val("");
 
-            var historyContext = "";
-            if (f.ai_chat_history && f.ai_chat_history.length > 0) {
-                historyContext = "\n\n[Conversation History]\n" + 
-                    f.ai_chat_history.slice(-5).map(h => `${h.username}: ${h.message}`).join("\n");
-            }
+            var tasks = f.all_tasks;
+            var current_id = f.current_task_id;
+            var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
+            var messageToSend = "[SYSTEM] " + systemMessage;
 
-            var task_desc = (f.all_tasks && f.current_task_id) ? f.all_tasks[f.current_task_id].description : "課題情報なし";
-            var messageToSend = "[SYSTEM] " + systemMessage + historyContext;
+            window.ai_chat_set_busy(true);
 
             fetch('/api/advisor', {
                 method: 'POST',
@@ -197,17 +196,17 @@
                 body: JSON.stringify({ 
                     message: messageToSend, 
                     code: f['my_code'] || "",
-                    task: task_desc
+                    task: task_data ? task_data.description : "タスクがありません"
                 }),
             })
             .then(res => res.json())
             .then(data => {
-                if (window.ai_chat_add_message) {
-                    window.ai_chat_add_message("あかね", data.text, "./data/fgimage/chat/akane/normal.png");
+                if (ai_chat_add_message) {
+                    ai_chat_add_message("あかね", data.text, "./data/fgimage/chat/akane/normal.png");
                 }
             })
             .finally(() => {
-                inputField.prop("disabled", false).attr("placeholder", "メッセージを入力...");
+                window.ai_chat_set_busy(false);
             });
         };
 
@@ -237,13 +236,14 @@
                 if (callback) callback();
             });
         };
+    } catch (e) { console.error("ai_chat init error", e); }
     [endscript]
 
 [endmacro]
 
 [macro name="ai_chat_talk"]
     [iscript]
-        window.ai_chat_add_message(mp.name, mp.text, mp.avatar);
+        ai_chat_add_message(mp.name, mp.text, mp.avatar);
     [endscript]
 [endmacro]
 

@@ -55,11 +55,13 @@
                 // 成功した結果を変数に格納
                 f.execution_result = data.result;
 
-                const trigger = window.mascot_chat_trigger || window.ai_chat_trigger;
-
-                if (pm.silent !== "true" && trigger) {
+                if (pm.silent !== "true") {
                     var shortResult = data.result.substring(0, 100); 
-                    trigger("ユーザーがコードを実行しました。実行結果: " + shortResult);
+                    if(window.mascot_chat_trigger){
+                        window.mascot_chat_trigger("ユーザーがコードを実行しました。実行結果: " + shortResult, false);
+                    }else{
+                        window.ai_chat_trigger("ユーザーがコードを実行しました。実行結果: " + shortResult);
+                    }
                 }
                 TYRANO.kag.stat.f.prev_output = data.result;
             })
@@ -67,9 +69,13 @@
                 // 失敗した結果を変数に格納
                 f.execution_result = "エラー:\n" + error.message;
 
-                const trigger = window.mascot_chat_trigger || window.ai_chat_trigger;
-                if (pm.silent !== "true" && trigger) {
-                    trigger("コード実行時にエラーが発生しました: " + error.message);
+                if (pm.silent !== "true") {
+                    if(window.mascot_chat_trigger){
+                        window.mascot_chat_trigger("コード実行時にエラーが発生しました: " + error.message, false);
+                    }
+                    else{
+                        window.ai_chat_trigger("コード実行時にエラーが発生しました: " + error.message);
+                    }
                 }
                 TYRANO.kag.stat.f.prev_output = "エラー:\n" + error.message;
             })

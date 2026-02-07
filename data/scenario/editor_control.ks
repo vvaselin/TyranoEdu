@@ -262,7 +262,6 @@ if (task_data) {
 *execute_code
 ; モーダルウィンドウに「実行中...」と表示
 [iscript]
-    window.ai_chat_set_busy(true);
     var $dialog = $("#result_modal");
     // コピーボタン無効化
     $("#modal_copy_button_id").button("disable");
@@ -306,19 +305,12 @@ if (task_data) {
 [execute_cpp code=&f.my_code silent="true"]
 
 [iscript]
-(function(){
-    var f = TYRANO.kag.stat.f;
-    var taskId = f.current_task_id;
-    
-    // --- 修正：安全策。tasksデータがない場合にクラッシュするのを防ぐ ---
-    var tasks = f.all_tasks || {};
-    var task = (taskId && tasks[taskId]) ? tasks[taskId] : { description: "課題なし", expected_output: "" };
-
+    var task = TYRANO.kag.stat.f.all_tasks[TYRANO.kag.stat.f.current_task_id];
     var payload = {
-        user_id: f.user_id,
-        task_id: taskId,
-        code: f['my_code'] || "",     
-        output: f.execution_result || "",
+        user_id: TYRANO.kag.stat.f.user_id,
+        task_id: TYRANO.kag.stat.f.current_task_id,
+        code: TYRANO.kag.stat.f['my_code'],     
+        output: TYRANO.kag.stat.f.execution_result,
         task_desc: task.description,               
         expected_output: task.expected_output || ""
     };
@@ -329,14 +321,20 @@ if (task_data) {
         data: JSON.stringify(payload),
         contentType: "application/json",
         dataType: "json",
+        
         success: function(data) {
-            // --- 1. 課題表示欄（HTML）の更新処理 ---
             var html = "";
             var scoreColor = (data.score >= 80) ? "#00ff00" : "#ff4444";
             html += "<strong style='font-size:18px; color:" + scoreColor + ";'>" + data.score + "点</strong><br>";
-            html += "<strong>理由:</strong> " + (data.reason || "なし") + "<br>";
-            html += "<strong style='color:#ffffaa;'>アドバイス:</strong> " + (data.improvement || "なし");      
+            html += "<strong>理由:</strong> " + data.reason + "<br>";
+            html += "<strong style='color:#ffffaa;'>アドバイス:</strong> " + data.improvement;      
             $("#grade-content").html(html);
+
+            // --- AIチャットへの通知 ---
+            if (window.ai_chat_trigger) {
+                var msg = "採点結果: " + data.score + "点。\n評価コメント: " + +data.reason;
+                window.ai_chat_trigger(msg);
+            }
             
             // 合否通知
             if(data.score >= 80){
@@ -346,19 +344,11 @@ if (task_data) {
             } else {
                 alertify.error("不合格...");
             }
-
-            // --- 2. AIチャットへの通知（トリガーを叩くのみ） ---
-            // マスコットチャット側と同じメッセージ形式にする
-            if (window.ai_chat_trigger) {
-                var msg = "採点結果: " + data.score + "点。\n評価コメント: " + (data.reason || "");
-                window.ai_chat_trigger(msg);
-            }
         },
         error: function() {
             $("#grade-content").text("採点サーバーとの通信に失敗しました。");
         }
     });
-})();
 [endscript]
 
 [return]
