@@ -75,7 +75,9 @@
             if (isBusy) {
                 inputField.attr("placeholder", "考え中...").prop("disabled", true);
             } else {
-                inputField.attr("placeholder", "メッセージを入力...");
+                inputField
+                    .attr("placeholder", "メッセージを入力...")
+                    .prop("disabled", false);
             }
         };
 
@@ -176,12 +178,10 @@
         };
 
         window.ai_chat_trigger = function(systemMessage) {
+            console.error("ai_chat_trigger called");
+
             if (typeof TYRANO.kag.stat.f === "undefined") return;
             var f = TYRANO.kag.stat.f;
-
-            var container = $(".ai-chat-container");
-            window.ai_chat_set_busy(true);
-            inputField.val("");
 
             var tasks = f.all_tasks;
             var current_id = f.current_task_id;
@@ -201,9 +201,12 @@
             })
             .then(res => res.json())
             .then(data => {
-                if (ai_chat_add_message) {
+                if (typeof ai_chat_add_message === "function") {
                     ai_chat_add_message("あかね", data.text, "./data/fgimage/chat/akane/normal.png");
                 }
+            })
+            .catch(err => {
+                console.error("advisor error:", err);
             })
             .finally(() => {
                 window.ai_chat_set_busy(false);
