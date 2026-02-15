@@ -367,7 +367,7 @@
                     var AlreadyCleared = TYRANO.kag.stat.f.cleared_tasks[TYRANO.kag.stat.f.current_task_id];
 
                     // サンドボックスモードでは好感度変動を無効化
-                    if (!AlreadyCleared&&!TYRANO.kag.stat.f.is_sandbox&&loveUpVal !== 0) {
+                    if (!TYRANO.kag.stat.f.is_sandbox&&loveUpVal !== 0) {
                         var current = parseInt(f.love_level) || 0;
                         f.love_level = current + loveUpVal; 
                         if(f.love_level < 0) f.love_level = 0;
@@ -420,7 +420,7 @@
                 var totalLove = parseInt(TYRANO.kag.stat.f.love_level) || 0;
                 
                 // レベル境界値（サーバー側の判定ロジックと同期）
-                var thresholds = [0, 16, 31, 51, 71, 100]; 
+                var thresholds = [0, 11, 26, 41, 71, 100]; 
                 var currentLv = 1;
                 var minLove = 0;
                 var maxLove = 16;
@@ -523,7 +523,7 @@
             };
 
             // window.mascot_chat_trigger としてグローバル公開
-            window.mascot_chat_trigger = function(systemMessage, is_new_record) {
+            window.mascot_chat_trigger = function(systemMessage, is_new_record=false) {
                 // 必須チェック
                 if (typeof TYRANO.kag.stat.f === "undefined") return;
                 var f = TYRANO.kag.stat.f;

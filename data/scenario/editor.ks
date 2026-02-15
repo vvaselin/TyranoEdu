@@ -342,22 +342,11 @@ if (task_data) {
             html += "<strong style='color:#ffffaa;'>アドバイス:</strong> " + data.improvement;      
             $("#grade-content").html(html);
             
-            var bonusMsg = "";
-            if (data.is_new_record) {
-                bonusMsg = " (自己ベスト更新！)";
-                // ここでクライアント側の好感度も増やしておく
-                if(data.bonus_love > 0) {
-                    var current = parseInt(TYRANO.kag.stat.f.love_level) || 0;
-                    TYRANO.kag.stat.f.love_level = current + data.bonus_love;
-                    alertify.success("ハイスコアボーナス! 好感度+" + data.bonus_love);
-                }
-            }
-
             // ここで採点結果だけを話させる 
             if (window.mascot_chat_trigger) {
                 // 点数と理由をAIに伝えて、プロンプトの指示通りに反応してもらう
                 var msg = "[SYSTEM] 採点結果: " + data.score + "点。\n評価コメント: " + data.reason;
-                window.mascot_chat_trigger(msg, data.is_new_record);
+                window.mascot_chat_trigger(msg, false);
             }
 
             if(data.score >= 80){
@@ -369,6 +358,20 @@ if (task_data) {
                 TYRANO.kag.stat.f.cleared_tasks[TYRANO.kag.stat.f.current_task_id] = true;
             } else {
                 alertify.error("不合格...");
+            }
+
+            var bonusMsg = "";
+            if (data.is_new_record) {
+                bonusMsg = " (自己ベスト更新！)";
+                // ここでクライアント側の好感度も増やしておく
+                if(data.bonus_love > 0) {
+                    var current = parseInt(TYRANO.kag.stat.f.love_level) || 0;
+                    TYRANO.kag.stat.f.love_level = current + data.bonus_love;
+                    alertify.success("ハイスコアボーナス! 好感度+" + data.bonus_love);
+                    if (window.saveLoveLevelToSupabase) {
+                        window.saveLoveLevelToSupabase(TYRANO.kag.stat.f.love_level);
+                    }
+                }
             }
         },
         error: function() {

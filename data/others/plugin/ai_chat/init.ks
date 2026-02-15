@@ -178,8 +178,6 @@
         };
 
         window.ai_chat_trigger = function(systemMessage) {
-            console.error("ai_chat_trigger called");
-
             if (typeof TYRANO.kag.stat.f === "undefined") return;
             var f = TYRANO.kag.stat.f;
 
