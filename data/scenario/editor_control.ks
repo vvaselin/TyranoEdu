@@ -341,6 +341,9 @@ if (task_data) {
                 alertify.success("合格!");
                 if (!TYRANO.kag.stat.f.cleared_tasks) TYRANO.kag.stat.f.cleared_tasks = {};
                 TYRANO.kag.stat.f.cleared_tasks[TYRANO.kag.stat.f.current_task_id] = true;
+
+                // クリア演出
+                
             } else {
                 alertify.error("不合格...");
             }

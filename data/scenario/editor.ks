@@ -356,8 +356,10 @@ if (task_data) {
                 }
                 // 現在のタスクID (例: "task1") を true にする
                 TYRANO.kag.stat.f.cleared_tasks[TYRANO.kag.stat.f.current_task_id] = true;
+                TYRANO.kag.stat.tf.is_cleared = true;
             } else {
                 alertify.error("不合格...");
+                TYRANO.kag.stat.tf.is_cleared = false;
             }
 
             var bonusMsg = "";
@@ -373,6 +375,7 @@ if (task_data) {
                     }
                 }
             }
+
         },
         error: function() {
             $("#grade-content").text("採点サーバーとの通信に失敗しました。");
@@ -381,6 +384,12 @@ if (task_data) {
     });
 [endscript]
 
+[jump target="*play_clear" cond="tf.is_cleared == true" ]
+
+[return]
+
+*play_clear
+[play_clear auto_remove="true" layer="fix" ]
 [return]
 
 *exit_chat
@@ -400,6 +409,7 @@ if (window.mascot_chat_save) {
     tyrano.plugin.kag.ftag.startTag("jump", {target: "*back_real"});
 }
 [endscript]
+
 [s]
 
 *back_real

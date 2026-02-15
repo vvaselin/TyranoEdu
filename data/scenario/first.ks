@@ -48,6 +48,26 @@
 [chara_face name="mocha" face="iya" storage="chara/mocha/iya.png" ]
 [chara_face name="mocha" face="akire" storage="chara/mocha/akire.png" ]
 
+; マクロ定義
+;--- クリアアニメーション表示マクロ ---
+;--- クリアアニメーション表示マクロ（最前面対応版） ---
+[macro name="play_clear"]
+
+    ; 同じ名前の古いオブジェクトを消去
+    [free name="clear_obj" layer=%layer|2]
+
+    ; SVG画像の表示
+    [image storage="clear.svg" name="clear_obj" layer=%layer|2 zindex=%zindex|2000000 x=%x|0 y=%y|0 width=%width|1280 height=%height|720 visible=true]
+
+    [wait time=1500]
+
+    ; auto_remove=true の場合の自動消去
+    [if exp="mp.auto_remove=='true'"]
+        [free name="clear_obj" layer=%layer|2]
+    [endif]
+
+[endmacro]
+
 ; --- 課題データの読み込み (認証チェックの前に移動！) ---
 [eval exp="f.current_task_id = sf.current_task_id || 'task1'"]
 [iscript]
