@@ -409,14 +409,14 @@
                 var totalLove = parseInt(TYRANO.kag.stat.f.love_level) || 0;
                 
                 // レベル境界値（サーバー側の判定ロジックと同期）
-                var thresholds = [0, 11, 26, 41, 71, 100]; 
+                var thresholds = [0, 11, 26, 41, 71, 101]; 
                 var currentLv = 1;
                 var minLove = 0;
                 var maxLove = 16;
 
                 // 現在のレベルを判定
                 for (var i = 0; i < thresholds.length - 1; i++) {
-                    if (totalLove >= thresholds[i]) {
+                    if (totalLove >= thresholds[i]-1) {
                         currentLv = i + 1;
                         minLove = thresholds[i];
                         maxLove = thresholds[i+1]-1;

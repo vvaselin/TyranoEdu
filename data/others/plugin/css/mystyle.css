@@ -148,9 +148,28 @@
     border-radius: 4px;
 }
 
-.user_name_display{
-  width: 300px !important;
-  border-bottom: 2px solid white !important;
-  padding-bottom: 2px;
-  display: inline-block !important;
+/* --- 好感度ゲージコンテナ --- */
+.gauge-box {
+    position: absolute;
+    top: 65px; 
+    left: 100px;
+    width: 310px;
+    z-index: 80;
+    align-items: center;
+}
+
+.gauge-track {
+    flex: 1;
+    height: 6px;
+    background-color: #3b3b50;
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
+
+.gauge-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #9ceeff 0%, #6ce6ff 100%);
+    width: 0%; /* JSで上書き */
+    transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }

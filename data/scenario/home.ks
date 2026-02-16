@@ -60,9 +60,6 @@ $(".logout_btn").off("click").on("click", async function() {
 ; ユーザー名編集ボタン
 [glink name="btn-svg-icon btn-size-s btn-icon-edit tooltip-bottom" text=""  x="400" y="15" ]
 
-[ptext layer="fix" x="30" y="13" color="0xF4E511" text="Lv." size="25" align="center" bold="bold"  cond="f.user_role == 'experimental' "]
-[ptext layer="fix" x="25" y="33" color="white" text="&TYRANO.kag.stat.f.love_level" size="50" align="center" bold="bold"  cond="f.user_role == 'experimental' "]
-
 [wait time=100]
 
 ; アンケートボタン
@@ -73,74 +70,120 @@ $(".logout_btn").off("click").on("click", async function() {
 [glink name="btn-svg-icon btn-quiz-red" text="" target="*post_survey" x=550 y=600 ]
 
 [iscript]
-$(".btn-icon-edit").attr("data-tooltip", "ユーザー名変更");
-$(".btn-quiz-blue").attr("data-tooltip", "事前アンケート");
-$(".btn-edit-blue").attr("data-tooltip", "事前テスト");
-$(".btn-edit-red").attr("data-tooltip", "事後テスト");
-$(".btn-quiz-red").attr("data-tooltip", "事後アンケート");
+    $(".btn-icon-edit").attr("data-tooltip", "ユーザー名変更");
+    $(".btn-quiz-blue").attr("data-tooltip", "事前アンケート");
+    $(".btn-edit-blue").attr("data-tooltip", "事前テスト");
+    $(".btn-edit-red").attr("data-tooltip", "事後テスト");
+    $(".btn-quiz-red").attr("data-tooltip", "事後アンケート");
 [endscript]
 
 [html]
-<div id="dialog-confirm" title="名前の変更" style="display:none;">
-    <p style="font-size:16px; margin-bottom:10px; color: white;">新しいユーザー名（2〜10文字）</p>
-    <input type="text" id="new-user-name" maxlength="10">
-</div>
+    <div id="dialog-confirm" title="名前の変更" style="display:none;">
+        <p style="font-size:16px; margin-bottom:10px; color: white;">新しいユーザー名（2〜10文字）</p>
+        <input type="text" id="new-user-name" maxlength="10">
+    </div>
+
+    <div class="gauge-box">
+        <div class="gauge-track">
+            <div class="gauge-fill"></div>
+        </div>
+    </div>
 [endhtml]
 
 [iscript]
-// 編集ボタンのクリックイベント
-$(".btn-size-s").off("click").on("click", function() {
-    // 現在の名前をインプットにセット
-    $("#new-user-name").val(TYRANO.kag.stat.f.user_name);
-    
-    $("#dialog-confirm").dialog({
-        resizable: false,
-        height: "auto",
-        width: 400,
-        modal: true,
-        draggable: false,
-        dialogClass: "name-edit-dialog",
-        buttons: {
-            "保存": async function() {
-                const newName = $("#new-user-name").val().trim();
-                
-                // バリデーション
-                if (newName.length < 2) {
-                    alert("ユーザー名は2文字以上で入力してください");
-                    return;
-                }
-                const validPattern = /^[a-zA-Z0-9あ-んア-ン一-龠々]+$/;
-                if (!validPattern.test(newName)) {
-                    alert("記号やスペースは使用できません");
-                    return;
-                }
-
-                // Supabase更新
-                if (window.sb) {
-                    const { error } = await window.sb
-                        .from('profiles')
-                        .update({ name: newName })
-                        .eq('id', TYRANO.kag.stat.f.user_id);
-
-                    if (error) {
-                        alert("エラー: " + error.message);
+    // 編集ボタンのクリックイベント
+    $(".btn-size-s").off("click").on("click", function() {
+        // 現在の名前をインプットにセット
+        $("#new-user-name").val(f.user_name);
+        
+        $("#dialog-confirm").dialog({
+            resizable: false,
+            height: "auto",
+            width: 400,
+            modal: true,
+            draggable: false,
+            dialogClass: "name-edit-dialog",
+            buttons: {
+                "保存": async function() {
+                    const newName = $("#new-user-name").val().trim();
+                    
+                    // バリデーション
+                    if (newName.length < 2) {
+                        alert("ユーザー名は2文字以上で入力してください");
                         return;
                     }
-                }
+                    const validPattern = /^[a-zA-Z0-9あ-んア-ン一-龠々]+$/;
+                    if (!validPattern.test(newName)) {
+                        alert("記号やスペースは使用できません");
+                        return;
+                    }
 
-                // ティラノ変数の更新と表示のリフレッシュ
-                TYRANO.kag.stat.f.user_name = newName;
-                $(".user_name_display").text(newName);
-                
-                $(this).dialog("close");
-            },
-            "キャンセル": function() {
-                $(this).dialog("close");
+                    // Supabase更新
+                    if (window.sb) {
+                        const { error } = await window.sb
+                            .from('profiles')
+                            .update({ name: newName })
+                            .eq('id', TYRANO.kag.stat.f.user_id);
+
+                        if (error) {
+                            alert("エラー: " + error.message);
+                            return;
+                        }
+                    }
+
+                    // ティラノ変数の更新と表示のリフレッシュ
+                    TYRANO.kag.stat.f.user_name = newName;
+                    $(".user_name_display").text(newName);
+                    
+                    $(this).dialog("close");
+                },
+                "キャンセル": function() {
+                    $(this).dialog("close");
+                }
             }
-        }
+        });
     });
-});
+    // 親密度ゲージ
+    var totalLove = parseInt(f.love_level) || 0;
+    var thresholds = [0, 11, 26, 41, 71, 101]; 
+    var currentLv = 1;
+    var minLove = 0;
+    var maxLove = 16;
+    for (var i = 0; i < thresholds.length - 1; i++) {
+        if (totalLove >= thresholds[i]-1) {
+            currentLv = i + 1;
+            minLove = thresholds[i];
+            maxLove = thresholds[i+1]-1;
+        }
+    }
+    var percent = 0;
+    var displayStr = "";
+    if (currentLv <= 5) {
+        var range = maxLove - minLove;
+        if (range > 0) {
+            percent = ((totalLove - minLove) / range) * 100;
+        } else {
+            percent = 100;
+        }
+        displayStr = totalLove + " / " + maxLove;
+        if (totalLove >= 100) {
+            displayStr = totalLove + " (MAX)";
+            percent = 100;
+            $(".gauge-fill").css(
+                'background',
+                'linear-gradient(90deg, #fff197 0%, #fff12c 100%)'
+            );
+        }
+    }
+    f.level = currentLv;
+    $(".gauge-fill").css("width", percent + "%");
+    tf.displayStr = displayStr;
+
 [endscript]
+; レベル表示
+[ptext layer="fix" x="30" y="13" color="0xF4E511" text="Lv." size="25" align="center" bold="bold"  cond="f.user_role == 'experimental' "]
+[ptext layer="fix" x="25" y="33" color="white" text="&f.level" size="50" align="center" bold="bold"  cond="f.user_role == 'experimental' "]
+[ptext layer="fix" x="100" y="70" color="white" text="&tf.displayStr" size="20" align="left" bold="bold"  cond="f.user_role == 'experimental' "]
 
 [wait time=100]
 
