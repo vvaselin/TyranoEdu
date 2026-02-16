@@ -338,7 +338,24 @@ if (task_data) {
             
             // 合否通知
             if(data.score >= 80){
-                alertify.success("合格!");
+                //alertify.success("合格!");
+                TYRANO.kag.ftag.startTag("image", {
+                    storage: "clear.svg",
+                    layer: "fix",
+                    name: "clear_obj",
+                    zindex: "20000000",
+                    x: "0",
+                    y: "0",
+                    width: "1280",
+                    height: "720",
+                    visible: "true"
+                });
+                setTimeout(function() {
+                    TYRANO.kag.ftag.startTag("free", {
+                        layer: "fix",
+                        name: "clear_obj"
+                    });
+                }, 1500);
                 if (!TYRANO.kag.stat.f.cleared_tasks) TYRANO.kag.stat.f.cleared_tasks = {};
                 TYRANO.kag.stat.f.cleared_tasks[TYRANO.kag.stat.f.current_task_id] = true;
 
@@ -365,16 +382,16 @@ $(".ai-chat-container").css("pointer-events", "none");
 
 if (window.ai_chat_save) {
     window.ai_chat_save(function() {
-        tyrano.plugin.kag.ftag.startTag("jump", {target: "*back_real"});
+        tyrano.plugin.kag.ftag.startTag("jump", {target: "*back"});
     });
 } else {
     // 関数がない場合のフォールバック
-    tyrano.plugin.kag.ftag.startTag("jump", {target: "*back_real"});
+    tyrano.plugin.kag.ftag.startTag("jump", {target: "*back"});
 }
 [endscript]
 [s]
 
-*back_real
+*back
 ; 元の画面に戻る
 [if exp="f.is_sandbox == true"]
     [jump storage="home.ks" target="*start"]

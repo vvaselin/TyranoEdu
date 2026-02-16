@@ -49,23 +49,20 @@
 [chara_face name="mocha" face="akire" storage="chara/mocha/akire.png" ]
 
 ; マクロ定義
-;--- クリアアニメーション表示マクロ ---
-;--- クリアアニメーション表示マクロ（最前面対応版） ---
 [macro name="play_clear"]
-
-    ; 同じ名前の古いオブジェクトを消去
+    ; layer="fix" のオブジェクトを消去（同じ名前のものがあれば）
     [free name="clear_obj" layer=%layer|2]
 
-    ; SVG画像の表示
-    [image storage="clear.svg" name="clear_obj" layer=%layer|2 zindex=%zindex|2000000 x=%x|0 y=%y|0 width=%width|1280 height=%height|720 visible=true]
+    ; 画像表示（zindexは十分に大きく、fixレイヤーに指定可能）
+    [image storage="clear.svg" name="clear_obj" layer=%layer|2 zindex=2000000 x=0 y=0 width=1280 height=720 visible=true]
 
+    ; アニメーション時間分待機
     [wait time=1500]
 
-    ; auto_remove=true の場合の自動消去
+    ; 自動消去
     [if exp="mp.auto_remove=='true'"]
         [free name="clear_obj" layer=%layer|2]
     [endif]
-
 [endmacro]
 
 ; --- 課題データの読み込み (認証チェックの前に移動！) ---
@@ -124,7 +121,6 @@ if ($("#loading_overlay").length === 0) {
 $("#loading_overlay").fadeIn(200);
 
 var uid = TYRANO.kag.stat.f.user_id;
-console.log("Loading Profile for:", uid);
 
 $.ajax({
     url: '/api/memory?user_id=' + uid,
@@ -133,7 +129,6 @@ $.ajax({
     success: function(data) {
         TYRANO.kag.stat.f.love_level = data.love_level || 0;
         TYRANO.kag.stat.f.user_role = data.role || "control";
-        console.error("User Role:", TYRANO.kag.stat.f.user_role);
         TYRANO.kag.stat.f.ai_memory = data;
         TYRANO.kag.stat.f.user_name = data.name || "ゲスト";
     },

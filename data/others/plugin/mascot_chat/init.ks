@@ -107,7 +107,6 @@
                         if(data.love_level && !TYRANO.kag.stat.f.love_level){
                              TYRANO.kag.stat.f.love_level = data.love_level;
                         }
-                        console.error("Memory Loaded:", data);
 
                         window.updateLoveGaugeUI();
                     }
@@ -385,20 +384,10 @@
                         }
 
                         window.updateLoveGaugeUI();
-
-                        
                     }
                     
                     addMessage("モカ", aiText, false);
-                    var charaDir = "./data/fgimage/chara/mocha/";
                     var emotion = data.emotion || "normal";
-
-                    // 古いIDのマッピング（念のため）
-                    if (emotion === "angry") emotion = "oko";
-                    if (emotion === "doki") emotion = "tere";
-
-                    var imgPath = charaDir + emotion + ".png";
-
                     tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:emotion, time:200});
                 })
                 .catch(error => {
@@ -528,10 +517,6 @@
                 if (typeof TYRANO.kag.stat.f === "undefined") return;
                 var f = TYRANO.kag.stat.f;
 
-                // ユーザーのチャット履歴には「表示しない」が、AIには送る
-                // (履歴配列にだけ追加して、UIには出さない、あるいは履歴にも入れないなどの調整が可能)
-                // ここでは「履歴には入れず、コンテキストとして送る」簡易パターンとします。
-
                 var tasks = f.all_tasks;
                 var current_id = f.current_task_id;
                 var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
@@ -575,11 +560,13 @@
                     }
 
                     // サンドボックスモードでは好感度変動を無効化
-                    if (is_new_record&&!TYRANO.kag.stat.f.is_sandbox&&loveUpVal !== 0) {
+                    if (!TYRANO.kag.stat.f.is_sandbox&&loveUpVal !== 0) {
                         var current = parseInt(f.love_level) || 0;
                         f.love_level = current + loveUpVal; 
+                        if(f.love_level < 0) f.love_level = 0;
+                        if(f.love_level > 100) f.love_level = 100;
                         
-                        console.error(`好感度 ${loveUpVal} ！ 現在: ${f.love_level}`);
+                        console.error(`好感度 ${loveUpVal} 、 現在: ${f.love_level}`);
                         if(loveUpVal > 0){
                             alertify.success("好感度UP! 現在："+f.love_level);
                         } else {
@@ -597,15 +584,7 @@
                     addMessage("モカ", aiText, false);
 
                     // 表情変更
-                    var charaDir = "./data/fgimage/chara/mocha/";
                     var emotion = data.emotion || "normal";
-
-                    // 古いIDのマッピング（念のため）
-                    if (emotion === "angry") emotion = "oko";
-                    if (emotion === "doki") emotion = "tere";
-
-                    var imgPath = charaDir + emotion + ".png";
-
                     tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:emotion, time:200});
                 })
                 .catch(error => {

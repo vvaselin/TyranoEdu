@@ -350,17 +350,33 @@ if (task_data) {
             }
 
             if(data.score >= 80){
-                alertify.success("合格!");
+                //alertify.success("合格!");
+
+                TYRANO.kag.ftag.startTag("image", {
+                    storage: "clear.svg",
+                    layer: "fix",
+                    name: "clear_obj",
+                    zindex: "20000000",
+                    x: "0",
+                    y: "0",
+                    width: "1280",
+                    height: "720",
+                    visible: "true"
+                });
+                setTimeout(function() {
+                    TYRANO.kag.ftag.startTag("free", {
+                        layer: "fix",
+                        name: "clear_obj"
+                    });
+                }, 1500);
+
                 if (!TYRANO.kag.stat.f.cleared_tasks) {
                     TYRANO.kag.stat.f.cleared_tasks = {};
                 }
                 // 現在のタスクID (例: "task1") を true にする
                 TYRANO.kag.stat.f.cleared_tasks[TYRANO.kag.stat.f.current_task_id] = true;
-                TYRANO.kag.stat.tf.is_cleared = true;
-                console.error("クリアフラグを立てたよ！", TYRANO.kag.stat.f.cleared_tasks);
             } else {
                 alertify.error("不合格...");
-                TYRANO.kag.stat.tf.is_cleared = false;
             }
 
             var bonusMsg = "";
@@ -384,36 +400,29 @@ if (task_data) {
         }
     });
 [endscript]
-[wait time=1000]
-[jump target="*play_clear" cond="tf.is_cleared == true" ]
-
-[return]
-
-*play_clear
-[play_clear auto_remove="true" layer="fix" ]
 [return]
 
 *exit_chat
 [iscript]
-var $dialog = $("#result_modal");
-if ($dialog.dialog("isOpen")) $dialog.dialog("close");
+    var $dialog = $("#result_modal");
+    if ($dialog.dialog("isOpen")) $dialog.dialog("close");
 
-$(".ai-chat-container").css("pointer-events", "none");
+    $(".ai-chat-container").css("pointer-events", "none");
 
-// 保存処理を実行し、完了後に *back_real へジャンプ
-if (window.mascot_chat_save) {
-    window.mascot_chat_save(function() {
-        tyrano.plugin.kag.ftag.startTag("jump", {target: "*back_real"});
-    });
-} else {
-    // 関数がない場合のフォールバック
-    tyrano.plugin.kag.ftag.startTag("jump", {target: "*back_real"});
-}
+    // 保存処理
+    if (window.mascot_chat_save) {
+        window.mascot_chat_save(function() {
+            tyrano.plugin.kag.ftag.startTag("jump", {target: "*back"});
+        });
+    } else {
+        // 関数がない場合のフォールバック
+        tyrano.plugin.kag.ftag.startTag("jump", {target: "*back"});
+    }
 [endscript]
 
 [s]
 
-*back_real
+*back
 ; 元の画面に戻る
 [if exp="f.is_sandbox == true"]
     [jump storage="home.ks" target="*start"]
