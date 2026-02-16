@@ -357,6 +357,7 @@ if (task_data) {
                 // 現在のタスクID (例: "task1") を true にする
                 TYRANO.kag.stat.f.cleared_tasks[TYRANO.kag.stat.f.current_task_id] = true;
                 TYRANO.kag.stat.tf.is_cleared = true;
+                console.error("クリアフラグを立てたよ！", TYRANO.kag.stat.f.cleared_tasks);
             } else {
                 alertify.error("不合格...");
                 TYRANO.kag.stat.tf.is_cleared = false;
@@ -383,7 +384,7 @@ if (task_data) {
         }
     });
 [endscript]
-
+[wait time=1000]
 [jump target="*play_clear" cond="tf.is_cleared == true" ]
 
 [return]
