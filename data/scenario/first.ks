@@ -48,23 +48,6 @@
 [chara_face name="mocha" face="iya" storage="chara/mocha/iya.png" ]
 [chara_face name="mocha" face="akire" storage="chara/mocha/akire.png" ]
 
-; マクロ定義
-[macro name="play_clear"]
-    ; layer="fix" のオブジェクトを消去（同じ名前のものがあれば）
-    [free name="clear_obj" layer=%layer|2]
-
-    ; 画像表示（zindexは十分に大きく、fixレイヤーに指定可能）
-    [image storage="clear.svg" name="clear_obj" layer=%layer|2 zindex=2000000 x=0 y=0 width=1280 height=720 visible=true]
-
-    ; アニメーション時間分待機
-    [wait time=1500]
-
-    ; 自動消去
-    [if exp="mp.auto_remove=='true'"]
-        [free name="clear_obj" layer=%layer|2]
-    [endif]
-[endmacro]
-
 ; --- 課題データの読み込み (認証チェックの前に移動！) ---
 [eval exp="f.current_task_id = sf.current_task_id || 'task1'"]
 [iscript]

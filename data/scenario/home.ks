@@ -247,7 +247,6 @@ alert("ただいま開発中です。");
 #モカ
 あっ、お…おはよう…！[wait time=1500]
 [er]
-[play_clear auto_remove="true" layer="fix" ]
 
 @layopt layer="message0" visible=false
 #
