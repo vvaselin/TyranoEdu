@@ -355,7 +355,8 @@ if (task_data) {
                         layer: "fix",
                         name: "clear_obj"
                     });
-                }, 1500);
+                }, 2000);
+                
                 if (!TYRANO.kag.stat.f.cleared_tasks) TYRANO.kag.stat.f.cleared_tasks = {};
                 TYRANO.kag.stat.f.cleared_tasks[TYRANO.kag.stat.f.current_task_id] = true;
 

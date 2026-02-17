@@ -82,13 +82,16 @@ $(".logout_btn").off("click").on("click", async function() {
         <p style="font-size:16px; margin-bottom:10px; color: white;">新しいユーザー名（2〜10文字）</p>
         <input type="text" id="new-user-name" maxlength="10">
     </div>
-
-    <div class="gauge-box">
-        <div class="gauge-track">
-            <div class="gauge-fill"></div>
-        </div>
-    </div>
 [endhtml]
+[if exp="f.user_role == 'experimental' "]
+    [html]
+        <div class="gauge-box">
+            <div class="gauge-track">
+                <div class="gauge-fill"></div>
+            </div>
+        </div>
+    [endhtml]
+[endif]
 
 [iscript]
     // 編集ボタンのクリックイベント
