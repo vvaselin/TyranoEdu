@@ -150,29 +150,37 @@ $(".logout_btn").off("click").on("click", async function() {
     });
     // 親密度ゲージ
     var totalLove = parseInt(f.love_level) || 0;
-    var thresholds = [0, 11, 26, 41, 71, 101]; 
+    var thresholds = [1, 11, 26, 41, 71, 101]; 
     var currentLv = 1;
     var minLove = 0;
-    var maxLove = 16;
+    var maxLove = 0;
+
     for (var i = 0; i < thresholds.length - 1; i++) {
-        if (totalLove >= thresholds[i]-1) {
+        if (totalLove >= thresholds[i] - 1) {
             currentLv = i + 1;
-            minLove = thresholds[i];
-            maxLove = thresholds[i+1]-1;
+            minLove = thresholds[i] - 1;    
+            maxLove = thresholds[i + 1] - 1;
         }
     }
+
     var percent = 0;
     var displayStr = "";
+
     if (currentLv <= 5) {
         var range = maxLove - minLove;
+        var currentProgress = totalLove - minLove;
+
         if (range > 0) {
-            percent = ((totalLove - minLove) / range) * 100;
+            percent = (currentProgress / range) * 100;
         } else {
             percent = 100;
         }
-        displayStr = totalLove + " / " + maxLove;
+
+        // 通常の表示文字列
+        displayStr = currentProgress + " / " + range;
+
         if (totalLove >= 100) {
-            displayStr = totalLove + " (MAX)";
+            displayStr = currentProgress + " (MAX)";
             percent = 100;
             $(".gauge-fill").css(
                 'background',
