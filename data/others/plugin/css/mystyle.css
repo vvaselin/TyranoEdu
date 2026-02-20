@@ -147,11 +147,17 @@
     cursor: pointer;
     border-radius: 4px;
 }
+.user_name_display{
+  width: 310px !important;
+  border-bottom: 2px solid white !important;
+  padding-bottom: 2px;
+  display: inline-block !important;
+}
 
 /* --- 好感度ゲージコンテナ --- */
 .gauge-box {
     position: absolute;
-    top: 65px; 
+    top: 62px; 
     left: 100px;
     width: 310px;
     z-index: 80;
