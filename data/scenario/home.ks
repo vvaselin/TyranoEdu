@@ -36,6 +36,8 @@
 [clickable x=220 y=110 width=300 height=540 target="*mocha_reaction" cond="f.user_role == 'experimental'" ]
 [wait time=100]
 
+[chara_show name="adviser" time="50"  left=-50  width=800 top =-50 cond="f.user_role == 'control' " time=100 wait="true" ]
+
 ; ログアウトボタン
 [button name="logout_btn" graphic="../others/plugin/theme_kopanda_22_HD_anim/image/button/title.png" enterimg="../others/plugin/theme_kopanda_22_HD_anim/image/button/title2.png" x=1180 y=20 height=50 role="sleep" fix="true"]
 

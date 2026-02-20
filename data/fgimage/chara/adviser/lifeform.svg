@@ -1,0 +1,127 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    /* 粒子全体の基本設定 */
+    .p {
+      fill: white;
+      filter: url(#glow);
+      opacity: 0;
+    }
+
+    /* コア（核）の設定：ぼかしと鼓動 */
+    .core {
+      fill: white;
+      filter: url(#core-blur);
+      transform-origin: 200px 200px;
+      animation: heartbeat 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes heartbeat {
+      0% { transform: scale(0.6); opacity: 0.95; }
+      100% { transform: scale(1.1); opacity: 0.7; }
+    }
+
+    /* 粒子用のアニメーション */
+    @keyframes move-a {
+      0% { transform: translate(0, 0); opacity: 0.3; }
+      50% { transform: translate(8px, -12px); opacity: 0.8; }
+      100% { transform: translate(-5px, 5px); opacity: 0.4; }
+    }
+    @keyframes move-b {
+      0% { transform: translate(0, 0); opacity: 0.4; }
+      50% { transform: translate(-10px, -8px); opacity: 0.9; }
+      100% { transform: translate(6px, 12px); opacity: 0.3; }
+    }
+    @keyframes move-c {
+      0% { transform: translate(0, 0); opacity: 0.2; }
+      50% { transform: translate(12px, 10px); opacity: 0.7; }
+      100% { transform: translate(-10px, -6px); opacity: 0.5; }
+    }
+
+    .orbit {
+      transform-origin: 200px 200px;
+      animation: rotate 10s linear infinite;
+    }
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
+
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="core-blur" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="15" />
+    </filter>
+  </defs>
+
+  <circle class="core" cx="200" cy="200" r="45" />
+
+  <g class="orbit">
+    <circle class="p" cx="192" cy="165" r="1.2" style="animation: move-a 3.2s infinite -0.1s;"/>
+    <circle class="p" cx="215" cy="182" r="2.1" style="animation: move-b 4.1s infinite -0.5s;"/>
+    <circle class="p" cx="178" cy="205" r="1.5" style="animation: move-c 3.7s infinite -1.2s;"/>
+    <circle class="p" cx="230" cy="210" r="2.5" style="animation: move-a 4.5s infinite -2.3s;"/>
+    <circle class="p" cx="195" cy="235" r="1.8" style="animation: move-b 3.9s infinite -0.8s;"/>
+    <circle class="p" cx="160" cy="190" r="1.1" style="animation: move-c 4.2s infinite -1.5s;"/>
+    <circle class="p" cx="240" cy="175" r="2.0" style="animation: move-a 3.5s infinite -3.1s;"/>
+    <circle class="p" cx="205" cy="155" r="1.6" style="animation: move-b 4.8s infinite -0.2s;"/>
+    <circle class="p" cx="185" cy="220" r="2.3" style="animation: move-c 3.6s infinite -2.7s;"/>
+    <circle class="p" cx="225" cy="195" r="1.4" style="animation: move-a 4.0s infinite -1.1s;"/>
+    <circle class="p" cx="210" cy="225" r="1.9" style="animation: move-b 3.3s infinite -0.4s;"/>
+    <circle class="p" cx="170" cy="170" r="2.4" style="animation: move-c 4.7s infinite -3.5s;"/>
+    <circle class="p" cx="198" cy="202" r="1.3" style="animation: move-a 3.8s infinite -0.9s;"/>
+    <circle class="p" cx="220" cy="160" r="2.2" style="animation: move-b 4.3s infinite -1.6s;"/>
+    <circle class="p" cx="180" cy="240" r="1.7" style="animation: move-c 3.4s infinite -2.2s;"/>
+    <circle class="p" cx="235" cy="230" r="1.0" style="animation: move-a 4.6s infinite -0.6s;"/>
+    <circle class="p" cx="165" cy="215" r="2.1" style="animation: move-b 3.1s infinite -1.8s;"/>
+    <circle class="p" cx="202" cy="185" r="1.5" style="animation: move-c 4.9s infinite -2.5s;"/>
+    <circle class="p" cx="188" cy="158" r="1.8" style="animation: move-a 3.7s infinite -1.3s;"/>
+    <circle class="p" cx="245" cy="205" r="1.2" style="animation: move-b 4.4s infinite -3.2s;"/>
+    <circle class="p" cx="175" cy="180" r="2.6" style="animation: move-c 3.5s infinite -0.7s;"/>
+    <circle class="p" cx="212" cy="245" r="1.4" style="animation: move-a 4.2s infinite -2.1s;"/>
+    <circle class="p" cx="230" cy="165" r="2.0" style="animation: move-b 3.6s infinite -1.9s;"/>
+    <circle class="p" cx="195" cy="190" r="1.6" style="animation: move-c 4.1s infinite -0.3s;"/>
+    <circle class="p" cx="155" cy="200" r="2.3" style="animation: move-a 3.9s infinite -2.8s;"/>
+    <circle class="p" cx="220" cy="220" r="1.1" style="animation: move-b 4.7s infinite -1.4s;"/>
+    <circle class="p" cx="205" cy="210" r="1.9" style="animation: move-c 3.2s infinite -3.6s;"/>
+    <circle class="p" cx="180" cy="160" r="2.5" style="animation: move-a 4.3s infinite -0.2s;"/>
+    <circle class="p" cx="240" cy="190" r="1.5" style="animation: move-b 3.4s infinite -2.6s;"/>
+    <circle class="p" cx="190" cy="245" r="2.2" style="animation: move-c 4.5s infinite -1.7s;"/>
+    <circle class="p" cx="215" cy="205" r="1.3" style="animation: move-a 3.8s infinite -0.5s;"/>
+    <circle class="p" cx="170" cy="230" r="2.8" style="animation: move-b 4.0s infinite -2.9s;"/>
+    <circle class="p" cx="235" cy="180" r="1.0" style="animation: move-c 3.1s infinite -1.0s;"/>
+    <circle class="p" cx="160" cy="210" r="2.4" style="animation: move-a 4.8s infinite -3.8s;"/>
+    <circle class="p" cx="200" cy="170" r="1.7" style="animation: move-b 3.6s infinite -0.8s;"/>
+    <circle class="p" cx="225" cy="235" r="2.1" style="animation: move-c 4.2s infinite -2.4s;"/>
+    <circle class="p" cx="195" cy="150" r="1.4" style="animation: move-a 3.3s infinite -1.5s;"/>
+    <circle class="p" cx="250" cy="215" r="1.9" style="animation: move-b 4.1s infinite -0.1s;"/>
+    <circle class="p" cx="175" cy="195" r="2.2" style="animation: move-c 3.9s infinite -3.3s;"/>
+    <circle class="p" cx="210" cy="165" r="1.6" style="animation: move-a 4.4s infinite -1.2s;"/>
+    <circle class="p" cx="240" cy="230" r="1.8" style="animation: move-b 3.7s infinite -2.0s;"/>
+    <circle class="p" cx="185" cy="185" r="2.5" style="animation: move-c 4.6s infinite -0.4s;"/>
+    <circle class="p" cx="205" cy="240" r="1.2" style="animation: move-a 3.5s infinite -2.7s;"/>
+    <circle class="p" cx="165" cy="155" r="2.3" style="animation: move-b 4.9s infinite -1.1s;"/>
+    <circle class="p" cx="230" cy="190" r="1.5" style="animation: move-c 3.4s infinite -3.9s;"/>
+    <circle class="p" cx="190" cy="220" r="2.0" style="animation: move-a 4.1s infinite -0.9s;"/>
+    <circle class="p" cx="220" cy="245" r="1.3" style="animation: move-b 3.8s infinite -2.2s;"/>
+    <circle class="p" cx="175" cy="210" r="2.7" style="animation: move-c 4.3s infinite -1.6s;"/>
+    <circle class="p" cx="215" cy="175" r="1.4" style="animation: move-a 3.6s infinite -0.3s;"/>
+    <circle class="p" cx="235" cy="205" r="2.1" style="animation: move-b 4.5s infinite -3.5s;"/>
+    <circle class="p" cx="188" cy="235" r="1.6" style="animation: move-c 3.3s infinite -1.4s;"/>
+    <circle class="p" cx="202" cy="160" r="2.4" style="animation: move-a 4.7s infinite -2.6s;"/>
+    <circle class="p" cx="160" cy="180" r="1.2" style="animation: move-b 3.9s infinite -0.7s;"/>
+    <circle class="p" cx="245" cy="225" r="2.6" style="animation: move-c 4.0s infinite -3.1s;"/>
+    <circle class="p" cx="180" cy="205" r="1.5" style="animation: move-a 3.2s infinite -1.8s;"/>
+    <circle class="p" cx="210" cy="190" r="2.2" style="animation: move-b 4.6s infinite -0.5s;"/>
+    <circle class="p" cx="195" cy="175" r="1.1" style="animation: move-c 3.7s infinite -2.3s;"/>
+    <circle class="p" cx="225" cy="210" r="2.0" style="animation: move-a 4.4s infinite -1.0s;"/>
+    <circle class="p" cx="170" cy="240" r="1.8" style="animation: move-b 3.5s infinite -3.7s;"/>
+    <circle class="p" cx="240" cy="155" r="1.3" style="animation: move-c 4.1s infinite -0.2s;"/>
+  </g>
+</svg>
