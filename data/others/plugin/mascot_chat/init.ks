@@ -103,16 +103,130 @@
                 .then(data => {
                     if(data){
                         TYRANO.kag.stat.f.ai_memory = data;
-                        // サーバーの好感度とクライアントの好感度を同期（必要に応じて）
                         if(data.love_level && !TYRANO.kag.stat.f.love_level){
                              TYRANO.kag.stat.f.love_level = data.love_level;
                         }
-
                         window.updateLoveGaugeUI();
                     }
                 });
 
-            // --- 履歴管理 ---
+            // ================================================================
+            // WebSocket 接続管理
+            // ================================================================
+            //
+            // 設計方針:
+            //   - WS接続はここで一度だけ確立し、window.mascotChatWS に保持する
+            //   - 送信時は ws.send(JSON文字列) を呼ぶだけ
+            //   - レスポンスは ws.onmessage で受け取り、pendingCallback を実行する
+            //   - pendingCallback は「一度に1リクエスト」の前提で1つだけ保持する
+            //     (sendButton/inputField を disabled にしているため同時送信は起きない)
+            //   - 切断時は自動再接続する (最大3回、指数バックオフ)
+            // ================================================================
+
+            var WS_URL = "ws://" + location.host + "/api/chat/ws";
+            var ws = null;
+            var pendingCallback = null;  // 現在のリクエストに対するレスポンスハンドラ
+            var reconnectAttempts = 0;
+            var MAX_RECONNECT = 3;
+
+            function connectWS() {
+                if (ws && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN)) {
+                    return; // 既に接続中 or 接続済み
+                }
+
+                ws = new WebSocket(WS_URL);
+
+                ws.onopen = function() {
+                    console.log("[MascotChat] WebSocket接続完了");
+                    reconnectAttempts = 0;
+                };
+
+                ws.onmessage = function(event) {
+                    try {
+                        var data = JSON.parse(event.data);
+                        if (pendingCallback) {
+                            var cb = pendingCallback;
+                            pendingCallback = null;
+                            cb(null, data);
+                        }
+                    } catch(e) {
+                        console.error("[MascotChat] WS onmessage JSONパース失敗:", e);
+                        if (pendingCallback) {
+                            var cb = pendingCallback;
+                            pendingCallback = null;
+                            cb(e, null);
+                        }
+                    }
+                };
+
+                ws.onerror = function(e) {
+                    console.error("[MascotChat] WSエラー:", e);
+                    if (pendingCallback) {
+                        var cb = pendingCallback;
+                        pendingCallback = null;
+                        cb(new Error("WebSocket通信エラー"), null);
+                    }
+                };
+
+                ws.onclose = function(event) {
+                    console.warn("[MascotChat] WS切断 (code=" + event.code + ")");
+                    ws = null;
+
+                    // ペンディング中のコールバックがあればエラーを通知
+                    if (pendingCallback) {
+                        var cb = pendingCallback;
+                        pendingCallback = null;
+                        cb(new Error("WebSocket切断"), null);
+                    }
+
+                    // 通常クローズ (1000, 1001) 以外なら自動再接続
+                    if (event.code !== 1000 && event.code !== 1001 && reconnectAttempts < MAX_RECONNECT) {
+                        var delay = Math.pow(2, reconnectAttempts) * 1000; // 1s, 2s, 4s
+                        reconnectAttempts++;
+                        console.log("[MascotChat] " + delay + "ms後に再接続試行 (" + reconnectAttempts + "/" + MAX_RECONNECT + ")");
+                        setTimeout(connectWS, delay);
+                    }
+                };
+            }
+
+            // 接続開始
+            connectWS();
+
+            // WS経由でAIにリクエストを送信し、コールバックでレスポンスを受け取るヘルパー
+            // callback(error, data) 形式
+            function sendChatRequest(payload, callback) {
+                // WSが開いていなければHTTP fallbackまたは再接続
+                if (!ws || ws.readyState !== WebSocket.OPEN) {
+                    console.warn("[MascotChat] WS未接続。再接続してからリトライします");
+                    connectWS();
+                    // 接続完了を少し待ってリトライ (簡易版: 500ms後に1回だけ)
+                    setTimeout(function() {
+                        if (ws && ws.readyState === WebSocket.OPEN) {
+                            pendingCallback = callback;
+                            ws.send(JSON.stringify(payload));
+                        } else {
+                            // それでも繋がらなければHTTP fallbackへ
+                            console.warn("[MascotChat] WSリトライ失敗。HTTP fallbackを使用");
+                            fetch('/api/chat', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            })
+                            .then(r => r.json())
+                            .then(data => callback(null, data))
+                            .catch(err => callback(err, null));
+                        }
+                    }, 500);
+                    return;
+                }
+
+                pendingCallback = callback;
+                ws.send(JSON.stringify(payload));
+            }
+
+            // ================================================================
+            // 履歴管理
+            // ================================================================
             function getHistory() {
                 if (typeof TYRANO.kag.stat.f === "undefined") TYRANO.kag.stat.f = {};
                 if (!TYRANO.kag.stat.f.ai_chat_history) TYRANO.kag.stat.f.ai_chat_history = [];
@@ -137,7 +251,6 @@
                     </div>
                 `);
                 
-                // コピーボタン機能
                 messageEl.find("pre code").each(function(i, block) {
                     var $block = $(block);
                     var $pre = $block.parent("pre");
@@ -165,11 +278,9 @@
                     aiMessagesContainer.scrollTop(0);
                 }
                 
-                // 履歴保存とボタン有効化ロジック
                 if (!is_history_load) {
                     navPrev.prop("disabled", false);
                     var history = getHistory(); 
-                    
                     history.push({ username, message }); 
                     if (history.length > 50) {
                         history.shift();
@@ -194,7 +305,7 @@
                     </div>
                 `);
                 
-                 messageEl.find("pre code").each(function(i, block) {
+                messageEl.find("pre code").each(function(i, block) {
                     var $block = $(block); var $pre = $block.parent("pre");
                     if ($pre.find('.copy-code-button').length > 0) return; 
                     $pre.css("position", "relative"); 
@@ -265,7 +376,6 @@
                         break;
                     }
                 }
-                // 後ろから走査して、最後のユーザーメッセージを探す
                 for (var i = history.length - 1; i >= 0; i--) {
                     if (history[i].username === "あなた") {
                         lastUserMsg = history[i];
@@ -287,7 +397,45 @@
                 navNext.prop("disabled", true); 
             }
 
-            // --- 送信処理 ---
+            // ================================================================
+            // AIレスポンス受信後の共通処理
+            // ================================================================
+            function applyAIResponse(data, isSystemTrigger) {
+                var aiText = data.text || "";
+                var emotion = data.emotion || "normal";
+                var loveUpVal = parseInt(data.love_up) || 0;
+                var f = TYRANO.kag.stat.f;
+
+                // 感情パラメータを保存
+                if (data.parameters) {
+                    f.prev_params = data.parameters;
+                }
+
+                // 好感度変動（サンドボックスモードでは無効）
+                if (!f.is_sandbox && loveUpVal !== 0) {
+                    var current = parseInt(f.love_level) || 0;
+                    f.love_level = Math.min(100, Math.max(0, current + loveUpVal));
+                    
+                    console.log("[MascotChat] 好感度変動:", loveUpVal);
+                    if (loveUpVal > 0) {
+                        alertify.success("好感度UP!");
+                    } else {
+                        alertify.error("好感度DOWN...");
+                    }
+
+                    if (window.saveLoveLevelToSupabase) {
+                        window.saveLoveLevelToSupabase(f.love_level);
+                    }
+                    window.updateLoveGaugeUI();
+                }
+
+                addMessage("モカ", aiText, false);
+                tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:emotion, time:200});
+            }
+
+            // ================================================================
+            // 送信処理 (ユーザー入力)
+            // ================================================================
             function sendMessage() {
                 if (getTfLogIndex() !== -1) { 
                     restoreLiveChatView();
@@ -307,27 +455,19 @@
                 inputField.val("").attr("placeholder", "考え中...").prop("disabled", true);
                 sendButton.prop("disabled", true);
 
+                // 会話履歴コンテキスト構築
                 var historyContext = "";
                 var history = getHistory();
-                // 最新の5ラリー分くらいを含める（長すぎるとエラーになる場合があるため調整）
                 var recentHistory = history.slice(-10); 
-                
                 if (recentHistory.length > 0) {
                     historyContext = "\n\n[Conversation History]\n";
                     recentHistory.forEach(function(item) {
-                        // AIとユーザーの区別がつくように整形
                         var role = (item.username === "あなた") ? "User" : "Character";
-                        // メッセージ内の改行を除去したり短縮しても良い
                         historyContext += role + ": " + item.message + "\n";
                     });
                 }
                 
-                var tasks = f.all_tasks;
-                var current_id = f.current_task_id;
-                var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
-                var currentLove = f.love_level || 0;
-
-                // 記憶情報の付与
+                // 長期記憶コンテキスト構築
                 var memoryContext = "";
                 if (f.ai_memory) {
                     var summary = f.ai_memory.summary || "なし";
@@ -335,67 +475,32 @@
                     memoryContext = `\n\n[Long Term Memory Info]\nSummary: ${summary}\nWeaknesses: ${weak}\n`;
                 }
                 
+                var tasks = f.all_tasks;
+                var current_id = f.current_task_id;
+                var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
+                var currentLove = f.love_level || 0;
                 var messageToSend = userMessage + historyContext + memoryContext;
 
-                fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        character_id: "mocha",
-                        message: messageToSend, 
-                        code: f['my_code'],
-                        task: task_data ? task_data.description : "タスクがありません",
-                        love_level:parseInt(currentLove),
-                        user_id: TYRANO.kag.stat.f.user_id,
-                        prev_params: TYRANO.kag.stat.f.prev_params,
-                        prev_output: TYRANO.kag.stat.f.prev_output
-                    }),
-                })
-                .then(r => r.json())
-                .then(data => {
-                    var aiText = data.text;
-                    var emotion = data.emotion || "normal";
-                    var loveUpVal = parseInt(data.love_up) || 0; 
+                var payload = {
+                    character_id: "mocha",
+                    message: messageToSend, 
+                    code: f['my_code'],
+                    task: task_data ? task_data.description : "タスクがありません",
+                    love_level: parseInt(currentLove),
+                    user_id: f.user_id,
+                    prev_params: f.prev_params,
+                    prev_output: f.prev_output
+                };
 
-                    // 前回の感情パラメータと出力を保存
-                    if (data.parameters) {
-                        TYRANO.kag.stat.f.prev_params = data.parameters;
+                // WebSocket経由で送信
+                sendChatRequest(payload, function(err, data) {
+                    if (err) {
+                        console.error("[MascotChat] 送信エラー:", err);
+                        addMessage("エラー", "上手くお話出来ませんでした。", false);
+                        tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:"sad", time:200});
+                    } else {
+                        applyAIResponse(data, false);
                     }
-
-                    // 前回クリア済みかどうか
-                    var AlreadyCleared = TYRANO.kag.stat.f.cleared_tasks[TYRANO.kag.stat.f.current_task_id];
-
-                    // サンドボックスモードでは好感度変動を無効化
-                    if (!TYRANO.kag.stat.f.is_sandbox&&loveUpVal !== 0) {
-                        var current = parseInt(f.love_level) || 0;
-                        f.love_level = current + loveUpVal; 
-                        if(f.love_level < 0) f.love_level = 0;
-                        if(f.love_level > 100) f.love_level = 100;
-                        
-                        console.error(`好感度 ${loveUpVal}`);
-                        if(loveUpVal > 0){
-                            alertify.success("好感度UP!");
-                        } else {
-                            alertify.error("好感度DOWN...");
-                        }
-
-                        if (window.saveLoveLevelToSupabase) {
-                            window.saveLoveLevelToSupabase(f.love_level);
-                        }
-
-                        window.updateLoveGaugeUI();
-                    }
-                    
-                    addMessage("モカ", aiText, false);
-                    var emotion = data.emotion || "normal";
-                    tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:emotion, time:200});
-                })
-                .catch(error => {
-                    console.error("AIチャットエラー:", error);
-                    addMessage("エラー", "上手くお話出来ませんでした。", false);
-                    tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:"sad", time:200});
-                })
-                .finally(() => {
                     inputField.prop("disabled", false).attr("placeholder", "メッセージを入力...").focus();
                     sendButton.prop("disabled", false);
                     inputField.css('height', '45px');
@@ -405,16 +510,12 @@
             window.updateLoveGaugeUI = function() {
                 if (typeof TYRANO.kag.stat.f === "undefined") return;
                 
-                // 現在の総親密度
                 var totalLove = parseInt(f.love_level) || 0;
-                
-                // レベル境界値（サーバー側の判定ロジックと同期）
                 var thresholds = [1, 11, 26, 41, 71, 101]; 
                 var currentLv = 1;
                 var minLove = 0;
                 var maxLove = 0;
 
-                // 現在のレベルを判定
                 for (var i = 0; i < thresholds.length - 1; i++) {
                     if (totalLove >= thresholds[i]-1) {
                         currentLv = i + 1;
@@ -423,7 +524,6 @@
                     }
                 }
 
-                // レベル内での進捗率計算
                 var percent = 0;
                 var displayStr = "";
                 
@@ -449,13 +549,11 @@
                     }
                 }
 
-                // UIへの反映（コンテナ内から確実に探す）
                 var $container = $(".ai-chat-container");
                 $container.find(".love-level-num").text(currentLv);
                 $container.find(".love-gauge-fill").css("width", Math.min(100, Math.max(0, percent)) + "%");
                 $container.find(".love-text").text(displayStr);
                 
-                // アイコンの色演出
                 if(currentLv >= 4) {
                     $container.find(".love-icon").css("color", "#ff4757").css("text-shadow", "0 0 10px #ff4757");
                 } else {
@@ -468,14 +566,13 @@
                 var history = getHistory();
                 tyrano.plugin.kag.ftag.startTag("chara_hide", {name:"mocha", time:200});
                 
-                // ▼▼▼ ローディング表示 ▼▼▼
                 if ($("#loading_overlay").length === 0) {
                     $('body').append('<div id="loading_overlay" class="loading-overlay" style="display:none;"><div class="loader">Loading...</div></div>');
                 }
                 $("#loading_overlay").fadeIn(200);
 
                 if (!history || history.length === 0) {
-                    $("#loading_overlay").fadeOut(200); // 履歴なしなら即消す
+                    $("#loading_overlay").fadeOut(200);
                     if (callback) callback();
                     return;
                 }
@@ -497,7 +594,6 @@
                 .then(data => {
                     console.log("Save complete:", data);
                     TYRANO.kag.stat.f.ai_chat_history = [];
-                    // 必要なら最新記憶をロード
                     return fetch('/api/memory?user_id=' + TYRANO.kag.stat.f.user_id);
                 })
                 .then(r => r.json())
@@ -515,9 +611,11 @@
                 });
             };
 
-            // window.mascot_chat_trigger としてグローバル公開
+            // ================================================================
+            // mascot_chat_trigger: cpp_executorなど外部プラグインから呼び出される
+            // WebSocket経由でAIに通知し、フィードバックを表示する
+            // ================================================================
             window.mascot_chat_trigger = function(systemMessage, is_new_record=false) {
-                // 必須チェック
                 if (typeof TYRANO.kag.stat.f === "undefined") return;
                 var f = TYRANO.kag.stat.f;
 
@@ -526,76 +624,31 @@
                 var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
                 var currentLove = f.love_level || 0;
                 
-                // システム通知であることを明示するプレフィックスを付ける
                 var messageToSend = "[SYSTEM] " + systemMessage;
 
-                // AIチャット中状態にする（入力無効化など）
-                var container = $(".ai-chat-container");
-                var inputField = container.find(".ai-chat-input");
-                inputField.attr("placeholder", "考え中...").prop("disabled", true);
+                // 入力UI を無効化
+                var $input = $(".ai-chat-container").find(".ai-chat-input");
+                $input.attr("placeholder", "考え中...").prop("disabled", true);
 
-                var lastEmotionParams = { joy: 0, anger: 0, fear: 0, trust: 0, shy: 0, surprise: 0 };
-                var lastExecOutput = "";
+                var payload = {
+                    character_id: "mocha",
+                    message: messageToSend, 
+                    code: f['my_code'],
+                    task: task_data ? task_data.description : "タスクがありません",
+                    love_level: parseInt(currentLove),
+                    user_id: f.user_id,
+                    prev_params: f.prev_params || { joy:0, anger:0, fear:0, trust:0, shy:0, surprise:0 },
+                    prev_output: f.prev_output || ""
+                };
 
-                // APIコール
-                fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        character_id: "mocha",
-                        message: messageToSend, 
-                        code: f['my_code'],
-                        task: task_data ? task_data.description : "タスクがありません",
-                        love_level:parseInt(currentLove),
-                        user_id: TYRANO.kag.stat.f.user_id,
-                        prev_params: lastEmotionParams,
-                        prev_output: lastExecOutput
-                    }),
-                })
-                .then(r => r.json())
-                .then(data => {
-                    var aiText = data.text;
-                    var emotion = data.emotion || "normal";
-                    var loveUpVal = parseInt(data.love_up) || 0; 
-
-                    // 前回の感情パラメータと出力を保存
-                    if (data.parameters) {
-                        TYRANO.kag.stat.f.prev_params = data.parameters;
+                // WebSocket経由で送信
+                sendChatRequest(payload, function(err, data) {
+                    if (err) {
+                        console.error("[MascotChat] Triggerエラー:", err);
+                    } else {
+                        applyAIResponse(data, true);
                     }
-
-                    // サンドボックスモードでは好感度変動を無効化
-                    if (!TYRANO.kag.stat.f.is_sandbox&&loveUpVal !== 0) {
-                        var current = parseInt(f.love_level) || 0;
-                        f.love_level = current + loveUpVal; 
-                        if(f.love_level < 0) f.love_level = 0;
-                        if(f.love_level > 100) f.love_level = 100;
-                        
-                        console.error(`好感度 ${loveUpVal}`);
-                        if(loveUpVal > 0){
-                            alertify.success("好感度UP!");
-                        } else {
-                            alertify.error("好感度DOWN...");
-                        }
-
-                        if (window.saveLoveLevelToSupabase) {
-                            window.saveLoveLevelToSupabase(f.love_level);
-                        }
-
-                        window.updateLoveGaugeUI();
-                    }
-
-                    // メッセージ表示
-                    addMessage("モカ", aiText, false);
-
-                    // 表情変更
-                    var emotion = data.emotion || "normal";
-                    tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:emotion, time:200});
-                })
-                .catch(error => {
-                    console.error("Trigger Error:", error);
-                })
-                .finally(() => {
-                    inputField.prop("disabled", false).attr("placeholder", "メッセージを入力...");
+                    $input.prop("disabled", false).attr("placeholder", "メッセージを入力...");
                 });
             };
             
@@ -652,7 +705,6 @@
 
     // --- 好感度保存関数 ---
     window.saveLoveLevelToSupabase = async function(newLevel) {
-        // ユーザーIDがない、またはSupabaseが初期化されていない場合は何もしない
         if (!TYRANO.kag.stat.f.user_id || !window.sb) return;
 
         try {
@@ -663,8 +715,6 @@
 
             if (error) {
                 console.error("好感度の保存に失敗:", error);
-            } else {
-                //console.error("好感度を保存しました:", newLevel);
             }
         } catch (e) {
             console.error("Supabase Error:", e);
