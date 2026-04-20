@@ -174,7 +174,7 @@ $("#btn-reg-confirm").click(async function() {
 });
 
 const handleAuthSuccess = (userId) => {
-    TYRANO.kag.stat.f.user_id = userId;
+    f.user_id = userId;
     $("#auth-box, #reg-modal").remove();
     // ログイン成功後は既存の処理と同様 
     tyrano.plugin.kag.ftag.startTag("jump", { storage: "first.ks", target: "*load_user_data" });

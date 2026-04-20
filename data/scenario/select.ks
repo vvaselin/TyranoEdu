@@ -15,7 +15,7 @@
         dataType: "json",
         async: false,
         success: function(data) {
-            TYRANO.kag.stat.f.all_tasks = data;
+            f.all_tasks = data;
             console.log("Tasks loaded:", data);
         }
     });
