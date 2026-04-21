@@ -6,12 +6,9 @@
 [bg storage="bunkabu.jpg" time="0"]
 [free_filter layer="base"]
 
-[if exp="f.user_role == 'experimental' "]
-    [bg storage="bunkabu.jpg" time="100" wait="true"]
-    [filter layer="base" blur=2]
-[else]
-    [bg storage="standard.png" time="100" wait="true"]
-[endif]
+
+[bg storage="bunkabu.jpg" time="100" wait="true"]
+[filter layer="base" blur=2]
 
 [layopt layer="0" visible="true"]
 @layopt layer="message0" visible=false
@@ -20,23 +17,23 @@
 *menu_loop
 [chara_mod name="mocha" face="normal" wait=false]
 ; トークモードへ移動
-[glink color="ts22" text="トークモード" target="*developing" x="850" y="570" width="300" size="30" cond="f.user_role == 'experimental' "]
+[glink color="ts22" text="トークモード" target="*developing" x="850" y="570" width="300" size="30"]
 ; 課題選択画面へ移動
 [glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xf88c;</span> 課題" target="*toSelect" x="600" y="100" height="100" width="510" size="60"]
 ; サンドボックスモード
 [glink color="mybtn_perspective mybtn_R" text="サンドボックス" target="*toSanbox" x="610" y="280" height="60" width="520" size="40"]
 ;キャラ情報
-[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xe7fd;</span> キャラ" target="*developing"  x="630" y="390" height="80" width="230" size="35" cond="f.user_role == 'experimental' "]
+[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xe7fd;</span> キャラ" target="*developing"  x="630" y="390" height="80" width="230" size="35"]
 ; 資料
 [glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xe0e0;</span> 資料" target="*toDocment" x="935" y="395" height="105" width="200" size="35"]
 [wait time=100]
 
 ; キャラクター表示
-[chara_show name="mocha" time="50"  left=40  width=680 top =90 cond="f.user_role == 'experimental' " time=100 wait="true" ]
-[clickable x=220 y=110 width=300 height=540 target="*mocha_reaction" cond="f.user_role == 'experimental'" ]
+[chara_show name="mocha" time="50"  left=40  width=680 top =90 time=100 wait="true" ]
+[clickable x=220 y=110 width=300 height=540 target="*mocha_reaction"]
 [wait time=100]
 
-[chara_show name="adviser" time="50"  left=-50  width=800 top =-50 cond="f.user_role == 'control' " time=100 wait="true" ]
+;[chara_show name="adviser" time="50"  left=-50  width=800 top =-50 cond="f.user_role == 'control' " time=100 wait="true" ]
 
 ; ログアウトボタン
 [button name="logout_btn" graphic="../others/plugin/theme_kopanda_22_HD_anim/image/button/title.png" enterimg="../others/plugin/theme_kopanda_22_HD_anim/image/button/title2.png" x=1180 y=20 height=50 role="sleep" fix="true"]

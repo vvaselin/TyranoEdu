@@ -24,7 +24,8 @@
 
 ; 1. スクロールエリアの作成
 [iscript]
-tf.area_contents_w = (f.user_role == 'experimental') ? 3500 : 2000;
+//tf.area_contents_w = (f.user_role == 'experimental') ? 3500 : 2000;
+tf.area_contents_w = 3500;
 [endscript]
 [scroll_area id="select_screen" top=150 left=0 width=1280 height=500 contents_w="&tf.area_contents_w" zindex=1000000]
 
@@ -35,13 +36,15 @@ tf.area_contents_w = (f.user_role == 'experimental') ? 3500 : 2000;
         
         // 座標計算
         tf.y_btn = 350; 
-        if (f.user_role == 'experimental') {
-            tf.x_lecture = (i - 1) * 600 + 150;
-            tf.x_task    = tf.x_lecture + 260;
-        } else {
-            // 講義なし：間隔を詰めて中央寄りに配置
-            tf.x_task = (i - 1) * 350 + 200;
-        }
+        //if (f.user_role == 'experimental') {
+        //    tf.x_lecture = (i - 1) * 600 + 150;
+        //    tf.x_task    = tf.x_lecture + 260;
+        //} else {
+        //    // 講義なし：間隔を詰めて中央寄りに配置
+        //    tf.x_task = (i - 1) * 350 + 200;
+        //}
+        tf.x_lecture = (i - 1) * 600 + 150;
+        tf.x_task    = tf.x_lecture + 260;
 
         tf.l_name = "l_btn_" + i;
         tf.t_name = "t_btn_" + i;
@@ -53,9 +56,9 @@ tf.area_contents_w = (f.user_role == 'experimental') ? 3500 : 2000;
     [if exp="tf.is_locked == false"]
         ; --- 解放状態 ---
         ; 講義ボタン (experimentalのみ)
-        [if exp="f.user_role == 'experimental'"]
+        ;[if exp="f.user_role == 'experimental'"]
             [glink name="&tf.l_name" color="mybtn_10" text="&'ep. '+tf.i" x="&tf.x_lecture" y="&tf.y_btn" width=250 target="*lecture_jump" exp="&'tf.target_lecture_num='+tf.i"]
-        [endif]
+        ;[endif]
 
         ; 課題ボタン
         ; expの中で 'task1' のように文字列として評価されるよう、引用符の扱いに注意します
@@ -63,9 +66,9 @@ tf.area_contents_w = (f.user_role == 'experimental') ? 3500 : 2000;
 
     [else]
         ; --- ロック状態 ---
-        [if exp="f.user_role == 'experimental'"]
+        ;[if exp="f.user_role == 'experimental'"]
             [glink name="&tf.l_name" color="mybtn_locked" text="&'ep. '+tf.i+' (Lock)'" x="&tf.x_lecture" y="&tf.y_btn" width=250 target="*locked"]
-        [endif]
+        ;[endif]
         [glink name="&tf.t_name" color="mybtn_locked" text="&'課題 '+tf.i+' (Lock)'" x="&tf.x_task" y="&tf.y_btn" width=250 target="*locked"]
     [endif]
 
@@ -131,18 +134,18 @@ if (f.all_tasks && f.all_tasks[taskId]) {
 [eval exp="f.is_sandbox = false"]
 @layopt layer="message0" visible=true
 [start_keyconfig]
-[if exp="f.user_role == 'experimental'"]
+;[if exp="f.user_role == 'experimental'"]
     [jump storage="editor.ks" target="*start"]
-[else]
-    [jump storage="editor_control.ks" target="*start"]
-[endif]
+;[else]
+;    [jump storage="editor_control.ks" target="*start"]
+;[endif]
 
 [eval exp="f.is_sandbox = false"]
 
 @layopt layer="message0" visible=true
 [start_keyconfig]
-[if exp="f.user_role == 'experimental' "]
+;[if exp="f.user_role == 'experimental' "]
     [jump storage="editor.ks" target="*start"]
-[else]
-    [jump storage="editor_control.ks" target="*start"]
-[endif]
+;[else]
+;    [jump storage="editor_control.ks" target="*start"]
+;[endif]

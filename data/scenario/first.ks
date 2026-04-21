@@ -116,6 +116,9 @@ $.ajax({
         f.user_role = data.role || "control";
         f.ai_memory = data;
         f.user_name = data.name || "ゲスト";
+        if (f.user_role == 'control') {
+            f.love_level = 0; 
+        }
     },
     error: function() {
         f.love_level = 0;

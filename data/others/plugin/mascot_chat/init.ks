@@ -90,18 +90,21 @@
         var sendButton = container.find(".ai-chat-send-button");
         var navPrev = container.find(".ai-chat-nav .ai-chat-prev");
         var navNext = container.find(".ai-chat-nav .ai-chat-next");
-        var uid = TYRANO.kag.stat.f.user_id;    
+        var uid = f.user_id;    
         // --- 記憶ロード ---
-        if (typeof TYRANO.kag.stat.f.ai_memory === "undefined") {
-            TYRANO.kag.stat.f.ai_memory = { summary: "", learned_topics: [], weaknesses: [] };
+        if (typeof f.ai_memory === "undefined") {
+            f.ai_memory = { summary: "", learned_topics: [], weaknesses: [] };
         }
         fetch('/api/memory?user_id=' + uid)
             .then(r => r.ok ? r.json() : null)
             .then(data => {
                 if(data){
                     TYRANO.kag.stat.f.ai_memory = data;
-                    if(data.love_level && !TYRANO.kag.stat.f.love_level){
-                         TYRANO.kag.stat.f.love_level = data.love_level;
+                    if(f.user_role=='experimental'&&data.love_level && !f.love_level){
+                        f.love_level = data.love_level;
+                    }
+                    else if(f.user_role=='experimental'&&!f.love_level){
+                        f.love_level = 0;
                     }
                     window.updateLoveGaugeUI();
                 }
@@ -386,7 +389,7 @@
                 f.prev_params = data.parameters;
             }   
             // 好感度変動（サンドボックスモードでは無効）
-            if (!f.is_sandbox && loveUpVal !== 0) {
+            if (f.user_role=='experimental'&&!f.is_sandbox && loveUpVal !== 0) {
                 var current = parseInt(f.love_level) || 0;
                 f.love_level = Math.min(100, Math.max(0, current + loveUpVal));
 
@@ -537,12 +540,12 @@
             }
 
             alertify.log("学習記録を保存...");  
-            var currentLove = TYRANO.kag.stat.f.love_level || 0;    
+            var currentLove = f.love_level || 0;    
             fetch('/api/summarize', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                    user_id: TYRANO.kag.stat.f.user_id,
+                    user_id: f.user_id,
                     chat_history: history,
                     current_love_level: parseInt(currentLove)
                 })
@@ -550,12 +553,12 @@
             .then(r => r.json())
             .then(data => {
                 console.log("Save complete:", data);
-                TYRANO.kag.stat.f.ai_chat_history = [];
-                return fetch('/api/memory?user_id=' + TYRANO.kag.stat.f.user_id);
+                f.ai_chat_history = [];
+                return fetch('/api/memory?user_id=' + f.user_id);
             })
             .then(r => r.json())
             .then(data => {
-                if(data) TYRANO.kag.stat.f.ai_memory = data;
+                if(data) f.ai_memory = data;
             })
             .catch(e => {
                 console.error("Save Error:", e);

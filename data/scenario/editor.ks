@@ -383,7 +383,7 @@ if (task_data) {
             if (data.is_new_record) {
                 bonusMsg = " (自己ベスト更新！)";
                 // ここでクライアント側の好感度も増やしておく
-                if(data.bonus_love > 0) {
+                if(f.user_role=='experimental'&&data.bonus_love > 0) {
                     var current = parseInt(f.love_level) || 0;
                     f.love_level = current + data.bonus_love;
                     alertify.success("ハイスコアボーナス! 好感度+" + data.bonus_love);
