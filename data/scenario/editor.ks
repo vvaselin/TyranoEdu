@@ -7,8 +7,8 @@
 [stop_keyconfig]
 
 [iscript]
-TYRANO.kag.stat.f.prev_params = {joy:0, trust:0, fear:0, anger:0, shy:0, surprise:0};
-TYRANO.kag.stat.f.prev_output = "";
+f.prev_params = {joy:0, trust:0, fear:0, anger:0, shy:0, surprise:0};
+f.prev_output = "";
 if (window.clearMascotChatHistory) {
     window.clearMascotChatHistory();
 }
@@ -209,8 +209,8 @@ $("#modal_copy_button_id").button("disable");
 [endhtml]
 
 [iscript]
-var tasks = TYRANO.kag.stat.f.all_tasks;
-var current_id = TYRANO.kag.stat.f.current_task_id;
+var tasks = f.all_tasks;
+var current_id = f.current_task_id;
 
 var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
 
@@ -219,7 +219,7 @@ if (task_data) {
     $("#task-title").text(task_data.title);
     $("#task-content").text(task_data.description);
 
-    if (TYRANO.kag.stat.f.is_sandbox) {
+    if (f.is_sandbox) {
         $("#expected-output-area").hide(); // 期待される出力を隠す
         $("#custom-stdin-area").show();    // 自由入力欄を表示
 
@@ -317,12 +317,12 @@ if (task_data) {
 ; 採点処理
 [iscript]
     // 課題データ
-    var task = TYRANO.kag.stat.f.all_tasks[TYRANO.kag.stat.f.current_task_id];
+    var task = f.all_tasks[f.current_task_id];
     var payload = {
-        user_id: TYRANO.kag.stat.f.user_id,
-        task_id: TYRANO.kag.stat.f.current_task_id,
-        code: TYRANO.kag.stat.f['my_code'],     
-        output: TYRANO.kag.stat.f.execution_result,
+        user_id: f.user_id,
+        task_id: f.current_task_id,
+        code: f['my_code'],
+        output: f.execution_result,
         task_desc: task.description,               
         expected_output: task.expected_output || ""
     };
@@ -370,11 +370,11 @@ if (task_data) {
                     });
                 }, 2000);
 
-                if (!TYRANO.kag.stat.f.cleared_tasks) {
-                    TYRANO.kag.stat.f.cleared_tasks = {};
+                if (!f.cleared_tasks) {
+                    f.cleared_tasks = {};
                 }
                 // 現在のタスクID (例: "task1") を true にする
-                TYRANO.kag.stat.f.cleared_tasks[TYRANO.kag.stat.f.current_task_id] = true;
+                f.cleared_tasks[f.current_task_id] = true;
             } else {
                 alertify.error("不合格...");
             }
@@ -384,11 +384,11 @@ if (task_data) {
                 bonusMsg = " (自己ベスト更新！)";
                 // ここでクライアント側の好感度も増やしておく
                 if(data.bonus_love > 0) {
-                    var current = parseInt(TYRANO.kag.stat.f.love_level) || 0;
-                    TYRANO.kag.stat.f.love_level = current + data.bonus_love;
+                    var current = parseInt(f.love_level) || 0;
+                    f.love_level = current + data.bonus_love;
                     alertify.success("ハイスコアボーナス! 好感度+" + data.bonus_love);
                     if (window.saveLoveLevelToSupabase) {
-                        window.saveLoveLevelToSupabase(TYRANO.kag.stat.f.love_level);
+                        window.saveLoveLevelToSupabase(f.love_level);
                     }
                 }
             }

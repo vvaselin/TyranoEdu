@@ -61,11 +61,11 @@ $.ajax({
     cache: false,
     async: false,
     success: function(data) {
-        TYRANO.kag.stat.f.all_tasks = data;
+        f.all_tasks = data;
     },
     error: function(xhr, status, error) {
         console.error("tasks.json Load Error:", error);
-        TYRANO.kag.stat.f.all_tasks = { "error": { "title":"Error", "description":"Load Failed" }};
+        f.all_tasks = { "error": { "title":"Error", "description":"Load Failed" }};
     }
 });
 [endscript]
@@ -82,7 +82,7 @@ window.sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 sb.auth.getSession().then(({ data: { session } }) => {
     if (session) {
         // ログイン済み -> プロフィール読み込みへ
-        TYRANO.kag.stat.f.user_id = session.user.id;
+        f.user_id = session.user.id;
         tyrano.plugin.kag.ftag.startTag("jump", { target: "*load_user_data" });
     } else {
         // 未ログイン -> ログイン画面へ移動
@@ -105,22 +105,22 @@ if ($("#loading_overlay").length === 0) {
 }
 $("#loading_overlay").fadeIn(200);
 
-var uid = TYRANO.kag.stat.f.user_id;
+var uid = f.user_id;
 
 $.ajax({
     url: '/api/memory?user_id=' + uid,
     type: 'GET',
     dataType: 'json',
     success: function(data) {
-        TYRANO.kag.stat.f.love_level = data.love_level || 0;
-        TYRANO.kag.stat.f.user_role = data.role || "control";
-        TYRANO.kag.stat.f.ai_memory = data;
-        TYRANO.kag.stat.f.user_name = data.name || "ゲスト";
+        f.love_level = data.love_level || 0;
+        f.user_role = data.role || "control";
+        f.ai_memory = data;
+        f.user_name = data.name || "ゲスト";
     },
     error: function() {
-        TYRANO.kag.stat.f.love_level = 0;
-        TYRANO.kag.stat.f.ai_memory = {};
-        TYRANO.kag.stat.f.user_role = "control";
+        f.love_level = 0;
+        f.ai_memory = {};
+        f.user_role = "control";
     }
 }).always(function(){
     window.sb.from('task_progress')
@@ -129,9 +129,9 @@ $.ajax({
         .eq('is_cleared', true)
         .then(({ data, error }) => {
             if (data) {
-                TYRANO.kag.stat.f.cleared_tasks = {};
+                f.cleared_tasks = {};
                 data.forEach(row => {
-                    TYRANO.kag.stat.f.cleared_tasks[row.task_id] = true;
+                    f.cleared_tasks[row.task_id] = true;
                 });
             }
             

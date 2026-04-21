@@ -77,7 +77,7 @@
                         window.ai_chat_trigger("コード実行時にエラーが発生しました: " + error.message);
                     }
                 }
-                TYRANO.kag.stat.f.prev_output = "エラー:\n" + error.message;
+                f.prev_output = "エラー:\n" + error.message;
             })
             .finally(() => {
                 // API通信が完了したら、ティラノスクリプトの次のタグに進ませる
