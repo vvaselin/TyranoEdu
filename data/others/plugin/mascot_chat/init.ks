@@ -434,6 +434,8 @@
             if (userMessage === "") return;
 
             addMessage("あなた", userMessage, false);
+            // 入力UI を無効化
+            var $input = $(".ai-chat-container").find(".ai-chat-input");
             thinking();
             // 会話履歴コンテキスト構築
             var historyContext = "";
