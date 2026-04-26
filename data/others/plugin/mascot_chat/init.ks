@@ -410,7 +410,8 @@
 
         // AIレスポンス待ちUI
         function thinking() {
-            inputField.attr("placeholder", "考え中...").prop("disabled", true);
+            var $input = $(".ai-chat-container").find(".ai-chat-input");
+            $input.attr("placeholder", "考え中...").prop("disabled", true);
             sendButton.prop("disabled", true);
             aiMessagesContainer.html('<div class="thinking-indicator">...</div>');
             aiMessagesContainer.scrollTop(0);
@@ -420,6 +421,7 @@
         // 送信処理 (ユーザー入力)
         // ================================================================
         function sendMessage() {
+            var $input = $(".ai-chat-container").find(".ai-chat-input");
             if (getTfLogIndex() !== -1) { 
                 restoreLiveChatView();
             }   
@@ -430,12 +432,13 @@
             }
 
             var f = TYRANO.kag.stat.f;
-            var userMessage = inputField.val().trim();
+            var userMessage = $input.val().trim();
             if (userMessage === "") return;
 
             addMessage("あなた", userMessage, false);
-            // 入力UI を無効化
-            var $input = $(".ai-chat-container").find(".ai-chat-input");
+            
+            $input.val("").css('height', '45px');
+            // 考え中
             thinking();
             // 会話履歴コンテキスト構築
             var historyContext = "";
@@ -481,9 +484,10 @@
                 } else {
                     applyAIResponse(data, false);
                 }
-                inputField.prop("disabled", false).attr("placeholder", "メッセージを入力...").focus();
+                var $input = $(".ai-chat-container").find(".ai-chat-input");
+                $input.prop("disabled", false).attr("placeholder", "メッセージを入力...").focus();
                 sendButton.prop("disabled", false);
-                inputField.css('height', '45px');
+                $input.css('height', '45px');
             });
         }   
         window.updateLoveGaugeUI = function() {
