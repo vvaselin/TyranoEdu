@@ -64,10 +64,10 @@
 
         var scWidth = parseInt(TYRANO.kag.config.scWidth);
         var scHeight = parseInt(TYRANO.kag.config.scHeight);
-        const chatWidth = scWidth * 0.37;
+        const chatWidth = scWidth * 0.30;
         const marginRight = scWidth * 0.02;
         const leftPosition = scWidth - chatWidth - marginRight;
-        const chatHeight = scHeight * 0.92;
+        const chatHeight = scHeight * 0.95;
         container.css({
             "position": "absolute", 
             "top": "2%", 
@@ -406,7 +406,16 @@
             }   
             addMessage("モカ", aiText, false);
             tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:emotion, time:200});
-        }   
+        }
+
+        // AIレスポンス待ちUI
+        function thinking() {
+            inputField.attr("placeholder", "考え中...").prop("disabled", true);
+            sendButton.prop("disabled", true);
+            aiMessagesContainer.html('<div class="thinking-indicator">...</div>');
+            aiMessagesContainer.scrollTop(0);
+            tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:"frustration", time:200});
+        }
         // ================================================================
         // 送信処理 (ユーザー入力)
         // ================================================================
@@ -425,8 +434,7 @@
             if (userMessage === "") return;
 
             addMessage("あなた", userMessage, false);
-            inputField.val("").attr("placeholder", "考え中...").prop("disabled", true);
-            sendButton.prop("disabled", true);  
+            thinking();
             // 会話履歴コンテキスト構築
             var historyContext = "";
             var history = getHistory();
@@ -574,7 +582,7 @@
         // mascot_chat_trigger: cpp_executorなど外部プラグインから呼び出される
         // WebSocket経由でAIに通知し、フィードバックを表示する
         // ================================================================
-        window.mascot_chat_trigger = function(systemMessage, is_new_record=false) {
+        window.mascot_chat_trigger = function(systemMessage, is_new_record=false, callback) {
             if (typeof TYRANO.kag.stat.f === "undefined") return;
             var f = TYRANO.kag.stat.f;  
             var tasks = f.all_tasks;
@@ -585,7 +593,9 @@
             var messageToSend = "[SYSTEM] " + systemMessage;    
             // 入力UI を無効化
             var $input = $(".ai-chat-container").find(".ai-chat-input");
-            $input.attr("placeholder", "考え中...").prop("disabled", true); 
+            
+            thinking();
+            
             var payload = {
                 character_id: "mocha",
                 message: messageToSend, 
@@ -603,7 +613,10 @@
                 } else {
                     applyAIResponse(data, true);
                 }
+                
                 $input.prop("disabled", false).attr("placeholder", "メッセージを入力...");
+
+                if (typeof callback === "function") callback();
             });
         };
 

@@ -320,9 +320,9 @@
 .love-gauge-box {
     position: absolute;
     bottom: 85px; 
-    left: 15px;
-    width: 250px; /* 少し広げる */
-    height: 38px;
+    left: 10px;
+    width: 170px;
+    height: 30px;
     background-color: rgba(20, 20, 20, 0.9);
     border-radius: 6px;
     padding: 0 10px;
