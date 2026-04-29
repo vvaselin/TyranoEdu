@@ -283,6 +283,50 @@
     font-size: 14px;
     line-height: 1.5;
 }
+
+.doc-content blockquote {
+    border-left: 4px solid #007acc;
+    margin: 15px 0;
+    padding: 10px 20px;
+    background-color: rgba(0, 122, 204, 0.1);
+    color: #aaa;
+    border-radius: 0 4px 4px 0;
+}
+
+.doc-content blockquote p {
+    margin-bottom: 0;
+    color: #aaa;
+}
+
+.doc-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 15px;
+}
+
+.doc-content th {
+    background-color: #007acc;
+    color: #fff;
+    padding: 10px 15px;
+    text-align: left;
+    font-weight: bold;
+}
+
+.doc-content td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #444;
+    color: #ccc;
+}
+
+.doc-content tr:nth-child(even) td {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+.doc-content tr:hover td {
+    background-color: rgba(0, 122, 204, 0.1);
+}
+
 /* style.css の修正例 */
 .doc-content .hljs-keyword, .doc-content .hljs-selector-tag { color: #569cd6; } /* int, return, if */
 .doc-content .hljs-string { color: #ce9178; }    /* "Hello World" */
@@ -376,4 +420,17 @@
 
 .doc-viewer-container.full-mode .doc-content pre code {
     font-size: 18px;
+}
+
+.doc-viewer-container.full-mode .doc-content blockquote {
+    font-size: 22px;
+}
+
+.doc-viewer-container.full-mode .doc-content table {
+    font-size: 20px;
+}
+
+.doc-viewer-container.full-mode .doc-content th,
+.doc-viewer-container.full-mode .doc-content td {
+    padding: 14px 20px;
 }

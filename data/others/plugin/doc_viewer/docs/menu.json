@@ -5,6 +5,7 @@
     "category": "第1章: 入出力",
     "items": [
        { "title": "文字の出力", "file": "chap1/1.md" },
+       { "title": "std:: って何？",     "file": "chap1/column1.md" },
        { "title": "文字の入力",       "file": "chap1/2.md" }
     ]
   },
@@ -33,6 +34,25 @@
     "items": [
        { "title": "for文",           "file": "chap5/1.md" },
        { "title": "while文",         "file": "chap5/2.md" }
+    ]
+  },
+  {
+    "category": "第6章: 配列・文字列",
+    "items": [
+       { "title": "配列の使い方",     "file": "chap6/1.md" },
+       { "title": "文字列の操作",     "file": "chap6/2.md" }
+    ]
+  },
+  {
+    "category": "第7章: 関数",
+    "items": [
+       { "title": "関数の定義と呼び出し", "file": "chap7/1.md" }
+    ]
+  },
+  {
+    "category": "第8章: クラス",
+    "items": [
+       { "title": "クラスの定義と使い方", "file": "chap8/1.md" }
     ]
   }
 ]
