@@ -1,4 +1,8 @@
-/* --- スクロールエリア本体 --- */
+/* ========================================
+   横スクロールエリア（既存）
+   ======================================== */
+
+/* --- 横スクロールエリア本体 --- */
 .scroll_scrollable {
   overflow-x: scroll !important; 
   overflow-y: hidden !important;
@@ -29,12 +33,12 @@
   background: #2ecc71 !important;
 }
 
-/* --- ◀ ▶ ボタン --- */
+/* --- ◀ ▶ ボタン（横スクロール） --- */
 .scroll_arrow_btn {
   position: absolute;
   top: 0;
   width: 40px;
-  height: calc(100% - 20px); /* バーの分を引く */
+  height: calc(100% - 24px); /* バーの分を引く */
   background: rgba(0, 0, 0, 0.4);
   color: white;
   display: flex;
@@ -58,3 +62,68 @@
 .scroll_arrow_btn.left { left: 0; border-radius: 0 15px 15px 0; }
 .scroll_arrow_btn.right { right: 0; border-radius: 15px 0 0 15px; }
 .scroll_arrow_btn span { pointer-events: none; }
+
+/* ========================================
+   縦スクロールエリア（新規）
+   ======================================== */
+
+/* --- 縦スクロールエリア本体 --- */
+.scroll_vertical_scrollable {
+  overflow-x: hidden !important; 
+  overflow-y: scroll !important;
+  scrollbar-width: auto !important;
+  /* Firefox用（緑 / 薄灰） */
+  scrollbar-color: #27ae60 #dcdde1; 
+}
+
+/* --- Webkit系（Chrome/Safari）カスタマイズ --- */
+
+.scroll_vertical_scrollable::-webkit-scrollbar {
+  display: block !important;
+  width: 24px !important; /* 縦スクロールバーの幅 */
+}
+
+.scroll_vertical_scrollable::-webkit-scrollbar-track {
+  background: #dcdde1 !important;
+  border-radius: 12px;
+}
+
+.scroll_vertical_scrollable::-webkit-scrollbar-thumb {
+  background: #27ae60 !important; /* 緑色 */
+  border-radius: 12px;
+  border: 4px solid #dcdde1;
+}
+
+.scroll_vertical_scrollable::-webkit-scrollbar-thumb:hover {
+  background: #2ecc71 !important;
+}
+
+/* --- ▲ ▼ ボタン（縦スクロール） --- */
+.scroll_vertical_arrow_btn {
+  position: absolute;
+  left: 0;
+  width: calc(100% - 24px); /* バーの分を引く */
+  height: 20px;
+  background: rgba(0, 0, 0, 0.4);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  cursor: pointer;
+  z-index: 20000005;
+  transition: background 0.2s;
+  user-select: none;
+}
+
+.scroll_vertical_arrow_btn:hover {
+  background: rgba(39, 174, 96, 0.6);
+}
+
+.scroll_vertical_arrow_btn:active {
+  background: rgba(39, 174, 96, 0.9);
+}
+
+.scroll_vertical_arrow_btn.up { top: 0; border-radius: 0 0 15px 15px; }
+.scroll_vertical_arrow_btn.down { bottom: 0; border-radius: 15px 15px 0 0; }
+.scroll_vertical_arrow_btn span { pointer-events: none; }
