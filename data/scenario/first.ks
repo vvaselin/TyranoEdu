@@ -10,7 +10,6 @@
 [plugin name="cpp_executor"]
 [plugin name="glink_ex"]
 [plugin name="mascot_chat"]
-[plugin name="ai_chat"]
 [plugin name="doc_viewer"]
 [plugin name="for"]
 [plugin name="scroll_area"]
