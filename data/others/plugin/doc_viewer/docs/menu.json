@@ -54,5 +54,30 @@
     "items": [
        { "title": "クラスの定義と使い方", "file": "chap8/1.md" }
     ]
+  },
+  {
+    "category": "第9章: ポインタと参照",
+    "items": [
+       { "title": "参照（&）", "file": "chap9/1.md" },
+       { "title": "ポインタの基本", "file": "chap9/2.md" }
+    ]
+  },
+  {
+    "category": "第10章: 標準ライブラリの型",
+    "items": [
+       { "title": "vector（動的配列）", "file": "chap10/1.md" },
+       { "title": "string（文字列クラス）", "file": "chap10/2.md" },
+       { "title": "テンプレートの基本", "file": "chap10/3.md" },
+       { "title": "コンテナ型いろいろ", "file": "chap10/4.md" }
+    ]
+  },
+  {
+    "category": "第11章: 実践的なトピック",
+    "items": [
+       { "title": "#include と標準ライブラリ一覧", "file": "chap11/1.md" },
+       { "title": "標準入力の高速化",       "file": "chap11/2.md" },
+       { "title": "よく使うアルゴリズム",   "file": "chap11/3.md" },
+      { "title": "デバッグのコツ", "file": "chap11/4.md" }
+    ]
   }
 ]
