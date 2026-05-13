@@ -239,11 +239,7 @@ if (taskData && taskData.initial_code) {
 }
 [endscript]
 
-[if exp="f.user_role == 'experimental' "]
 [jump storage="editor.ks" target="*start"]
-[else]
-[jump storage="editor_control.ks" target="*start"]
-[endif]
 
 *developing
 [iscript]
