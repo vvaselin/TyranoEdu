@@ -59,8 +59,6 @@
                     var shortResult = data.result.substring(0, 100); 
                     if(window.mascot_chat_trigger){
                         window.mascot_chat_trigger("ユーザーがコードを実行しました。実行結果: " + shortResult, false);
-                    }else{
-                        window.ai_chat_trigger("ユーザーがコードを実行しました。実行結果: " + shortResult);
                     }
                 }
                 TYRANO.kag.stat.f.prev_output = data.result;
@@ -72,9 +70,6 @@
                 if (pm.silent !== "true") {
                     if(window.mascot_chat_trigger){
                         window.mascot_chat_trigger("コード実行時にエラーが発生しました: " + error.message, false);
-                    }
-                    else{
-                        window.ai_chat_trigger("コード実行時にエラーが発生しました: " + error.message);
                     }
                 }
                 f.prev_output = "エラー:\n" + error.message;

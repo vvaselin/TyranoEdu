@@ -121,7 +121,7 @@
         //     (sendButton/inputField を disabled にしているため同時送信は起きない)
         //   - 切断時は自動再接続する (最大3回、指数バックオフ)
         // ================================================================ 
-        var WS_URL = "ws://" + location.host + "/api/chat/ws";
+        var WS_URL = (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/api/chat/ws";
         var ws = null;
         var pendingCallback = null;  // 現在のリクエストに対するレスポンスハンドラ
         var reconnectAttempts = 0;
