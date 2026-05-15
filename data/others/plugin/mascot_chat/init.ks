@@ -106,6 +106,11 @@
                     else if(f.user_role=='experimental'&&!f.love_level){
                         f.love_level = 0;
                     }
+
+                    if(f.user_role=='control'){
+                        var loveGaugeBox = container.find(".love-gauge-box");
+                        loveGaugeBox.hide();
+                    }
                     window.updateLoveGaugeUI();
                 }
             }); 
