@@ -1,4 +1,42 @@
 {
+  "_categories": [
+    {
+      "id":    "basic",
+      "label": "基本入出力・変数・演算",
+      "short": "基本",
+      "lecture_start": 1,
+      "lecture_count": 1
+    },
+    {
+      "id":    "branch",
+      "label": "条件分岐",
+      "short": "条件分岐",
+      "lecture_start": 2,
+      "lecture_count": 1
+    },
+    {
+      "id":    "loop",
+      "label": "ループ",
+      "short": "ループ",
+      "lecture_start": 3,
+      "lecture_count": 1
+    },
+    {
+      "id":    "func",
+      "label": "関数",
+      "short": "関数",
+      "lecture_start": 4,
+      "lecture_count": 1
+    },
+    {
+      "id":    "array",
+      "label": "配列・文字列・構造体",
+      "short": "配列",
+      "lecture_start": 5,
+      "lecture_count": 1
+    }
+  ],
+
   "task1": {
     "category": "基本入出力・変数・演算",
     "title": "課題1: Hello World",
@@ -836,6 +874,7 @@
   },
 
   "sandbox": {
+    "category": null,
     "title": "サンドボックスモード",
     "description": "自由にコードを書いて実行してみよう。",
     "stdin": "",
