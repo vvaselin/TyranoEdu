@@ -6,6 +6,7 @@
 ; ── 前回の残骸を確実に削除（エラー等で残った場合の保険） ────
 [iscript]
 $('#lecture_area,#task_area,#lecture_tabs,#task_tabs,.sel_back_btn').remove();
+console.error(f.level);
 [endscript]
 
 [wait time=500]
@@ -23,7 +24,7 @@ $('#lecture_area,#task_area,#lecture_tabs,#task_tabs,.sel_back_btn').remove();
 
 ; ── スクロールエリアを作成 ────────────────────────────────────
 ; タブ行(42px) + 余白 = top 157
-[scroll_area_vertical id="lecture_area" top=157 left=50  width=560 height=508 contents_h=800 zindex=1000000]
+[scroll_area_vertical id="lecture_area" top=157 left=50  width=560 height=508 contents_h=450 zindex=1000000]
 [scroll_area_vertical id="task_area"    top=157 left=640 width=560 height=508 contents_h=800 zindex=1000000]
 
 ; ── ボタンデータを全てforループの外で事前計算 ────────────────
@@ -69,19 +70,30 @@ Object.keys(catTaskLists).forEach(function(cat) {
 });
 tf.task_max = maxTaskNum;
 
-// 講義ボタンデータを格納
-window._sd_lec = [];
-cats.forEach(function(cat, idx) {
-    window._sd_lec.push({
-        name:    'l_btn_cat' + idx,
-        label:   'ep.' + cat.lecture_start + '　' + cat.short + 'の講義',
-        lec_num: cat.lecture_start,
-        locked:  false,
-        color:   'mybtn_10',
-        target:  '*lecture_jump'
-    });
-});
-tf.cat_last_idx = cats.length - 1;
+// 講義ボタンデータ
+window._sd_lec = {};
+for (var i = 1; i <= 5; i++) {
+    window._sd_lec[i] = {
+        y: (i - 1) * (BTN_H + BTN_MARGIN) + 50,
+        name: 'l_btn_ep' + i,
+        label: 'ep.' + i,
+        lec_num: i,
+        locked: f.level < i,
+        color: (f.level < i)
+            ? 'mybtn_locked'
+            : 'mybtn_10',
+        target: (f.level < i)
+            ? '*locked'
+            : '*lecture_jump'
+    };
+}
+
+tf.lec_max = 5;
+
+// 取得用
+window._getLecData = function(i) {
+    return window._sd_lec[i];
+};
 
 // forループ内からアクセスするためのヘルパー関数
 // （直接window._sd_task[n]と書くと[n]がタグ解析される恐れがあるため）
@@ -105,22 +117,29 @@ window._getLecData  = function(i) { return window._sd_lec[i];  };
     }
     [endscript]
     [if exp="tf.skip == false"]
-        [glink name="&tf.btn_name" color="&tf.btn_color" text="&tf.btn_label" x="50" y="&tf.btn_y" width="440" height="60" size="18" target="&tf.btn_target"]
+        [glink name="&tf.btn_name" color="&tf.btn_color" text="&tf.btn_label" x="50" y="&tf.btn_y" width="440" height="60" size="18" target="&tf.btn_target" exp="&'f.current_task_id = \"task' + tf.i + '\"'" ]
         [scroll_area_vertical_in id="task_area" name="&tf.btn_name"]
     [endif]
 [nextfor]
 
-; ── 講義ボタン forループ ──────────────────────────────────────
-[for name="tf.ci" from="0" to="&tf.cat_last_idx"]
+; ── 講義ボタン ─────────────────────
+
+[for name="tf.li" from="1" to="5"]
+
     [iscript]
-    var d = window._getLecData(parseInt(tf.ci));
+    var d = window._getLecData(parseInt(tf.li));
+
     tf.lec_name   = d.name;
     tf.lec_label  = d.label;
     tf.lec_color  = d.color;
     tf.lec_target = d.target;
+    tf.lec_y      = d.y;
     [endscript]
-    [glink name="&tf.lec_name" color="&tf.lec_color" text="&tf.lec_label" x="50" y="50" width="440" height="60" size="18" target="&tf.lec_target"]
+
+    [glink name="&tf.lec_name" storage="select.ks" target="&tf.lec_target" color="&tf.lec_color" text="&tf.lec_label" x="50" y="&tf.lec_y" width="440" height="60" size="20" exp="&'tf.target_lecture_num='+tf.li"]
+
     [scroll_area_vertical_in id="lecture_area" name="&tf.lec_name"]
+
 [nextfor]
 
 ; ── タブUIと初期表示制御（iscriptはここだけ） ────────────────
@@ -130,12 +149,10 @@ var $fix = TYRANO.kag.layer.getLayer("fix");
 var cats = f.all_tasks._categories;
 
 window._sel_taskMap = {};
-window._sel_lecMap  = {};
 window._sel_curCat  = 0;
 
 cats.forEach(function(c, idx) {
     window._sel_taskMap[idx] = [];
-    window._sel_lecMap[idx]  = ['.l_btn_cat' + idx];
 });
 Object.keys(f.all_tasks).forEach(function(key) {
     if (!/^task\d+$/.test(key)) return;
@@ -147,17 +164,13 @@ Object.keys(f.all_tasks).forEach(function(key) {
 cats.forEach(function(c, idx) {
     if (idx === 0) return;
     window._sel_taskMap[idx].forEach(function(s){ $(s).hide(); });
-    window._sel_lecMap [idx].forEach(function(s){ $(s).hide(); });
 });
 
 // タブ切り替え
 window._sel_switch = function(newIdx) {
     window._sel_taskMap[window._sel_curCat].forEach(function(s){ $(s).hide(); });
-    window._sel_lecMap [window._sel_curCat].forEach(function(s){ $(s).hide(); });
     window._sel_taskMap[newIdx].forEach(function(s){ $(s).show(); });
-    window._sel_lecMap [newIdx].forEach(function(s){ $(s).show(); });
     $('#task_area_view').scrollTop(0);
-    $('#lecture_area_view').scrollTop(0);
     window._sel_curCat = newIdx;
 };
 
@@ -199,8 +212,7 @@ function buildTabRow(rowId, top, left, width) {
     $fix.append($row);
 }
 
-buildTabRow('lecture_tabs', 115, 50,  560);
-buildTabRow('task_tabs',    115, 640, 560);
+buildTabRow('task_tabs', 115, 640, 560);
 
 [endscript]
 
