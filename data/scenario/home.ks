@@ -19,7 +19,9 @@
 ; トークモードへ移動
 [glink color="ts22" text="トークモード" target="*developing" x="850" y="570" width="300" size="30"]
 ; 課題選択画面へ移動
-[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xf88c;</span> 課題" target="*toSelect" x="600" y="100" height="100" width="510" size="60"]
+[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xf88c;</span> 課題" target="*toSelectTask" x="630" y="140" height="75" width="220" size="50"]
+;エピソード選択画面へ移動
+[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xe02e;</span> エピソード" target="*toSelectStory" x="935" y="100" height="110" width="200" size="40"]
 ; サンドボックスモード
 [glink color="mybtn_perspective mybtn_R" text="サンドボックス" target="*toSanbox" x="610" y="280" height="60" width="520" size="40"]
 ;キャラ情報
@@ -201,14 +203,22 @@ $(".logout_btn").off("click").on("click", async function() {
 
 [s]
 
-*toSelect
+*toSelectTask
 [free_filter]
 [freeimage layer="0" ]
 ; 課題選択画面へ移動
 [clearfix]
 
 [chara_hide name="mocha" time=50]
-[jump storage="select.ks" target="*start"]
+[jump storage="select/task.ks" target="*start"]
+
+*toSelectStory
+[free_filter]
+[freeimage layer="0" ]
+[clearfix]
+
+[chara_hide name="mocha" time=50]
+[jump storage="select/story.ks" target="*start"]
 
 *toDocment
 [free_filter]

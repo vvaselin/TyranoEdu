@@ -2,28 +2,22 @@
 *start
 [mask time=500]
 [clearfix]
-
-; 前回の残骸を確実に削除
-[iscript]
-$('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();
-[endscript]
-
 [wait time=500]
 [bg storage="黒板.png" time="0"]
 @layopt layer="message0" visible=false
 [stop_keyconfig]
 
+[iscript]
+$('#task_area,#task_tabs,.sel_back_btn').remove();
+[endscript]
+
 ; ── タイトル ──────────────────────────────────────────────
-[ptext name="lecture_title" layer="fix" text="📖 講義パート" size="28" color="0xFFFFFF" bold="true" x="30"  y="72" width="560" align="center"]
 [ptext name="task_title"    layer="fix" text="🖊 課題パート"  size="28" color="0xFFFFFF" bold="true" x="640" y="72" width="560" align="center"]
 
 ; ── 戻るボタン ────────────────────────────────────────────
-[glink name="sel_back_btn" color="mybtn_09" text="戻る↩" target="*back_home" width="200" size="20" x="100" y="15" fix="true"]
+[glink name="sel_back_btn" color="mybtn_09" text="戻る↩" target="*back_home" width="200" size="20" x="100" y="15"]
 
 ; ── スクロールエリア ──────────────────────────────────────
-; 講義: タブなし → top=115
-; 課題: タブあり → top=157 (タブ42px分)
-[scroll_area_vertical id="lecture_area" top=115 left=50  width=560 height=550 contents_h=450 zindex=1000000]
 [scroll_area_vertical id="task_area"    top=157 left=640 width=560 height=508 contents_h=600 zindex=1000000]
 
 ; ══════════════════════════════════════════════════════════
@@ -47,35 +41,6 @@ $('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();
         });
     });
 
-    // ── 講義ボタンデータ ──────────────────────────────────
-    // 統制群: 前カテゴリのクリア数が3問以上で解放
-    // 実験群: f.level で解放
-    var clearedPerCat = cats.map(function(cat) {
-        return catTaskLists[cat.label].filter(function(key) {
-            return f.cleared_tasks && f.cleared_tasks[key];
-        }).length;
-    });
-
-    window._sd_lec = {};
-    for (var i = 1; i <= 5; i++) {
-        var locked;
-        if (f.user_role === 'control') {
-            // ep.1は常時解放、ep.i は前カテゴリ(cats[i-2])のクリア数が3以上で解放
-            locked = i > 1 && clearedPerCat[i - 2] < 3;
-        } else {
-            locked = f.level < i;
-        }
-        window._sd_lec[i] = {
-            y:      (i - 1) * BTN_STEP + 50,
-            name:   'l_btn_ep' + i,
-            label:  'ep.' + i,
-            locked: locked,
-            color:  locked ? 'mybtn_locked' : 'mybtn_10',
-            target: locked ? '*locked'       : '*lecture_jump'
-        };
-    }
-    tf.lec_max = 5;
-
     // ── タスクボタンデータ ────────────────────────────────
     window._sd_task = {};
     var maxTaskNum = 0;
@@ -88,7 +53,7 @@ $('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();
             window._sd_task[i] = {
                 y:      pos * BTN_STEP + 50,
                 name:   't_btn_task' + i,
-                label:  '課題' + i + ': ' + tasks[key].title.replace(/^課題\d+[:：]\s*/, ''),
+                label:  tasks[key].title.replace(/^課題\d+[:：]\s*/, ''),
                 locked: locked,
                 color:  locked ? 'mybtn_locked' : 'mybtn_08',
                 target: locked ? '*locked'       : '*common_task_start',
@@ -99,25 +64,8 @@ $('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();
     tf.task_max = maxTaskNum;
 
     // forループ内からのアクセス用（[n]がタグ解析されるのを回避）
-    window._getLecData  = function(i) { return window._sd_lec[i];  };
     window._getTaskData = function(i) { return window._sd_task[i]; };
 [endscript]
-
-; ══════════════════════════════════════════════════════════
-; ▼ 講義ボタン（タブなし）
-; ══════════════════════════════════════════════════════════
-[for name="tf.li" from="1" to="&tf.lec_max"]
-    [iscript]
-        var d = window._getLecData(parseInt(tf.li));
-        tf.lec_name   = d.name;
-        tf.lec_label  = d.label;
-        tf.lec_y      = d.y;
-        tf.lec_color  = d.color;
-        tf.lec_target = d.target;
-    [endscript]
-    [glink name="&tf.lec_name" storage="select.ks" target="&tf.lec_target" color="&tf.lec_color" text="&tf.lec_label" x="50" y="&tf.lec_y" width="440" height="60" size="20" exp="&'tf.target_lecture_num='+tf.li"]
-    [scroll_area_vertical_in id="lecture_area" name="&tf.lec_name"]
-[nextfor]
 
 ; ══════════════════════════════════════════════════════════
 ; ▼ タスクボタン（カテゴリタブ付き）
@@ -216,24 +164,16 @@ $('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();
 ; ▼ ハンドラ
 ; ══════════════════════════════════════════════════════════
 
-*lecture_jump
-[scroll_area_vertical_del id="lecture_area"]
-[scroll_area_vertical_del id="task_area"]
-[iscript]
-$('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();
-[endscript]
-[clearfix]
-@layopt layer="message0" visible=true
-[start_keyconfig]
-[eval exp="tf.lecture_path='lecture/'+tf.target_lecture_num+'.ks'"]
-[jump storage="&tf.lecture_path" target="*start"]
-
 *locked
 [dialog type="alert" text="前の課題をクリアすると解放されます。"]
+[iscript]
+$('.sel_back_btn').remove();
+[endscript]
+[glink name="sel_back_btn" color="mybtn_09" text="戻る↩" target="*back_home" width="200" size="20" x="100" y="15"]
 [s]
 
 *back_home
-[scroll_area_vertical_del id="lecture_area"]
+[clearfix]
 [scroll_area_vertical_del id="task_area"]
 [iscript]
 $('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();
@@ -242,7 +182,6 @@ $('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();
 [jump storage="home.ks" target="*start"]
 
 *common_task_start
-[scroll_area_vertical_del id="lecture_area"]
 [scroll_area_vertical_del id="task_area"]
 [iscript]
     $('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();

@@ -450,5 +450,5 @@
 [if exp="f.is_sandbox == true"]
     [jump storage="home.ks"]
 [else]
-    [jump storage="select.ks"]
+    [jump storage="select/task.ks"]
 [endif]

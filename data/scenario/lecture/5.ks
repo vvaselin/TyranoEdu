@@ -20,4 +20,4 @@ tf.system.backlog=[];
 ; 元の画面に戻る
 [clearfix]
 [chara_hide name="mocha" time=0]
-[jump storage="select.ks" target="*start"]
+[jump storage="select/story.ks" target="*start"]
