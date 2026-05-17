@@ -376,3 +376,16 @@
     min-width: 55px;
     text-align: right;
 }
+
+/* --- Lv UP 発光エフェクト --- */
+@keyframes loveGaugGlow {
+  0%   { box-shadow: 0 0  6px rgba(255,107,129,0.4), inset 0 0  4px rgba(255,107,129,0.1); }
+  30%  { box-shadow: 0 0 30px rgba(255, 160, 174, 0.9), inset 0 0 12px rgba(255,107,129,0.3); }
+  60%  { box-shadow: 0 0 18px rgba(255,150,160,0.7), inset 0 0  8px rgba(255,150,160,0.2); }
+  100% { box-shadow: none; }
+}
+
+.love-gauge-box.lv-up-glow {
+  animation: loveGaugGlow 1.2s ease-out forwards;
+  border-color: rgba(255, 107, 129, 0.8);
+}

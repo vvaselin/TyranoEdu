@@ -507,9 +507,19 @@
                 if (totalLove >= thresholds[i]-1) {
                     currentLv = i + 1;
                     minLove = thresholds[i]-1;
-                    maxLove = thresholds[i+1];
+                    maxLove = thresholds[i+1]-1;
                 }
-            }   
+            } 
+            
+           var prevLv = window._mascot_prev_lv || 1;
+            if (currentLv > prevLv) {
+                var $gauge = $(".love-gauge-box");
+                $gauge.removeClass("lv-up-glow");
+                void $gauge[0].offsetWidth;
+                $gauge.addClass("lv-up-glow");
+            }
+            window._mascot_prev_lv = currentLv;
+
             var percent = 0;
             var displayStr = "";
 

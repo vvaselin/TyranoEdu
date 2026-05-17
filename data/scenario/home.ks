@@ -18,17 +18,34 @@
 [chara_mod name="mocha" face="normal" wait=false]
 ; トークモードへ移動
 [glink color="ts22" text="トークモード" target="*developing" x="850" y="570" width="300" size="30"]
-; 課題選択画面へ移動
-[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xf88c;</span> 課題" target="*toSelectTask" x="630" y="140" height="75" width="220" size="50"]
-;エピソード選択画面へ移動
-[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xe02e;</span> エピソード" target="*toSelectStory" x="935" y="100" height="110" width="200" size="40"]
-; サンドボックスモード
-[glink color="mybtn_perspective mybtn_R" text="サンドボックス" target="*toSanbox" x="610" y="280" height="60" width="520" size="40"]
-;キャラ情報
-[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xe7fd;</span> キャラ" target="*developing"  x="630" y="390" height="80" width="230" size="35"]
-; 資料
-[glink color="mybtn_perspective mybtn_R" text="<span class='material-icons'>&#xe0e0;</span> 資料" target="*toDocment" x="935" y="395" height="105" width="200" size="35"]
-[wait time=100]
+
+;=== ボタン配置（nameで目印をつける） ===
+[glink color="mybtn_perspective" name="grp_R" text="<span class='material-icons'>&#xe0b7;</span> エピソード" target="*toSelectStory" x="635" y="130" height="100" width="260" size="35"]
+[glink color="mybtn_perspective" name="grp_R" text="<span class='material-icons'>&#xf88c;</span> 課題" target="*toSelectTask"  x="935" y="130" height="100" width="260" size="35"]
+[glink color="mybtn_perspective" name="grp_R" text="サンドボックスモード" target="*toSanbox" x="640" y="280" height="60" width="550" size="35"]
+[glink color="mybtn_perspective" name="grp_R" text="<span class='material-icons'>&#xe7fd;</span> キャラ" target="*developing"  x="635" y="390" height="100" width="260" size="35"]
+[glink color="mybtn_perspective" name="grp_R" text="<span class='material-icons'>&#xe0e0;</span> 資料" target="*toDocment" x="935" y="390" height="100" width="260" size="35"]
+
+;=== ラッパーを作り、glinkをまとめて移動 ===
+[iscript]
+    // 1. 外枠（perspective担当）
+    var $outer = $('<div class="perspective-outer">').css({
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none'       // ラッパー自体はクリック透過
+    });
+    // 2. 内枠（rotateY担当）
+    var $inner = $('<div class="perspective-inner-R">').css({
+        pointerEvents: 'none'
+    });
+    $outer.append($inner);
+    // 3. フリーレイヤに追加
+    $('.layer_free').append($outer);
+    $('.grp_R').css('pointer-events', 'auto').appendTo($inner);
+[endscript]
 
 ; キャラクター表示
 [chara_show name="mocha" time="50"  left=40  width=680 top =90 time=100 wait="true" ]
