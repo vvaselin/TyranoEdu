@@ -46,14 +46,45 @@
     $('.layer_free').append($outer);
     $('.grp_R').css('pointer-events', 'auto').appendTo($inner);
 
-    // f.has_unread_lecture が未計算（story.ks未訪問）の場合はep.1未視聴で判定
-    if (f.has_unread_lecture === undefined) {
-        f.has_unread_lecture = (!f.watched_lectures || !f.watched_lectures[1]);
-    }
+    // f.has_unread_lecture 計算
+    (function() {
+        var cats = f.all_tasks && f.all_tasks._categories;
+        if (!cats) { f.has_unread_lecture = false; return; }
+
+        // 解放済みエピソード数を算出
+        var unlockedCount;
+        if (f.user_role === 'control') {
+            var clearedPerCat = cats.map(function(c) {
+                return Object.keys(f.all_tasks).filter(function(k) {
+                    return /^task\d+$/.test(k) && f.all_tasks[k].category === c.label;
+                }).filter(function(k) {
+                    return f.cleared_tasks && f.cleared_tasks[k];
+                }).length;
+            });
+            unlockedCount = clearedPerCat.filter(function(n) { return n >= 3; }).length + 1;
+        } else {
+            // f.love_level から直接レベルを算出（f.level に依存しない）
+            var love = parseInt(f.love_level) || 0;
+            var th = [0, 10, 25, 40, 70, 100];
+            unlockedCount = 1;
+            for (var i = 1; i < th.length; i++) {
+                if (love >= th[i]) unlockedCount = i + 1;
+            }
+        }
+
+        var hasUnread = false;
+        for (var j = 1; j <= Math.min(unlockedCount, 5); j++) {
+            if (!f.watched_lectures || !f.watched_lectures[j]) {
+                hasUnread = true;
+                break;
+            }
+        }
+        f.has_unread_lecture = hasUnread;
+    })();
 [endscript]
 
 ; エピソードボタン右上に NEW 表示
-[ptext name="new_episode_tag" layer="fix" text="NEW" color="0xFF3333" edge="2px white" bold="true" size="24" x="855" y="135" cond="f.has_unread_lecture == true"]
+[ptext name="new_episode_tag" layer="fix" text="NEW" color="0xFF3333" edge="2px white" bold="true" size="28" x="850" y="130" cond="f.has_unread_lecture == true"]
 
 ; キャラクター表示
 [chara_show name="mocha" time="50"  left=40  width=680 top =90 time=100 wait="true" ]

@@ -19,32 +19,43 @@ $('#task_area,#task_tabs,.sel_back_btn').remove();
 
 ; task.ks が表示されるたびに未読エピソードフラグを再計算
 [iscript]
-    if (!f.has_unread_lecture && f.all_tasks && f.all_tasks._categories) {
-        var _unlockedCount;
+    (function() {
+        var cats = f.all_tasks && f.all_tasks._categories;
+        if (!cats) { f.has_unread_lecture = false; return; }
+
+        // 解放済みエピソード数を算出
+        var unlockedCount;
         if (f.user_role === 'control') {
-            var _clearedPerCat = f.all_tasks._categories.map(function(c) {
+            var clearedPerCat = cats.map(function(c) {
                 return Object.keys(f.all_tasks).filter(function(k) {
-                    return /^task[0-9]+$/.test(k) && f.all_tasks[k].category === c.label;
+                    return /^task\d+$/.test(k) && f.all_tasks[k].category === c.label;
                 }).filter(function(k) {
                     return f.cleared_tasks && f.cleared_tasks[k];
                 }).length;
             });
-            _unlockedCount = _clearedPerCat.filter(function(n) { return n >= 3; }).length + 1;
+            unlockedCount = clearedPerCat.filter(function(n) { return n >= 3; }).length + 1;
         } else {
-            _unlockedCount = parseInt(f.level) || 1;
+            // f.love_level から直接レベルを算出（f.level に依存しない）
+            var love = parseInt(f.love_level) || 0;
+            var th = [0, 10, 25, 40, 70, 100];
+            unlockedCount = 1;
+            for (var i = 1; i < th.length; i++) {
+                if (love >= th[i]) unlockedCount = i + 1;
+            }
         }
-        var _hasUnread = false;
-        for (var _i = 1; _i <= Math.min(_unlockedCount, 5); _i++) {
-            if (!f.watched_lectures || !f.watched_lectures[_i]) {
-                _hasUnread = true;
+
+        var hasUnread = false;
+        for (var j = 1; j <= Math.min(unlockedCount, 5); j++) {
+            if (!f.watched_lectures || !f.watched_lectures[j]) {
+                hasUnread = true;
                 break;
             }
         }
-        f.has_unread_lecture = _hasUnread;
-    }
+        f.has_unread_lecture = hasUnread;
+    })();
 [endscript]
 
-[ptext name="new_episode_tag" layer="fix" text="NEW" color="0xFF3333" bold="true" size="18" edge="2px white" x="315" y="10" cond="f.has_unread_lecture == true"]
+[ptext name="new_episode_tag" layer="fix" text="NEW" color="0xFF3333" bold="true" size="28" edge="2px white" x="315" y="10" cond="f.has_unread_lecture == true"]
 
 ; ── スクロールエリア ──────────────────────────────────────
 [scroll_area_vertical id="task_area" top=157 left=500 width=700 height=508 contents_h=600 zindex=1000000]
