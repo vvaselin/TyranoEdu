@@ -54,8 +54,9 @@ $('#lecture_area,.sel_back_btn').remove();
     for (var i = 1; i <= 5; i++) {
         var locked;
         if (f.user_role === 'control') {
-            // ep.1は常時解放、ep.i は前カテゴリ(cats[i-2])のクリア数が3以上で解放
-            locked = i > 1 && clearedPerCat[i - 2] < 3;
+            // 3問以上のクリアしたカテゴリ数で解放判定
+            var catsCleared = clearedPerCat.filter(function(n) { return n >= 3; }).length;
+            locked = i > catsCleared + 1;
         } else {
             locked = f.level < i;
         }
@@ -109,7 +110,8 @@ $('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();
 [jump storage="&tf.lecture_path" target="*start"]
 
 *locked
-[dialog type="alert" text="前の課題をクリアすると解放されます。"]
+[eval exp="tf.msg = (f.user_role === 'control') ? '各カテゴリを3問以上クリアすると解放されます。' : 'レベルが足りません。';"]
+[dialog type="alert" text="&tf.msg"]
 [iscript]
 $('.sel_back_btn').remove();
 [endscript]

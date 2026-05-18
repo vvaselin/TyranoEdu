@@ -1,4 +1,4 @@
-; select.ks - 課題・講義選択画面（カテゴリタブ版）
+; select/task.ks - 課題選択画面
 *start
 [mask time=500]
 [clearfix]
@@ -12,23 +12,22 @@ $('#task_area,#task_tabs,.sel_back_btn').remove();
 [endscript]
 
 ; ── タイトル ──────────────────────────────────────────────
-[ptext name="task_title"    layer="fix" text="🖊 課題パート"  size="28" color="0xFFFFFF" bold="true" x="640" y="72" width="560" align="center"]
+[ptext name="task_title" layer="fix" text="🖊 課題パート" size="28" color="0xFFFFFF" bold="true" x="500" y="72" width="700" align="center"]
 
 ; ── 戻るボタン ────────────────────────────────────────────
 [glink name="sel_back_btn" color="mybtn_09" text="戻る↩" target="*back_home" width="200" size="20" x="100" y="15"]
 
 ; ── スクロールエリア ──────────────────────────────────────
-[scroll_area_vertical id="task_area"    top=157 left=640 width=560 height=508 contents_h=600 zindex=1000000]
+[scroll_area_vertical id="task_area" top=157 left=500 width=700 height=508 contents_h=600 zindex=1000000]
 
 ; ══════════════════════════════════════════════════════════
-; ▼ 事前計算（forループ内でのSyntaxError回避のためヘルパー関数化）
+; ▼ 事前計算
 ; ══════════════════════════════════════════════════════════
 [iscript]
     var tasks = f.all_tasks;
     var cats  = tasks._categories;
     var BTN_H = 60, BTN_MARGIN = 16, BTN_STEP = BTN_H + BTN_MARGIN;
 
-    // ── カテゴリ別タスクリストを先に構築（講義・タスク両方で使用） ──
     var catTaskLists = {};
     cats.forEach(function(c) { catTaskLists[c.label] = []; });
     Object.keys(tasks).forEach(function(key) {
@@ -41,34 +40,32 @@ $('#task_area,#task_tabs,.sel_back_btn').remove();
         });
     });
 
-    // ── タスクボタンデータ ────────────────────────────────
     window._sd_task = {};
     var maxTaskNum = 0;
     Object.keys(catTaskLists).forEach(function(cat) {
         catTaskLists[cat].forEach(function(key, pos) {
-            var i      = parseInt(key.replace('task',''));
-            var prevId = pos > 0 ? catTaskLists[cat][pos - 1] : null;
-            var locked = prevId !== null && (!f.cleared_tasks || !f.cleared_tasks[prevId]);
+            var i       = parseInt(key.replace('task',''));
+            var cleared = !!(f.cleared_tasks && f.cleared_tasks[key]);
             if (i > maxTaskNum) maxTaskNum = i;
             window._sd_task[i] = {
-                y:      pos * BTN_STEP + 50,
-                name:   't_btn_task' + i,
-                label:  tasks[key].title.replace(/^課題\d+[:：]\s*/, ''),
-                locked: locked,
-                color:  locked ? 'mybtn_locked' : 'mybtn_08',
-                target: locked ? '*locked'       : '*common_task_start',
-                taskId: key
+                y:       pos * BTN_STEP + 50,
+                name:    't_btn_task' + i,
+                chkId:   't_chk_' + key,        // チェックボックス用ID兼クラス名
+                label:   tasks[key].title.replace(/^課題\d+[:：]\s*/, ''),
+                cleared: cleared,
+                color:   'mybtn_08',
+                target:  '*common_task_start',
+                taskId:  key
             };
         });
     });
     tf.task_max = maxTaskNum;
 
-    // forループ内からのアクセス用（[n]がタグ解析されるのを回避）
     window._getTaskData = function(i) { return window._sd_task[i]; };
 [endscript]
 
 ; ══════════════════════════════════════════════════════════
-; ▼ タスクボタン（カテゴリタブ付き）
+; ▼ タスクボタン＋チェックボックス
 ; ══════════════════════════════════════════════════════════
 [for name="tf.i" from="1" to="&tf.task_max"]
     [iscript]
@@ -85,8 +82,30 @@ $('#task_area,#task_tabs,.sel_back_btn').remove();
         }
     [endscript]
     [if exp="tf.skip == false"]
-        [glink name="&tf.btn_name" color="&tf.btn_color" text="&tf.btn_label" x="50" y="&tf.btn_y" width="440" height="60" size="18" target="&tf.btn_target" exp="&'f.current_task_id = \"task' + tf.i + '\"'"]
+        [glink name="&tf.btn_name" color="&tf.btn_color" text="&tf.btn_label" x="50" y="&tf.btn_y" width="560" height="60" size="18" target="&tf.btn_target" exp="&'f.current_task_id = \"task' + tf.i + '\"'"]
         [scroll_area_vertical_in id="task_area" name="&tf.btn_name"]
+        [iscript]
+        // ボタン右隣にチェックボックスを配置
+        var d = window._getTaskData(parseInt(tf.i));
+        $('<div>')
+            .attr('id', d.chkId)
+            .addClass(d.chkId)
+            .css({
+                position:        'absolute',
+                left:            '625px',
+                top:             d.y + 'px',
+                width:           '60px',
+                height:          '60px',
+                'line-height':   '60px',
+                'text-align':    'center',
+                'font-size':     '34px',
+                'z-index':       11,
+                'pointer-events':'none',
+                color: d.cleared ? '#009959' : 'rgb(252, 252, 252)'
+            })
+            .text(d.cleared ? '☑' : '☐')
+            .appendTo($('#task_area_inner'));
+        [endscript]
     [endif]
 [nextfor]
 
@@ -99,23 +118,23 @@ $('#task_area,#task_tabs,.sel_back_btn').remove();
     var TAB_H = 42;
     var C_ON = '#27ae60', C_OFF = 'rgba(0,0,0,0.55)', C_HOV = 'rgba(0,110,80,0.65)';
 
-    // カテゴリ→ボタンセレクタのマップを構築
     window._sel_taskMap = {};
     window._sel_curCat  = 0;
     cats.forEach(function(c, idx) { window._sel_taskMap[idx] = []; });
     Object.keys(f.all_tasks).forEach(function(key) {
         if (!/^task\d+$/.test(key)) return;
         var catIdx = cats.findIndex(function(c) { return c.label === f.all_tasks[key].category; });
-        if (catIdx >= 0) window._sel_taskMap[catIdx].push('.t_btn_' + key);
+        if (catIdx >= 0) {
+            window._sel_taskMap[catIdx].push('.t_btn_' + key);
+            window._sel_taskMap[catIdx].push('.t_chk_' + key); // チェックボックスも連動
+        }
     });
 
-    // カテゴリ0以外を非表示
     cats.forEach(function(c, idx) {
         if (idx === 0) return;
         window._sel_taskMap[idx].forEach(function(s) { $(s).hide(); });
     });
 
-    // タブ切り替え
     window._sel_switch = function(newIdx) {
         window._sel_taskMap[window._sel_curCat].forEach(function(s) { $(s).hide(); });
         window._sel_taskMap[newIdx].forEach(function(s) { $(s).show(); });
@@ -123,18 +142,31 @@ $('#task_area,#task_tabs,.sel_back_btn').remove();
         window._sel_curCat = newIdx;
     };
 
-    // タブ行を生成（課題エリアのみ）
+    // タブラベルにクリア数を表示（例: 基本 3/6）
+    var catTaskLists = {};
+    cats.forEach(function(c) { catTaskLists[c.label] = []; });
+    Object.keys(f.all_tasks).forEach(function(key) {
+        if (!/^task\d+$/.test(key) || !f.all_tasks[key].category) return;
+        catTaskLists[f.all_tasks[key].category].push(key);
+    });
+
     var $row = $('<div>').attr('id', 'task_tabs').css({
-        position:'absolute', top:'115px', left:'640px',
-        width:'560px', height:TAB_H+'px',
+        position:'absolute', top:'115px', left:'500px',
+        width:'700px', height:TAB_H+'px',
         display:'flex', 'z-index':1000002,
         'border-radius':'10px 10px 0 0', overflow:'hidden'
     });
     cats.forEach(function(cat, idx) {
-        var $tab = $('<div>').text(cat.short)
+        var total   = catTaskLists[cat.label].length;
+        var cleared = catTaskLists[cat.label].filter(function(k) {
+            return f.cleared_tasks && f.cleared_tasks[k];
+        }).length;
+        var tabLabel = cat.short + ' ' + cleared + '/' + total;
+
+        var $tab = $('<div>').text(tabLabel)
             .addClass('_sel_tab').attr('data-idx', idx).css({
                 flex:'1', height:TAB_H+'px', 'line-height':TAB_H+'px',
-                'text-align':'center', cursor:'pointer', 'font-size':'14px',
+                'text-align':'center', cursor:'pointer', 'font-size':'13px',
                 color:'white',
                 background:    idx === 0 ? C_ON : C_OFF,
                 'font-weight': idx === 0 ? 'bold' : 'normal',
@@ -164,16 +196,7 @@ $('#task_area,#task_tabs,.sel_back_btn').remove();
 ; ▼ ハンドラ
 ; ══════════════════════════════════════════════════════════
 
-*locked
-[dialog type="alert" text="前の課題をクリアすると解放されます。"]
-[iscript]
-$('.sel_back_btn').remove();
-[endscript]
-[glink name="sel_back_btn" color="mybtn_09" text="戻る↩" target="*back_home" width="200" size="20" x="100" y="15"]
-[s]
-
 *back_home
-[clearfix]
 [scroll_area_vertical_del id="task_area"]
 [iscript]
 $('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();
