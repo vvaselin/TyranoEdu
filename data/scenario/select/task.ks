@@ -17,6 +17,35 @@ $('#task_area,#task_tabs,.sel_back_btn').remove();
 ; ── 戻るボタン ────────────────────────────────────────────
 [glink name="sel_back_btn" color="mybtn_09" text="戻る↩" target="*back_home" width="200" size="20" x="100" y="15"]
 
+; task.ks が表示されるたびに未読エピソードフラグを再計算
+[iscript]
+    if (!f.has_unread_lecture && f.all_tasks && f.all_tasks._categories) {
+        var _unlockedCount;
+        if (f.user_role === 'control') {
+            var _clearedPerCat = f.all_tasks._categories.map(function(c) {
+                return Object.keys(f.all_tasks).filter(function(k) {
+                    return /^task[0-9]+$/.test(k) && f.all_tasks[k].category === c.label;
+                }).filter(function(k) {
+                    return f.cleared_tasks && f.cleared_tasks[k];
+                }).length;
+            });
+            _unlockedCount = _clearedPerCat.filter(function(n) { return n >= 3; }).length + 1;
+        } else {
+            _unlockedCount = parseInt(f.level) || 1;
+        }
+        var _hasUnread = false;
+        for (var _i = 1; _i <= Math.min(_unlockedCount, 5); _i++) {
+            if (!f.watched_lectures || !f.watched_lectures[_i]) {
+                _hasUnread = true;
+                break;
+            }
+        }
+        f.has_unread_lecture = _hasUnread;
+    }
+[endscript]
+
+[ptext name="new_episode_tag" layer="fix" text="NEW" color="0xFF3333" bold="true" size="18" edge="2px white" x="315" y="10" cond="f.has_unread_lecture == true"]
+
 ; ── スクロールエリア ──────────────────────────────────────
 [scroll_area_vertical id="task_area" top=157 left=500 width=700 height=508 contents_h=600 zindex=1000000]
 

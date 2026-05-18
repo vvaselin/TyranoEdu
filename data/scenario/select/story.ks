@@ -72,17 +72,6 @@ $('#lecture_area,.sel_back_btn').remove();
 
     // forループ内からのアクセス用（[n]がタグ解析されるのを回避）
     window._getLecData  = function(i) { return window._sd_lec[i];  };
-
-    // ── 未読エピソードがあるか判定して f. 変数に保存 ──────
-    // 解放済み（locked=false）かつ未視聴（watched_lecturesに記録なし）があればtrue
-    var hasUnread = false;
-    for (var j = 1; j <= 5; j++) {
-        if (!window._sd_lec[j].locked && (!f.watched_lectures || !f.watched_lectures[j])) {
-            hasUnread = true;
-            break;
-        }
-    }
-    f.has_unread_lecture = hasUnread;
 [endscript]
 
 ; ══════════════════════════════════════════════════════════
