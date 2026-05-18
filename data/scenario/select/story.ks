@@ -26,7 +26,7 @@ $('#lecture_area,.sel_back_btn').remove();
 [iscript]
     var tasks = f.all_tasks;
     var cats  = tasks._categories;
-    var BTN_H = 60, BTN_MARGIN = 16, BTN_STEP = BTN_H + BTN_MARGIN;
+    var BTN_H = 60, BTN_MARGIN = 30, BTN_STEP = BTN_H + BTN_MARGIN;
 
     // ── カテゴリ別タスクリストを先に構築（講義・タスク両方で使用） ──
     var catTaskLists = {};
@@ -54,9 +54,8 @@ $('#lecture_area,.sel_back_btn').remove();
     for (var i = 1; i <= 5; i++) {
         var locked;
         if (f.user_role === 'control') {
-            // 3問以上のクリアしたカテゴリ数で解放判定
-            var catsCleared = clearedPerCat.filter(function(n) { return n >= 3; }).length;
-            locked = i > catsCleared + 1;
+            // ep.1は常時解放、ep.i は前カテゴリ(cats[i-2])のクリア数が3以上で解放
+            locked = i > 1 && clearedPerCat[i - 2] < 3;
         } else {
             locked = f.level < i;
         }
@@ -73,6 +72,17 @@ $('#lecture_area,.sel_back_btn').remove();
 
     // forループ内からのアクセス用（[n]がタグ解析されるのを回避）
     window._getLecData  = function(i) { return window._sd_lec[i];  };
+
+    // ── 未読エピソードがあるか判定して f. 変数に保存 ──────
+    // 解放済み（locked=false）かつ未視聴（watched_lecturesに記録なし）があればtrue
+    var hasUnread = false;
+    for (var j = 1; j <= 5; j++) {
+        if (!window._sd_lec[j].locked && (!f.watched_lectures || !f.watched_lectures[j])) {
+            hasUnread = true;
+            break;
+        }
+    }
+    f.has_unread_lecture = hasUnread;
 [endscript]
 
 ; ══════════════════════════════════════════════════════════
@@ -89,6 +99,25 @@ $('#lecture_area,.sel_back_btn').remove();
     [endscript]
     [glink name="&tf.lec_name" storage="select/story.ks" target="&tf.lec_target" color="&tf.lec_color" text="&tf.lec_label" x="50" y="&tf.lec_y" width="440" height="60" size="20" exp="&'tf.target_lecture_num='+tf.li"]
     [scroll_area_vertical_in id="lecture_area" name="&tf.lec_name"]
+    [iscript]
+    // scroll area inner への直接配置（ptextはfixレイヤー固定でスクロールに追従しないため）
+    var d = window._getLecData(parseInt(tf.li));
+    var isUnread = !d.locked && (!f.watched_lectures || !f.watched_lectures[parseInt(tf.li)]);
+    if (isUnread) {
+        $('<span>').text('NEW').css({
+            position:         'absolute',
+            left:             (50 + 440 + 5) + 'px',  // ボタン右端の外側
+            top:              (d.y + 4) + 'px',
+            color:            '#FF3333',
+            'font-weight':    'bold',
+            'font-size':      '20px',
+            'letter-spacing': '1px',
+            'z-index':        20,
+            'pointer-events': 'none',
+            '-webkit-text-stroke': '0.5px white'
+        }).appendTo($('#lecture_area_inner'));
+    }
+    [endscript]
 [nextfor]
 
 [mask_off time=500]
@@ -99,6 +128,19 @@ $('#lecture_area,.sel_back_btn').remove();
 ; ══════════════════════════════════════════════════════════
 
 *lecture_jump
+[iscript]
+if (!f.watched_lectures) f.watched_lectures = {};
+f.watched_lectures[tf.target_lecture_num] = true;
+// 視聴後に未読フラグを再計算
+var hasUnread = false;
+for (var j = 1; j <= 5; j++) {
+    if (!window._sd_lec[j].locked && !f.watched_lectures[j]) {
+        hasUnread = true;
+        break;
+    }
+}
+f.has_unread_lecture = hasUnread;
+[endscript]
 [scroll_area_vertical_del id="lecture_area"]
 [iscript]
 $('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();

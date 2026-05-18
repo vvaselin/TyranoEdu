@@ -82,7 +82,7 @@ $('#task_area,#task_tabs,.sel_back_btn').remove();
         }
     [endscript]
     [if exp="tf.skip == false"]
-        [glink name="&tf.btn_name" color="&tf.btn_color" text="&tf.btn_label" x="50" y="&tf.btn_y" width="560" height="60" size="18" target="&tf.btn_target" exp="&'f.current_task_id = \"task' + tf.i + '\"'"]
+        [glink name="&tf.btn_name" color="&tf.btn_color" text="&tf.btn_label" x="50" y="&tf.btn_y" width="500" height="60" size="18" target="&tf.btn_target" exp="&'f.current_task_id = \"task' + tf.i + '\"'"]
         [scroll_area_vertical_in id="task_area" name="&tf.btn_name"]
         [iscript]
         // ボタン右隣にチェックボックスを配置
@@ -92,7 +92,7 @@ $('#task_area,#task_tabs,.sel_back_btn').remove();
             .addClass(d.chkId)
             .css({
                 position:        'absolute',
-                left:            '625px',
+                left:            '600px',
                 top:             d.y + 'px',
                 width:           '60px',
                 height:          '60px',

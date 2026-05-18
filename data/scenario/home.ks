@@ -45,7 +45,15 @@
     // 3. フリーレイヤに追加
     $('.layer_free').append($outer);
     $('.grp_R').css('pointer-events', 'auto').appendTo($inner);
+
+    // f.has_unread_lecture が未計算（story.ks未訪問）の場合はep.1未視聴で判定
+    if (f.has_unread_lecture === undefined) {
+        f.has_unread_lecture = (!f.watched_lectures || !f.watched_lectures[1]);
+    }
 [endscript]
+
+; エピソードボタン右上に NEW 表示
+[ptext name="new_episode_tag" layer="fix" text="NEW" color="0xFF3333" edge="2px white" bold="true" size="24" x="855" y="135" cond="f.has_unread_lecture == true"]
 
 ; キャラクター表示
 [chara_show name="mocha" time="50"  left=40  width=680 top =90 time=100 wait="true" ]
