@@ -134,7 +134,38 @@
         var isProcessing = false;    // 現在リクエスト処理中かどうか
         var reconnectAttempts = 0;
         var MAX_RECONNECT = 3;
-        var WS_TIMEOUT_MS = 30000;   // 30秒タイムアウト
+        var WS_TIMEOUT_MS = 60000;   // 60秒タイムアウト（ストリーミング対応で延長）
+        var streamAccumulated = "";  // ストリーミング中の蓄積テキスト
+        var isStreaming = false;     // ストリーミング受信中フラグ
+
+        // ストリーミングチャンク受信時の処理
+        function handleStreamChunk(delta) {
+            streamAccumulated += delta;
+
+            // タイムアウトをリセット（データが来ているので延長）
+            if (pendingTimeout) {
+                clearTimeout(pendingTimeout);
+                pendingTimeout = setTimeout(function() {
+                    console.error("[MascotChat] ストリーミングタイムアウト");
+                    pendingTimeout = null;
+                    clearPending(new Error("タイムアウト: AIからの応答がありません"), null);
+                }, WS_TIMEOUT_MS);
+            }
+
+            // 「考え中...」を消してストリーミングテキストを表示
+            var displayText = streamAccumulated.replace(/\\n/g, '\n');
+            var messageHtml = DOMPurify.sanitize(marked.parse(displayText, { breaks: true }));
+            aiMessagesContainer.html(
+                '<div class="ai-chat-message-simple"><div class="message-body">' + messageHtml + '</div></div>'
+            );
+            aiMessagesContainer.scrollTop(0);
+
+            if (!isStreaming) {
+                isStreaming = true;
+                // ストリーミング開始時に表情を戻す
+                tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:"normal", time:200});
+            }
+        }
 
         // ペンディング状態をクリアするヘルパー
         function clearPending(err, data) {
@@ -142,6 +173,10 @@
                 clearTimeout(pendingTimeout);
                 pendingTimeout = null;
             }
+            // ストリーミング状態をリセット
+            streamAccumulated = "";
+            isStreaming = false;
+
             if (pendingCallback) {
                 var cb = pendingCallback;
                 pendingCallback = null;
@@ -177,7 +212,16 @@
             ws.onmessage = function(event) {
                 try {
                     var data = JSON.parse(event.data);
-                    clearPending(null, data);
+                    if (data.type === "chunk") {
+                        // ストリーミングチャンク: テキストを逐次表示
+                        handleStreamChunk(data.delta || "");
+                    } else if (data.type === "done") {
+                        // ストリーミング完了: メタデータ込みの最終レスポンス
+                        clearPending(null, data);
+                    } else {
+                        // レガシー形式 (HTTP fallback等): 一括レスポンス
+                        clearPending(null, data);
+                    }
                 } catch(e) {
                     console.error("[MascotChat] WS onmessage JSONパース失敗:", e);
                     clearPending(e, null);
