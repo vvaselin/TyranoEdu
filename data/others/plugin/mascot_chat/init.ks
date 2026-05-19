@@ -129,8 +129,40 @@
         var WS_URL = (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/api/chat/ws";
         var ws = null;
         var pendingCallback = null;  // 現在のリクエストに対するレスポンスハンドラ
+        var pendingTimeout = null;   // タイムアウト用タイマー
+        var requestQueue = [];       // リクエストキュー（競合防止）
+        var isProcessing = false;    // 現在リクエスト処理中かどうか
         var reconnectAttempts = 0;
-        var MAX_RECONNECT = 3;  
+        var MAX_RECONNECT = 3;
+        var WS_TIMEOUT_MS = 30000;   // 30秒タイムアウト
+
+        // ペンディング状態をクリアするヘルパー
+        function clearPending(err, data) {
+            if (pendingTimeout) {
+                clearTimeout(pendingTimeout);
+                pendingTimeout = null;
+            }
+            if (pendingCallback) {
+                var cb = pendingCallback;
+                pendingCallback = null;
+                isProcessing = false;
+                cb(err, data);
+            } else {
+                isProcessing = false;
+            }
+            // キューに次のリクエストがあれば処理
+            processQueue();
+        }
+
+        // キューの次のリクエストを処理
+        function processQueue() {
+            if (isProcessing || requestQueue.length === 0) return;
+            var next = requestQueue.shift();
+            // キューから取り出した時点でUIを「考え中...」に戻す
+            thinking();
+            sendChatRequestInternal(next.payload, next.callback);
+        }
+
         function connectWS() {
             if (ws && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN)) {
                 return; // 既に接続中 or 接続済み
@@ -139,41 +171,29 @@
             ws.onopen = function() {
                 console.log("[MascotChat] WebSocket接続完了");
                 reconnectAttempts = 0;
+                // 接続完了後、キューに溜まったリクエストを処理
+                processQueue();
             };  
             ws.onmessage = function(event) {
                 try {
                     var data = JSON.parse(event.data);
-                    if (pendingCallback) {
-                        var cb = pendingCallback;
-                        pendingCallback = null;
-                        cb(null, data);
-                    }
+                    clearPending(null, data);
                 } catch(e) {
                     console.error("[MascotChat] WS onmessage JSONパース失敗:", e);
-                    if (pendingCallback) {
-                        var cb = pendingCallback;
-                        pendingCallback = null;
-                        cb(e, null);
-                    }
+                    clearPending(e, null);
                 }
             };  
             ws.onerror = function(e) {
                 console.error("[MascotChat] WSエラー:", e);
-                if (pendingCallback) {
-                    var cb = pendingCallback;
-                    pendingCallback = null;
-                    cb(new Error("WebSocket通信エラー"), null);
-                }
+                // oncloseも発火するので、ここではclearPendingしない
+                // （二重コールバック防止）
             };  
             ws.onclose = function(event) {
                 console.warn("[MascotChat] WS切断 (code=" + event.code + ")");
                 ws = null;  
                 // ペンディング中のコールバックがあればエラーを通知
-                if (pendingCallback) {
-                    var cb = pendingCallback;
-                    pendingCallback = null;
-                    cb(new Error("WebSocket切断"), null);
-                }   
+                clearPending(new Error("WebSocket切断"), null);
+
                 // 通常クローズ (1000, 1001) 以外なら自動再接続
                 if (event.code !== 1000 && event.code !== 1001 && reconnectAttempts < MAX_RECONNECT) {
                     var delay = Math.pow(2, reconnectAttempts) * 1000; // 1s, 2s, 4s
@@ -185,9 +205,18 @@
         }   
         // 接続開始
         connectWS();    
-        // WS経由でAIにリクエストを送信し、コールバックでレスポンスを受け取るヘルパー
-        // callback(error, data) 形式
-        function sendChatRequest(payload, callback) {
+
+        // 内部送信処理（直接呼ばない。sendChatRequest経由で使う）
+        function sendChatRequestInternal(payload, callback) {
+            isProcessing = true;
+
+            // タイムアウト設定
+            pendingTimeout = setTimeout(function() {
+                console.error("[MascotChat] リクエストタイムアウト (" + WS_TIMEOUT_MS + "ms)");
+                pendingTimeout = null;
+                clearPending(new Error("タイムアウト: AIからの応答がありません"), null);
+            }, WS_TIMEOUT_MS);
+
             // WSが開いていなければHTTP fallbackまたは再接続
             if (!ws || ws.readyState !== WebSocket.OPEN) {
                 console.warn("[MascotChat] WS未接続。再接続してからリトライします");
@@ -205,15 +234,27 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(payload)
                         })
-                        .then(r => r.json())
-                        .then(data => callback(null, data))
-                        .catch(err => callback(err, null));
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) { clearPending(null, data); })
+                        .catch(function(err) { clearPending(err, null); });
                     }
                 }, 500);
                 return;
             }   
             pendingCallback = callback;
             ws.send(JSON.stringify(payload));
+        }
+
+        // WS経由でAIにリクエストを送信し、コールバックでレスポンスを受け取るヘルパー
+        // callback(error, data) 形式
+        // 競合時はキューに入れて順番に処理する
+        function sendChatRequest(payload, callback) {
+            if (isProcessing) {
+                console.log("[MascotChat] リクエスト処理中。キューに追加します");
+                requestQueue.push({ payload: payload, callback: callback });
+                return;
+            }
+            sendChatRequestInternal(payload, callback);
         }   
         // ================================================================
         // 履歴管理
@@ -631,11 +672,15 @@
             sendChatRequest(payload, function(err, data) {
                 if (err) {
                     console.error("[MascotChat] Triggerエラー:", err);
+                    // エラー時もUIを更新して「考え中...」のまま止まるのを防ぐ
+                    addMessage("モカ", "ごめんね、うまく応答できなかったみたい…もう一度試してみてね。", false);
+                    tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:"sad", time:200});
                 } else {
                     applyAIResponse(data, true);
                 }
                 
                 $input.prop("disabled", false).attr("placeholder", "メッセージを入力...");
+                sendButton.prop("disabled", false);
 
                 if (typeof callback === "function") callback();
             });
