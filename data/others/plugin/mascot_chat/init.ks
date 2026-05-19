@@ -162,8 +162,6 @@
 
             if (!isStreaming) {
                 isStreaming = true;
-                // ストリーミング開始時に表情を戻す
-                tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:"normal", time:200});
             }
         }
 
@@ -173,9 +171,17 @@
                 clearTimeout(pendingTimeout);
                 pendingTimeout = null;
             }
+            // ストリーミングで蓄積したテキストを退避（doneのtextが空の時のフォールバック用）
+            var fallbackText = streamAccumulated;
             // ストリーミング状態をリセット
             streamAccumulated = "";
             isStreaming = false;
+
+            // done の text が空でストリーミングテキストがあればフォールバック
+            if (data && !data.text && fallbackText) {
+                data.text = fallbackText;
+                console.warn("[MascotChat] done.text が空。ストリーミングテキストをフォールバック使用");
+            }
 
             if (pendingCallback) {
                 var cb = pendingCallback;
@@ -269,7 +275,13 @@
                 setTimeout(function() {
                     if (ws && ws.readyState === WebSocket.OPEN) {
                         pendingCallback = callback;
-                        ws.send(JSON.stringify(payload));
+                        try {
+                            ws.send(JSON.stringify(payload));
+                        } catch(e) {
+                            console.error("[MascotChat] ws.send例外(リトライ):", e);
+                            pendingCallback = null;
+                            clearPending(new Error("WebSocket送信失敗: " + e.message), null);
+                        }
                     } else {
                         // それでも繋がらなければHTTP fallbackへ
                         console.warn("[MascotChat] WSリトライ失敗。HTTP fallbackを使用");
@@ -286,7 +298,13 @@
                 return;
             }   
             pendingCallback = callback;
-            ws.send(JSON.stringify(payload));
+            try {
+                ws.send(JSON.stringify(payload));
+            } catch(e) {
+                console.error("[MascotChat] ws.send例外:", e);
+                pendingCallback = null;
+                clearPending(new Error("WebSocket送信失敗: " + e.message), null);
+            }
         }
 
         // WS経由でAIにリクエストを送信し、コールバックでレスポンスを受け取るヘルパー
