@@ -181,7 +181,7 @@
 /* --- (3) 下部エリア: 入力フォーム --- */
 .ai-chat-form {
     position: absolute;
-    bottom: -38px;
+    bottom: -30px;
     left: -5px;
     width: 100%;
     min-height: 45px;

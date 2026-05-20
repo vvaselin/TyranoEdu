@@ -123,9 +123,9 @@
 [endscript]
 
 ; 実行ボタン
-[glink fix="true" color="mybtn_06" text="コードを実行" target="*execute_code" width="400" size="20" x="240" y="650"]
+[glink fix="true" color="mybtn_01" text="コードを実行" target="*execute_code" width="400" size="20" x="240" y="650"]
 ; 実行結果モーダル表示ボタン
-[glink fix="true" color="mybtn_01" text="コンソール" target="*open_result_window" width="140" size="20" x="645" y="650"]
+[glink fix="true" color="mybtn_06" text="コンソール" target="*open_result_window" width="130" height="50"  size="18" x="645" y="650"]
 ; 採点
 [if exp="f.is_sandbox == false"]
     [glink fix="true" color="mybtn_07" text="提出" target="*submit" width="200" size="20" x="15" y="655" ]
