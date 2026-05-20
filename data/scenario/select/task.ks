@@ -15,7 +15,8 @@ $('#task_area,#task_tabs,.sel_back_btn').remove();
 [ptext name="task_title" layer="fix" text="🖊 課題パート" size="28" color="0xFFFFFF" bold="true" x="500" y="72" width="700" align="center"]
 
 ; ── 戻るボタン ────────────────────────────────────────────
-[glink name="sel_back_btn" color="mybtn_09" text="戻る↩" target="*back_home" width="200" size="20" x="100" y="15"]
+[glink name="sel_back_btn" color="mybtn_09" text="戻る↩" target="*back_home" width="200" size="20" x="80" y="15"]
+[glink name="sel_back_btn" color="mybtn_09" text="エピソード" target="*toSelectStory" width="200" size="20" x="300" y="15"]
 
 ; task.ks が表示されるたびに未読エピソードフラグを再計算
 [iscript]
@@ -55,7 +56,7 @@ $('#task_area,#task_tabs,.sel_back_btn').remove();
     })();
 [endscript]
 
-[ptext name="new_episode_tag" layer="fix" text="NEW" color="0xFF3333" bold="true" size="28" edge="2px white" x="315" y="10" cond="f.has_unread_lecture == true"]
+[ptext name="new_episode_tag" layer="fix" text="NEW" color="0xFF3333" bold="true" size="28" edge="2px white" x="520" y="10" cond="f.has_unread_lecture == true"]
 
 ; ── スクロールエリア ──────────────────────────────────────
 [scroll_area_vertical id="task_area" top=157 left=500 width=700 height=508 contents_h=600 zindex=1000000]
@@ -243,6 +244,15 @@ $('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();
 [endscript]
 [clearfix]
 [jump storage="home.ks" target="*start"]
+
+
+*toSelectStory
+[scroll_area_vertical_del id="task_area"]
+[iscript]
+$('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();
+[endscript]
+[clearfix]
+[jump storage="select/story.ks" target="*start"]
 
 *common_task_start
 [scroll_area_vertical_del id="task_area"]

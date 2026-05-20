@@ -84,7 +84,7 @@
 [endscript]
 
 ; エピソードボタン右上に NEW 表示
-[ptext name="new_episode_tag" layer="fix" text="NEW" color="0xFF3333" edge="2px white" bold="true" size="28" x="850" y="130" cond="f.has_unread_lecture == true"]
+[ptext name="new_episode_tag" layer="fix" text="NEW" color="0xFF3333" edge="2px white" bold="true" size="28" x="840" y="130" cond="f.has_unread_lecture == true"]
 
 ; キャラクター表示
 [chara_show name="mocha" time="50"  left=40  width=680 top =90 time=100 wait="true" ]
