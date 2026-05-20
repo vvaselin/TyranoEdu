@@ -105,7 +105,7 @@
   "task4": {
     "category": "基本入出力・変数・演算",
     "title": "課題1-4: 入力と出力",
-    "description": "名前が入力されたとき、\n挨拶を表示する\nプログラムを完成させてください。\n\n入力: Taro",
+    "description": "名前が入力されたとき、\n挨拶を表示する\nプログラムを完成させてください。",
     "stdin": "Taro",
     "expected_output": "こんにちは、Taroさん！",
     "initial_code": [
@@ -128,7 +128,7 @@
   "task5": {
     "category": "基本入出力・変数・演算",
     "title": "課題1-5: 文字列の結合",
-    "description": "姓と名が入力されたとき、\nフルネームを出力してください。\n姓と名の間はスペースで区切ること。\n\n入力: Yamada Taro",
+    "description": "姓と名が入力されたとき、\nフルネームを出力してください。\n姓と名の間はスペースで区切ること。",
     "stdin": "Yamada Taro",
     "expected_output": "フルネーム: Yamada Taro",
     "initial_code": [
@@ -152,7 +152,7 @@
   "task6": {
     "category": "基本入出力・変数・演算",
     "title": "課題1-6: 温度変換",
-    "description": "摂氏（℃）が入力されたとき、\n華氏（℉）に変換して\n出力してください。\n\n変換式:\n華氏 = 摂氏 × 9 ÷ 5 + 32\n\n入力: 100",
+    "description": "摂氏（℃）が入力されたとき、\n華氏（℉）に変換して\n出力してください。\n\n変換式:\n華氏 = 摂氏 × 9 ÷ 5 + 32",
     "stdin": "100",
     "expected_output": "摂氏100度 = 華氏212度",
     "initial_code": [
@@ -177,7 +177,7 @@
   "task7": {
     "category": "条件分岐",
     "title": "課題2-1: 条件分岐",
-    "description": "整数が入力されたとき、\n正の数・負の数・ゼロを\n判定して表示してください。\n\n入力: -5",
+    "description": "整数が入力されたとき、\n正の数・負の数・ゼロを\n判定して表示してください。",
     "stdin": "-5",
     "expected_output": "負の数",
     "initial_code": [
@@ -204,7 +204,7 @@
   "task8": {
     "category": "条件分岐",
     "title": "課題2-2: 2つの数の大きい方",
-    "description": "2つの整数が入力されたとき、\n大きい方を表示してください。\n\n入力: 5 3",
+    "description": "2つの整数が入力されたとき、\n大きい方を表示してください。",
     "stdin": "5 3",
     "expected_output": "最大値: 5",
     "initial_code": [
@@ -230,7 +230,7 @@
   "task9": {
     "category": "条件分岐",
     "title": "課題2-3: switch文（曜日）",
-    "description": "1〜7の整数が入力されたとき、\n対応する曜日を表示してください。\n\n1=月曜日 2=火曜日 3=水曜日\n4=木曜日 5=金曜日 6=土曜日\n7=日曜日\n\n1〜7以外は「無効な値です」。\n\n入力: 3",
+    "description": "1〜7の整数が入力されたとき、\n対応する曜日を表示してください。\n\n1=月曜日 2=火曜日 3=水曜日\n4=木曜日 5=金曜日 6=土曜日\n7=日曜日\n\n1〜7以外は「無効な値です」。",
     "stdin": "3",
     "expected_output": "水曜日",
     "initial_code": [
@@ -269,7 +269,7 @@
   "task10": {
     "category": "条件分岐",
     "title": "課題2-4: うるう年の判定",
-    "description": "西暦年が入力されたとき、\nうるう年かどうか判定してください。\n\nうるう年の条件:\n4の倍数\nかつ 100の倍数でない\nまたは 400の倍数\n\n入力: 1900",
+    "description": "西暦年が入力されたとき、\nうるう年かどうか判定してください。\n\nうるう年の条件:\n4の倍数\nかつ 100の倍数でない\nまたは 400の倍数",
     "stdin": "1900",
     "expected_output": "1900年はうるう年ではありません",
     "initial_code": [
@@ -297,7 +297,7 @@
   "task11": {
     "category": "条件分岐",
     "title": "課題2-5: BMI判定",
-    "description": "体重（kg）と身長（cm）が\n入力されたとき、\nBMI と判定を表示してください。\n\nBMI = 体重 ÷ (身長m)²\n※身長は cm → m に変換する\n\n18.5未満: 低体重\n18.5以上25未満: 普通体重\n25以上: 過体重\n\n入力: 70 175",
+    "description": "体重（kg）と身長（cm）が\n入力されたとき、\nBMI と判定を表示してください。\n\nBMI = 体重 ÷ (身長m)²\n※身長は cm → m に変換する\n\n18.5未満: 低体重\n18.5以上25未満: 普通体重\n25以上: 過体重",
     "stdin": "70 175",
     "expected_output": "BMI: 22\n判定: 普通体重",
     "initial_code": [
@@ -330,7 +330,7 @@
   "task12": {
     "category": "条件分岐",
     "title": "課題2-6: 3つの数の中央値",
-    "description": "3つの整数が入力されたとき、\n中央値を表示してください。\n\n中央値:\n3つの中で2番目に大きい値\n\n入力: 3 1 2",
+    "description": "3つの整数が入力されたとき、\n中央値を表示してください。\n\n中央値:\n3つの中で2番目に大きい値",
     "stdin": "3 1 2",
     "expected_output": "中央値: 2",
     "initial_code": [
@@ -358,7 +358,7 @@
   "task13": {
     "category": "ループ",
     "title": "課題3-1: forループ",
-    "description": "整数 n が入力されたとき、\n1 から n まで\n1行ずつ出力してください。\n\n入力: 5",
+    "description": "整数 n が入力されたとき、\n1 から n まで\n1行ずつ出力してください。",
     "stdin": "5",
     "expected_output": "1\n2\n3\n4\n5",
     "initial_code": [
@@ -381,7 +381,7 @@
   "task14": {
     "category": "ループ",
     "title": "課題3-2: whileループ",
-    "description": "整数 n が入力されたとき、\n1 から n までの合計を\n計算して表示してください。\n\n入力: 5",
+    "description": "整数 n が入力されたとき、\n1 から n までの合計を\n計算して表示してください。",
     "stdin": "5",
     "expected_output": "1から5の合計: 15",
     "initial_code": [
@@ -409,7 +409,7 @@
   "task15": {
     "category": "ループ",
     "title": "課題3-3: 星のピラミッド",
-    "description": "整数 n が入力されたとき、\nn 段の * のピラミッドを\n表示してください。\n\n入力: 5",
+    "description": "整数 n が入力されたとき、\nn 段の * のピラミッドを\n表示してください。",
     "stdin": "5",
     "expected_output": "*\n**\n***\n****\n*****",
     "initial_code": [
@@ -436,7 +436,7 @@
   "task16": {
     "category": "ループ",
     "title": "課題3-4: do-whileループ",
-    "description": "0 が入力されるまで整数を読み込み、\n合計を出力してください。\n0 は合計に含めないこと。\n\n入力:\n10\n20\n30\n0",
+    "description": "0 が入力されるまで整数を読み込み、\n合計を出力してください。\n0 は合計に含めないこと。",
     "stdin": "10\n20\n30\n0",
     "expected_output": "合計: 60",
     "initial_code": [
@@ -466,7 +466,7 @@
   "task17": {
     "category": "ループ",
     "title": "課題3-5: 素数判定",
-    "description": "整数 n が入力されたとき、\n素数かどうか判定してください。\n\n素数:\n1 とその数自身以外に\n約数を持たない 2 以上の整数\n\n入力: 17",
+    "description": "整数 n が入力されたとき、\n素数かどうか判定してください。\n\n素数:\n1 とその数自身以外に\n約数を持たない 2 以上の整数",
     "stdin": "17",
     "expected_output": "17は素数です",
     "initial_code": [
@@ -500,7 +500,7 @@
   "task18": {
     "category": "ループ",
     "title": "課題3-6: FizzBuzz",
-    "description": "整数 n が入力されたとき、\n1 から n まで順に表示してください。\n\n3の倍数: 「Fizz」\n5の倍数: 「Buzz」\n両方の倍数: 「FizzBuzz」\n\n入力: 15",
+    "description": "整数 n が入力されたとき、\n1 から n まで順に表示してください。\n\n3の倍数: 「Fizz」\n5の倍数: 「Buzz」\n両方の倍数: 「FizzBuzz」",
     "stdin": "15",
     "expected_output": "1\n2\nFizz\n4\nBuzz\nFizz\n7\n8\nFizz\nBuzz\n11\nFizz\n13\n14\nFizzBuzz",
     "initial_code": [
@@ -530,7 +530,7 @@
   "task19": {
     "category": "関数",
     "title": "課題4-1: 関数の定義",
-    "description": "2つの整数が入力されたとき、\n大きい方を返す関数 maxOf を\n完成させてください。\n\n入力: 3 7",
+    "description": "2つの整数が入力されたとき、\n大きい方を返す関数 maxOf を\n完成させてください。",
     "stdin": "3 7",
     "expected_output": "最大値: 7",
     "initial_code": [
@@ -558,7 +558,7 @@
   "task20": {
     "category": "関数",
     "title": "課題4-2: 絶対値を返す関数",
-    "description": "整数が入力されたとき、\n絶対値を返す関数 absOf を\n完成させてください。\n\n入力: -7",
+    "description": "整数が入力されたとき、\n絶対値を返す関数 absOf を\n完成させてください。",
     "stdin": "-7",
     "expected_output": "-7の絶対値: 7",
     "initial_code": [
@@ -586,7 +586,7 @@
   "task21": {
     "category": "関数",
     "title": "課題4-3: 階乗（ループ版）",
-    "description": "整数 n が入力されたとき、\nn の階乗（n!）を計算する\n関数 factorial を完成させてください。\n\n入力: 6",
+    "description": "整数 n が入力されたとき、\nn の階乗（n!）を計算する\n関数 factorial を完成させてください。",
     "stdin": "6",
     "expected_output": "6! = 720",
     "initial_code": [
@@ -616,7 +616,7 @@
   "task22": {
     "category": "関数",
     "title": "課題4-4: 再帰関数（階乗）",
-    "description": "再帰を使って\nn の階乗（n!）を計算する\n関数を完成させてください。\n\n入力: 5",
+    "description": "再帰を使って\nn の階乗（n!）を計算する\n関数を完成させてください。",
     "stdin": "5",
     "expected_output": "5! = 120",
     "initial_code": [
@@ -642,7 +642,7 @@
   "task23": {
     "category": "関数",
     "title": "課題4-5: フィボナッチ数列（ループ版）",
-    "description": "整数 n が入力されたとき、\nフィボナッチ数列の最初の n 項を\n1行ずつ表示してください。\n\nフィボナッチ数列:\n1, 1, 2, 3, 5, 8, 13, 21, …\n\n入力: 8",
+    "description": "整数 n が入力されたとき、\nフィボナッチ数列の最初の n 項を\n1行ずつ表示してください。\n\nフィボナッチ数列:\n1, 1, 2, 3, 5, 8, 13, 21, …",
     "stdin": "8",
     "expected_output": "1\n1\n2\n3\n5\n8\n13\n21",
     "initial_code": [
@@ -671,7 +671,7 @@
   "task24": {
     "category": "関数",
     "title": "課題4-6: 再帰関数（フィボナッチ）",
-    "description": "再帰を使って\nフィボナッチ数列の第 n 項を\n求めてください。\n\nfib(1)=1, fib(2)=1\nfib(3)=2, …\n\n入力: 10",
+    "description": "再帰を使って\nフィボナッチ数列の第 n 項を\n求めてください。\n\nfib(1)=1, fib(2)=1\nfib(3)=2, …",
     "stdin": "10",
     "expected_output": "fib(10) = 55",
     "initial_code": [
@@ -721,7 +721,7 @@
   "task26": {
     "category": "配列・文字列・構造体",
     "title": "課題5-2: 配列の合計と平均",
-    "description": "5つの整数が入力されたとき、\n合計と平均を出力してください。\n平均は小数点以下も表示すること。\n\n入力: 1 2 3 4 6",
+    "description": "5つの整数が入力されたとき、\n合計と平均を出力してください。\n平均は小数点以下も表示すること。",
     "stdin": "1 2 3 4 6",
     "expected_output": "合計: 16\n平均: 3.2",
     "initial_code": [
@@ -751,7 +751,7 @@
   "task27": {
     "category": "配列・文字列・構造体",
     "title": "課題5-3: 最大値と最小値",
-    "description": "5つの整数が入力されたとき、\n最大値と最小値を\n出力してください。\n\n入力: 3 1 4 1 5",
+    "description": "5つの整数が入力されたとき、\n最大値と最小値を\n出力してください。",
     "stdin": "3 1 4 1 5",
     "expected_output": "最大値: 5\n最小値: 1",
     "initial_code": [
@@ -783,7 +783,7 @@
   "task28": {
     "category": "配列・文字列・構造体",
     "title": "課題5-4: 文字列の逆順",
-    "description": "文字列が入力されたとき、\n逆順に並べ替えて\n出力してください。\n\n入力: Hello",
+    "description": "文字列が入力されたとき、\n逆順に並べ替えて\n出力してください。",
     "stdin": "Hello",
     "expected_output": "olleH",
     "initial_code": [
@@ -809,7 +809,7 @@
   "task29": {
     "category": "配列・文字列・構造体",
     "title": "課題5-5: バブルソート",
-    "description": "5つの整数が入力されたとき、\nバブルソートで昇順に並べ替えて\n1行ずつ出力してください。\n\n入力: 5 3 1 4 2",
+    "description": "5つの整数が入力されたとき、\nバブルソートで昇順に並べ替えて\n1行ずつ出力してください。",
     "stdin": "5 3 1 4 2",
     "expected_output": "1\n2\n3\n4\n5",
     "initial_code": [
@@ -846,7 +846,7 @@
   "task30": {
     "category": "配列・文字列・構造体",
     "title": "課題5-6: 構造体",
-    "description": "Student 構造体（名前・点数）を使って、\n名前・スコアを表示し、\n60点以上なら「合格」\n未満なら「不合格」と\n表示してください。\n\n入力: Tanaka 60",
+    "description": "Student 構造体（名前・点数）を使って、\n名前・スコアを表示し、\n60点以上なら「合格」\n未満なら「不合格」と\n表示してください。",
     "stdin": "Tanaka 60",
     "expected_output": "名前: Tanaka\nスコア: 60\n評価: 合格",
     "initial_code": [

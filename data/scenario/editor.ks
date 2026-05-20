@@ -149,8 +149,25 @@
         overflow:auto;
         box-sizing: border-box;
     ">
-        <h3 id="task-title" style="margin-bottom: 10px;">課題</h3>
-        <p id="task-content" style="white-space: pre-wrap; margin-bottom: 15px;"></p>
+        <h3 id="task-title" style="margin-bottom: 10px; font-size: 16px;">課題</h3>
+        <p id="task-content" style="white-space: pre-wrap; margin-bottom: 15px; font-size: 14px;"></p>
+
+        <div id="stdin-display-area" style="
+            display:none;
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+        ">
+            <div style="font-size:12px; color:#aaa; margin-bottom:5px;">▼ 標準入力 (stdin)</div>
+            <div id="stdin-display-text" style="
+                font-family: monospace;
+                font-size: 14px;
+                white-space: pre-wrap;
+                color: #87ceeb;
+            "></div>
+        </div>
 
         <div id="expected-output-area" style="
             display:none;
@@ -237,6 +254,12 @@
                 $("#expected-output-text").text(task_data.expected_output);
             } else {
                 $("#expected-output-area").hide();
+            }
+            if (task_data.stdin && task_data.stdin !== "") {
+                $("#stdin-display-area").show();
+                $("#stdin-display-text").text(task_data.stdin);
+            } else {
+                $("#stdin-display-area").hide();
             }
         }
     } else {
