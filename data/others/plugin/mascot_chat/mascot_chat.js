@@ -47,10 +47,12 @@ window.initMascotChat = function() {
             '.ai-chat-container textarea, ' +
             '.ai-chat-container button, ' +
             '.ai-chat-container input { ' +
-            '  font-family: "游ゴシック", "Yu Gothic", "YuGothic", "MS PGothic", "Hiragino Kaku Gothic ProN", sans-serif !important; ' +
+            '  font-family: "BIZ UDPGothic", "MS PGothic", "Hiragino Kaku Gothic ProN", sans-serif !important; ' +
             '  font-weight: bold !important; ' +
-            '  letter-spacing: 0.06em !important; ' +    /* 字間 */
-            '  -webkit-font-smoothing: antialiased !important; ' +
+            '  letter-spacing: 0.06em !important; ' +
+            '  -webkit-font-smoothing: antialiased !important; ' +     /* Chrome/Safari/Edge */
+            '  -moz-osx-font-smoothing: grayscale !important; ' +      /* macOS Firefox */
+            '  text-rendering: optimizeLegibility !important; ' +      /* 全ブラウザ共通 */
             '} ' +
             '.ai-chat-container .ai-chat-message-simple { ' +
             '  line-height: 1.9 !important; ' +          /* 行間 */

@@ -17,7 +17,7 @@
 *menu_loop
 [chara_mod name="mocha" face="normal" wait=false]
 ; トークモードへ移動
-[glink color="ts22" text="トークモード" target="*developing" x="850" y="570" width="300" size="30"]
+;[glink color="ts22" text="トークモード" target="*developing" x="850" y="570" width="300" size="30"]
 
 ;=== ボタン配置（nameで目印をつける） ===
 [glink color="mybtn_perspective" name="grp_R" text="<span class='material-icons'>&#xe0b7;</span> エピソード" target="*toSelectStory" x="635" y="130" height="100" width="260" size="35"]
