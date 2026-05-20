@@ -12,10 +12,11 @@ $('#lecture_area,.sel_back_btn').remove();
 [endscript]
 
 ; ── タイトル ──────────────────────────────────────────────
-[ptext name="lecture_title" layer="fix" text="📖 講義パート" size="28" color="0xFFFFFF" bold="true" x="640"  y="72" width="560" align="center"]
+[ptext name="lecture_title" layer="fix" text="📖 エピソード" size="28" color="0xFFFFFF" bold="true" x="640"  y="72" width="560" align="center"]
 
 ; ── 戻るボタン ────────────────────────────────────────────
-[glink name="sel_back_btn" color="mybtn_09" text="戻る↩" target="*back_home" width="200" size="20" x="100" y="15"]
+[glink name="sel_back_btn" color="mybtn_09" text="戻る↩" target="*back_home" width="200" size="20" x="80" y="15"]
+[glink name="sel_back_btn" color="mybtn_09" text="課題" target="*toSelectTask" width="200" size="20" x="300" y="15"]
 
 ; ── スクロールエリア ──────────────────────────────────────
 [scroll_area_vertical id="lecture_area" top=115 left=640  width=560 height=550 contents_h=450 zindex=1000000]
@@ -146,7 +147,8 @@ $('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();
 [iscript]
 $('.sel_back_btn').remove();
 [endscript]
-[glink name="sel_back_btn" color="mybtn_09" text="戻る↩" target="*back_home" width="200" size="20" x="100" y="15"]
+[glink name="sel_back_btn" color="mybtn_09" text="戻る↩" target="*back_home" width="200" size="20" x="80" y="15"]
+[glink name="sel_back_btn" color="mybtn_09" text="課題" target="*toSelectTask" width="200" size="20" x="300" y="15"]
 [s]
 
 *back_home
@@ -155,5 +157,12 @@ $('.sel_back_btn').remove();
 [iscript]
 $('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();
 [endscript]
-[clearfix]
 [jump storage="home.ks" target="*start"]
+
+*toSelectTask
+[clearfix]
+[scroll_area_vertical_del id="lecture_area"]
+[iscript]
+$('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();
+[endscript]
+[jump storage="select/task.ks" target="*start"]
