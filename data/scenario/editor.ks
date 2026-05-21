@@ -6,6 +6,11 @@
 [bg storage="standard.png" time="0"]
 [stop_keyconfig]
 
+; --- JSファイルの読み込み ---
+[loadjs storage="./data/others/js/editor_modal.js"]
+[loadjs storage="./data/others/js/editor_task.js"]
+[loadjs storage="./data/others/js/editor_grading.js"]
+
 [iscript]
     f.prev_params = {joy:0, trust:0, fear:0, anger:0, shy:0, surprise:0};
     f.prev_output = "";
@@ -39,87 +44,9 @@
     $("#monaco-iframe").css({ "width": "100%", "height": "100%" });
 [endscript]
 
-; --- 結果表示用モーダル---
+; --- 結果表示用モーダル ---
 [iscript]
-    // 明示的に読み込む
-    tyrano.plugin.kag.ftag.startTag("loadcss", {file: "./data/others/css/modal_dark_theme.css"});
-    // ティラノの変数 f を参照
-    var f = TYRANO.kag.stat.f;
-    // fixレイヤーを取得
-    var fix_layer = $(".fixlayer").first();
-    // 二重生成防止のため、既存のモーダルがあれば削除
-    $("#result_modal").remove();
-
-    // --- モーダルウィンドウのHTMLを定義 ---
-    var modal_html = `
-    <div id="result_modal" title="コンソール">
-        <pre id="result_modal_content">
-            実行ボタンを押してね
-        </pre>
-    </div>
-    `;
-
-    // --- HTMLをfixレイヤーに追加し、非表示にする ---
-    var $modal = $(modal_html);
-    fix_layer.append($modal);
-
-    // --- jQuery UI Dialog として初期化 ---
-    $modal.dialog({
-        autoOpen: false,
-        modal: false,
-        width: 400,
-        height: 300,
-        minWidth: 300,
-        maxWidth: 800,
-        minHeight: 200,
-        maxHeight: 600,
-        position: { my: "center", at: "center", of: window },
-        dialogClass: "dialog-dark",
-        classes: {
-            "ui-dialog": "dialog-dark"
-        },
-        helper: "ui-resizable-helper",
-        buttons: [
-            {
-                text: "コピー",
-                id: "modal_copy_button_id",
-                click: function() {
-                    var $dialog_content = $(this).find("#result_modal_content");
-                    var textToCopy = $dialog_content.text();
-                    var $button = $(event.target).closest("button");
-                    navigator.clipboard.writeText(textToCopy).then(
-                        () => {
-                            $button.text("コピー完了!");
-                            setTimeout(() => { 
-                                $button.text("コピー"); 
-                            }, 2000);
-                        },
-                        (err) => {
-                            $button.text("失敗");
-                            setTimeout(() => { 
-                                $button.text("コピー"); 
-                            }, 2000);
-                        }
-                    );
-                }
-            }
-        ],
-        open: function(event, ui) {
-            $(this).css('font-size', '14px');
-            $(this).parent().css('z-index', '10002'); 
-        },
-        // リサイズの負荷軽減
-        resizeStart: function(event, ui) {
-            $("#monaco-iframe").css('pointer-events', 'none');
-            $(this).find("#result_modal_content").css('visibility', 'hidden');
-        },
-        resizeStop: function(event, ui) {
-            $("#monaco-iframe").css('pointer-events', 'auto');
-            $(this).find("#result_modal_content").css('visibility', 'visible');
-        }
-    });
-    // コピーボタン無効化
-    $("#modal_copy_button_id").button("disable");
+    window.initResultModal();
 [endscript]
 
 ; 実行ボタン
@@ -219,14 +146,14 @@
         </div>
 
         <div id="custom-stdin-area" style="
-        display:none;
-        background-color: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        padding: 10px;
-        margin-bottom: 15px;
-    ">
-        <div style="font-size:12px; color:#aaa; margin-bottom:5px;">▼ 標準入力 (stdin)</div>
+            display:none;
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+        ">
+            <div style="font-size:12px; color:#aaa; margin-bottom:5px;">▼ 標準入力 (stdin)</div>
             <textarea id="custom-stdin-text" style="
                 width: 100%;
                 height: 60px;
@@ -250,80 +177,14 @@
             border-radius:5px;
         ">
             <h4 style="color:#ffcc00; margin:0 0 5px 0;">▼ 採点結果</h4>
-            <div id="grade-content" style="font-size:14px; line-height:1.4;">
-                </div>
+            <div id="grade-content" style="font-size:14px; line-height:1.4;"></div>
         </div>
     </div>
 [endhtml]
 
+; --- 課題データをUIに反映 ---
 [iscript]
-    var tasks = f.all_tasks;
-    var current_id = f.current_task_id;
-
-    var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
-
-    if (task_data) {
-        // 成功: データをUIにセット
-        $("#task-title").text(task_data.title);
-        $("#task-content").text(task_data.description);
-
-        if (f.is_sandbox) {
-            $("#expected-output-area").hide(); // 期待される出力を隠す
-            $("#custom-stdin-area").show();    // 自由入力欄を表示
-
-            // 入力欄の内容を tasks["sandbox"].stdin に反映させる
-            $("#custom-stdin-text").on("input", function() {
-                tasks["sandbox"].stdin = $(this).val();
-            });
-            
-            // 初期値をセット（tasks.jsonに記述がある場合）
-            $("#custom-stdin-text").val(task_data.stdin || "");
-        } else {
-            // 通常の課題モード
-            $("#custom-stdin-area").hide();
-            if (task_data.expected_output && task_data.expected_output !== "") {
-                $("#expected-output-area").show();
-                $("#expected-output-text").text(task_data.expected_output);
-            } else {
-                $("#expected-output-area").hide();
-            }
-            // 標準入力の表示
-            if (task_data.stdin && task_data.stdin !== "") {
-                $("#stdin-display-area").show();
-                $("#stdin-display-text").text(task_data.stdin);
-            } else {
-                $("#stdin-display-area").hide();
-            }
-            // ヒントの折り畳み機能
-            $("#hint-header").on("click", function() {
-                var content = $("#hint-content");
-                var toggle = $("#hint-toggle");
-                
-                if (content.is(":visible")) {
-                    content.slideUp(200);
-                    toggle.text("▶");
-                } else {
-                    content.slideDown(200);
-                    toggle.text("▼");
-                }
-            });
-
-            if (task_data.hints && task_data.hints.length > 0) {
-                $("#hint-area").show();
-                $("#hint-content").text(task_data.hints.join("\n"));
-            } else {
-                $("#hint-area").hide();
-            }
-        }
-    } else {
-        // 失敗: 課題IDが見つからない
-        $("#task-title").text("エラー");
-        var error_msg = "課題ID「" + current_id + "」が見つかりません。";
-        if (!tasks) {
-            error_msg += " (tasks.json が未ロード)";
-        }
-        $("#task-content").text(error_msg);
-    }
+    window.initTaskDisplay();
 [endscript]
 [mask_off time=1000]
 
@@ -332,167 +193,35 @@
 
 ; ■■■ 実行処理（サブルーチン） ■■■
 *open_result_window
-; モーダルウィンドウを開く
 [iscript]
-    var $dialog = $("#result_modal");
-    if (!$dialog.dialog("isOpen")) {
-        $dialog.dialog("open");
-    }
-    else {
-        $dialog.dialog("close");
-    }
+    window.toggleResultModal();
 [endscript]
 [return]
 
 *execute_code
-; モーダルウィンドウに「実行中...」と表示
 [iscript]
-    var $dialog = $("#result_modal");
-    // コピーボタン無効化
-    $("#modal_copy_button_id").button("disable");
-    
-    // 中身を更新
-    $("#result_modal_content").text("実行中...");
-    
-    // ダイアログが閉じていたら開く
-    if (!$dialog.dialog("isOpen")) {
-        $dialog.dialog("open");
-    }
-    
-    // 時間計測開始
-    f.starttime = performance.now();
+    window.showExecutionStart();
 [endscript]
 
 ; サーバーにコードを送信 (プラグインが完了するまで待機)
 [execute_cpp code=&f.my_code]
 
-; 完了後、モーダルウィンドウの結果を上書きする
+; 完了後、結果を表示
 [iscript]
-    // 実行結果を変数から取得
-    var result_text = f.execution_result || "（何も出力されなかったよ）";
-    
-    // モーダルの中身を更新
-    $("#result_modal_content").text(result_text);
-    // コピーボタン有効化
-    $("#modal_copy_button_id").button("enable");
-    
-    // 実行時間
-    console.error("実行時間：", (performance.now() - f.starttime), "ms");
+    window.showExecutionResult();
 [endscript]
-
 [return]
 
 *submit
+; 採点開始表示
 [iscript]
-    
-    $("[data-event-pm*='back_btn']").hide();
-
-    $("#grade-result-area").show();
-    $("#grade-content").html("<span style='color:gray;'>採点中...</span>");
+    window.showGradingStart();
 [endscript]
-;コード実行
+; コード実行
 [execute_cpp code=&f.my_code silent="true"]
 ; 採点処理
 [iscript]
-    // 課題データ
-    var task = f.all_tasks[f.current_task_id];
-    var payload = {
-        user_id: f.user_id,
-        task_id: f.current_task_id,
-        code: f['my_code'],
-        output: f.execution_result,
-        task_desc: task.description,               
-        expected_output: task.expected_output || ""
-    };
-
-    $.ajax({
-        url: "/api/grade",
-        type: "POST",
-        data: JSON.stringify(payload),
-        contentType: "application/json",
-        dataType: "json",
-        
-        success: function(data) {
-            var html = "";
-            var scoreColor = (data.score >= 80) ? "#00ff00" : "#ff4444";
-            html += "<strong style='font-size:18px; color:" + scoreColor + ";'>" + data.score + "点</strong><br>";
-            html += "<strong>理由:</strong> " + data.reason + "<br>";
-            html += "<strong style='color:#ffffaa;'>アドバイス:</strong> " + data.improvement;      
-            $("#grade-content").html(html);
-            
-            // ここで採点結果だけを話させる 
-            if (window.mascot_chat_trigger) {
-                var msg = "[SYSTEM] 採点結果: " + data.score + "点。\n評価コメント: " + data.reason;
-                
-                // コールバックでAI応答完了後にボタンを解放
-                window.mascot_chat_trigger(msg, false, function() {
-                    if(data.score >= 80){
-                        // クリア演出
-                        TYRANO.kag.ftag.startTag("image", {
-                            storage: "clear.svg",
-                            layer: "fix",
-                            name: "clear_obj",
-                            zindex: "20000000",
-                            x: "0",
-                            y: "0",
-                            width: "1280",
-                            height: "720",
-                            visible: "true"
-                        });
-                        setTimeout(function() {
-                            TYRANO.kag.ftag.startTag("free", {
-                                layer: "fix",
-                                name: "clear_obj"
-                            });
-                        }, 2000);
-
-                        if (!f.cleared_tasks) {
-                            f.cleared_tasks = {};
-                        }
-                        // 現在のタスクID (例: "task1") を true にする
-                        f.cleared_tasks[f.current_task_id] = true;
-                    } else {
-                        alertify.error("不合格...");
-                    }
-
-                    var bonusMsg = "";
-                    if (data.is_new_record) {
-                        bonusMsg = " (自己ベスト更新！)";
-                        // ここでクライアント側の好感度も増やしておく
-                        if(f.user_role=='experimental'&&data.bonus_love > 0) {
-                            var current = parseInt(f.love_level) || 0;
-                            f.love_level = current + data.bonus_love;
-                            alertify.success("ハイスコアボーナス! 好感度+" + data.bonus_love);
-                            if (window.saveLoveLevelToSupabase) {
-                                window.saveLoveLevelToSupabase(f.love_level);
-                            }
-                        }
-                    }
-
-                    if(f.cleared_tasks[f.current_task_id] == true){
-                        setTimeout(function() {
-                            TYRANO.kag.ftag.startTag("jump", {target: "*show_clear_dialog"});
-                        }, 2500);
-                    }
-
-                    // 戻るボタン解放
-                    $("[data-event-pm*='back_btn']").show();
-                    
-                });
-            } else {
-                // mascot_chat が使えない場合は即解放
-                $("[data-event-pm*='back_btn']").show();
-            }
-
-            
-
-        },
-        error: function() {
-            $("#grade-content").text("採点サーバーとの通信に失敗しました。");
-            
-            $("[data-event-pm*='back_btn']").show();
-        }
-    });
+    window.submitForGrading();
 [endscript]
 [return]
 
@@ -514,7 +243,6 @@
             tyrano.plugin.kag.ftag.startTag("jump", {target: "*back"});
         });
     } else {
-        // 関数がない場合のフォールバック
         tyrano.plugin.kag.ftag.startTag("jump", {target: "*back"});
     }
 [endscript]
