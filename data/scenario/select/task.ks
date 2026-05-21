@@ -16,7 +16,7 @@ $('#task_area,#task_tabs,.sel_back_btn').remove();
 
 ; ── 戻るボタン ────────────────────────────────────────────
 [glink name="sel_back_btn" color="mybtn_09" text="戻る↩" target="*back_home" width="200" size="20" x="80" y="15"]
-[glink name="sel_back_btn" color="mybtn_09" text="<span class='material-icons'>&#xe0b7;</span> エピソード" target="*toSelectStory" width="200" size="20" x="300" y="15"]
+[glink name="sel_back_btn" color="mybtn_09" text="<span class='material-icons'>&#xe0b7;</span> エピソード" target="*toSelectStory" width="200" height="50" size="20" x="300" y="15"]
 
 ; task.ks が表示されるたびに未読エピソードフラグを再計算
 [iscript]

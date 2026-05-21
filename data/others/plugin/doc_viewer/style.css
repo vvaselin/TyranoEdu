@@ -160,7 +160,7 @@
     border-bottom: 1px solid #333;
     cursor: pointer;
     color: #ccc;
-    font-size: 15px;
+    font-size: 14px;
     transition: background 0.2s;
 }
 .doc-sub-menu .doc-menu-item {
@@ -181,7 +181,7 @@
 /* 階層下のアイテム（インデントをつける） */
 .doc-menu-item.sub-item {
     padding-left: 35px; /* 左を空ける */
-    font-size: 15px;
+    font-size: 14px;
 }
 
 /* --- オーバーレイ（メニューが開いている時の背景暗転） --- */
@@ -221,7 +221,7 @@
     flex: 1;
     padding: 30px;
     overflow-y: auto;
-    font-family: "Meiryo", sans-serif;
+    font-family: "BIZ UDPGothic", sans-serif;
     line-height: 1.8;
     text-align: left;
 }
@@ -230,7 +230,7 @@
     position: absolute;
     top: 5px;
     right: 5px;
-    font-size: 12px;
+    font-size: 10px;
     padding: 4px 8px;
     background-color: rgba(255, 255, 255, 0.2);
     color: #fff;
@@ -247,19 +247,19 @@
 }
 
 /* Markdown装飾 */
-.doc-content h1 { font-size: 22px; border-bottom: 2px solid #007acc; padding-bottom: 5px; margin-bottom: 20px; color: #fff; }
-.doc-content h2 { font-size: 18px; border-left: 5px solid #007acc; padding-left: 15px; margin-top: 30px; margin-bottom: 15px; color: #fff; background: rgba(255,255,255,0.05); padding-top:5px; padding-bottom:5px;}
+.doc-content h1 { font-size: 18px; border-bottom: 2px solid #007acc; padding-bottom: 5px; margin-bottom: 24px; color: #fff; }
+.doc-content h2 { font-size: 18px; border-left: 5px solid #007acc; padding-left: 15px; margin-top: 30px; margin-bottom: 14px; color: #fff; background: rgba(255,255,255,0.05); padding-top:5px; padding-bottom:5px;}
 .doc-content h3 { 
-    font-size: 17px; /* 15pxから引き上げ。本文(推定16px)より大きく */
+    font-size: 16px;
     margin-top: 25px; 
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     color: #eee; 
     font-weight: bold;
     border-bottom: 1px solid #444; /* 境目をわかりやすく */
     display: inline-block; /* 下線を文字の長さに合わせる場合 */
     width: 100%;
 }
-.doc-content p { margin-bottom: 11px; color: #ccc; }
+.doc-content p { margin-bottom: 12px; color: #ccc; }
 .doc-content code {
     padding: 2px 5px;
     border-radius: 3px;
@@ -295,14 +295,14 @@
 }
 
 .doc-content blockquote p {
-    margin-bottom: 0;
+    margin-bottom: 5px;
     color: #aaa;
 }
 
 .doc-content table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     font-size: 15px;
 }
 
@@ -335,8 +335,8 @@
 .doc-content .hljs-number { color: #b5cea8; }    /* 10, 3.14 */
 .doc-content .hljs-title.function_, .doc-content .hljs-function { color: #dcdcaa; } /* main() */
 .doc-content .hljs-type { color: #4ec9b0; }      /* 型名 */
-.doc-content ul, .doc-content ol { margin-left: 25px; margin-bottom: 20px; }
-.doc-content li { margin-bottom: 8px; }
+.doc-content ul, .doc-content ol { margin-left: 25px; margin-bottom: 24px; }
+.doc-content li { margin-bottom: 12px; }
 .doc-content a { color: #66b3ff; text-decoration: none; }
 .doc-content a:hover { text-decoration: underline; }
 .doc-content strong, .doc-content b {
@@ -362,6 +362,10 @@
 /* フルモード時はハンバーガーボタンと閉じるボタンを隠す（必要に応じて） */
 .doc-viewer-container.full-mode .doc-hamburger {
     display: none;
+}
+
+.doc_content_area .full-mode {
+    padding: 40px;
 }
 
 /* パネル内部を横並びにする準備 */
@@ -398,7 +402,7 @@
 
 .doc-viewer-container.full-mode .doc-content h1 { font-size: 32px; }
 .doc-viewer-container.full-mode .doc-content h2 { font-size: 26px; }
-.doc-viewer-container.full-mode .doc-content p  { font-size: 22px; }
+.doc-viewer-container.full-mode .doc-content p  { font-size: 21px; }
 
 /* メニュー項目のフォントサイズも調整 */
 .doc-viewer-container.full-mode .doc-menu-item {
@@ -416,19 +420,19 @@
 
 /* ついでにリストの間隔なども調整すると読みやすくなります */
 .doc-viewer-container.full-mode .doc-content li {
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
 
 .doc-viewer-container.full-mode .doc-content pre code {
-    font-size: 18px;
+    font-size: 20px;
 }
 
 .doc-viewer-container.full-mode .doc-content blockquote {
-    font-size: 22px;
+    font-size: 20px;
 }
 
 .doc-viewer-container.full-mode .doc-content table {
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .doc-viewer-container.full-mode .doc-content th,

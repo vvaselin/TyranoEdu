@@ -152,6 +152,38 @@
         <h3 id="task-title" style="margin-bottom: 10px; font-size: 16px;">課題</h3>
         <p id="task-content" style="white-space: pre-wrap; margin-bottom: 15px; font-size: 14px;"></p>
 
+        <div id="hint-area" style="
+            display:none;
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 5px 10px;
+            margin-bottom: 15px;
+        ">
+            <div id="hint-header" style="
+                font-size: 12px;
+                color: #ffcc00;
+                margin-bottom: 8px;
+                cursor: pointer;
+                user-select: none;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            ">
+                <span id="hint-toggle">▶</span>
+                <span>💡 ヒント</span>
+            </div>
+            <div id="hint-content" style="
+                display: none;
+                font-family: monospace;
+                font-size: 14px;
+                white-space: pre-wrap;
+                color: #ddd;
+                line-height: 1.6;
+                padding-left: 20px;
+            "></div>
+        </div>
+
         <div id="stdin-display-area" style="
             display:none;
             background-color: rgba(255, 255, 255, 0.08);
@@ -255,11 +287,32 @@
             } else {
                 $("#expected-output-area").hide();
             }
+            // 標準入力の表示
             if (task_data.stdin && task_data.stdin !== "") {
                 $("#stdin-display-area").show();
                 $("#stdin-display-text").text(task_data.stdin);
             } else {
                 $("#stdin-display-area").hide();
+            }
+            // ヒントの折り畳み機能
+            $("#hint-header").on("click", function() {
+                var content = $("#hint-content");
+                var toggle = $("#hint-toggle");
+                
+                if (content.is(":visible")) {
+                    content.slideUp(200);
+                    toggle.text("▶");
+                } else {
+                    content.slideDown(200);
+                    toggle.text("▼");
+                }
+            });
+
+            if (task_data.hints && task_data.hints.length > 0) {
+                $("#hint-area").show();
+                $("#hint-content").text(task_data.hints.join("\n"));
+            } else {
+                $("#hint-area").hide();
             }
         }
     } else {

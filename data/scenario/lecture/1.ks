@@ -9,6 +9,7 @@ tf.system.backlog=[];
 [add_theme_button]
 [bg storage="room.jpg" time="0"]
 @layopt layer="message0" visible=true
+[turn_end]
 
 [chara_show name="mocha" width=600 top =100]
 #モカ

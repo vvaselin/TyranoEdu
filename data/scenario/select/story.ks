@@ -16,7 +16,7 @@ $('#lecture_area,.sel_back_btn').remove();
 
 ; ── 戻るボタン ────────────────────────────────────────────
 [glink name="sel_back_btn" color="mybtn_09" text="戻る↩" target="*back_home" width="200" size="20" x="80" y="15"]
-[glink name="sel_back_btn" color="mybtn_09" text="<span class='material-icons'>&#xf88c;</span> 課題" target="*toSelectTask" width="200" size="20" x="300" y="15"]
+[glink name="sel_back_btn" color="mybtn_09" text="<span class='material-icons'>&#xf88c;</span> 課題" target="*toSelectTask" width="200" height="50" size="20" x="300" y="15"]
 
 ; ── スクロールエリア ──────────────────────────────────────
 [scroll_area_vertical id="lecture_area" top=115 left=640  width=560 height=550 contents_h=450 zindex=1000000]
@@ -139,6 +139,7 @@ $('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();
 @layopt layer="message0" visible=true
 [start_keyconfig]
 [eval exp="tf.lecture_path='lecture/'+tf.target_lecture_num+'.ks'"]
+[turn_start]
 [jump storage="&tf.lecture_path" target="*start"]
 
 *locked

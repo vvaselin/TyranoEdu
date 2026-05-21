@@ -480,11 +480,13 @@ window.initMascotChat = function() {
             var aiText = data.text || "";
             var emotion = data.emotion || "normal";
             var loveUpVal = parseInt(data.love_up) || 0;
-            var f = TYRANO.kag.stat.f;  
+            var f = TYRANO.kag.stat.f;
+            
             // 感情パラメータを保存
             if (data.parameters) {
                 f.prev_params = data.parameters;
-            }   
+            }
+            
             // 好感度変動（サンドボックスモードでは無効）
             if (f.user_role=='experimental'&&!f.is_sandbox && loveUpVal !== 0) {
                 var current = parseInt(f.love_level) || 0;
@@ -495,13 +497,26 @@ window.initMascotChat = function() {
                     alertify.success("好感度UP!");
                 } else {
                     alertify.error("好感度DOWN...");
-                }   
+                }
                 if (window.saveLoveLevelToSupabase) {
                     window.saveLoveLevelToSupabase(f.love_level);
                 }
                 window.updateLoveGaugeUI();
-            }   
+            }
+            
             addMessage("モカ", aiText, false);
+            
+            // emotion バリデーション: 存在しない表情IDは normal にフォールバック
+            var validEmotions = [
+                "normal", "happy", "sad", "surprise", "oko", "komari", 
+                "tere", "terekomari", "aseri", "doya", "huhun", "melt", 
+                "akire", "iya", "doubt"
+            ];
+            if (validEmotions.indexOf(emotion) === -1) {
+                console.warn("[MascotChat] 不正な emotion:", emotion, "→ normal にフォールバック");
+                emotion = "normal";
+            }
+            
             tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:emotion, time:200});
         }
 

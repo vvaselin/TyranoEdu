@@ -39,16 +39,20 @@
   "task1": {
     "category": "基本入出力・変数・演算",
     "title": "課題1-1: Hello World",
-    "description": "画面に\n「Hello, World!」と表示する\nプログラムを完成させてください。",
+    "description": "画面に\n「Hello, World!」と\n表示するプログラムを\n作成してください。\n\n出力形式:\nHello, World!",
     "stdin": "",
     "expected_output": "Hello, World!",
+    "hints": [
+      "cout と << を使って文字列を出力できます。",
+      "出力したい文字列は \" \" で囲みます。",
+      "行末に endl を書くと改行されます。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
       "",
       "int main() {",
-      "    // Hello, World! と出力しよう",
-      "    // cout を使おう",
+      "    cout << /* 出力する文字列を書こう */ << endl;",
       "    return 0;",
       "}"
     ]
@@ -56,19 +60,24 @@
   "task2": {
     "category": "基本入出力・変数・演算",
     "title": "課題1-2: 変数と出力",
-    "description": "age と height を\n以下の形式で出力してください。",
+    "description": "整数型の変数 age に 25、\n小数型の変数 height に 1.75 を\n代入して出力してください。\n\n出力形式:\n年齢: 25\n身長: 1.75",
     "stdin": "",
     "expected_output": "年齢: 25\n身長: 1.75",
+    "hints": [
+      "整数は int 型、小数は double 型で宣言します。",
+      "変数への代入は = を使います（例: int age = 25;）。",
+      "cout << \"ラベル\" << 変数名 << endl; の形で出力できます。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
       "",
       "int main() {",
-      "    int age = 25;",
-      "    double height = 1.75;",
+      "    int age = /* 値を書こう */;",
+      "    double height = /* 値を書こう */;",
       "",
-      "    // age と height をそれぞれ出力してみよう",
-      "    // cout と endl を使おう",
+      "    cout << \"年齢: \" << /* */ << endl;",
+      "    cout << \"身長: \" << /* */ << endl;",
       "",
       "    return 0;",
       "}"
@@ -77,9 +86,14 @@
   "task3": {
     "category": "基本入出力・変数・演算",
     "title": "課題1-3: 四則演算",
-    "description": "a=10, b=3 として\n合計・差・積・商・余りを\n出力するプログラムを\n完成させてください。\n各行の << と << の間に\n式を書き加えましょう。",
+    "description": "a=10, b=3 として\n合計・差・積・商・余りを\n順に出力してください。\n\n出力形式:\n合計: 13\n差: 7\n積: 30\n商: 3\n余り: 1",
     "stdin": "",
     "expected_output": "合計: 13\n差: 7\n積: 30\n商: 3\n余り: 1",
+    "hints": [
+      "足し算は +、引き算は -、掛け算は *、割り算は / を使います。",
+      "整数同士の割り算の余りは % で求められます。",
+      "cout << \"合計: \" << a + b << endl; のように式をそのまま書けます。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
@@ -87,11 +101,11 @@
       "int main() {",
       "    int a = 10, b = 3;",
       "",
-      "    cout << \"合計: \" << << endl;",
-      "    cout << \"差: \"   << << endl;",
-      "    cout << \"積: \"   << << endl;",
-      "    cout << \"商: \"   << << endl;",
-      "    cout << \"余り: \" << << endl;",
+      "    cout << \"合計: \" << /* a と b の合計 */ << endl;",
+      "    cout << \"差: \"   << /* a と b の差   */ << endl;",
+      "    cout << \"積: \"   << /* a と b の積   */ << endl;",
+      "    cout << \"商: \"   << /* a と b の商   */ << endl;",
+      "    cout << \"余り: \" << /* a と b の余り */ << endl;",
       "",
       "    return 0;",
       "}"
@@ -99,10 +113,15 @@
   },
   "task4": {
     "category": "基本入出力・変数・演算",
-    "title": "課題1-4: 入力と出力",
-    "description": "名前が入力されたとき、\n挨拶を表示する\nプログラムを完成させてください。",
+    "title": "課題1-4: 入力と挨拶",
+    "description": "名前を入力すると\n挨拶を表示する\nプログラムを作成してください。\n\n出力形式:\nこんにちは、〇〇さん！\n（〇〇には入力した名前が入ります）",
     "stdin": "Taro",
     "expected_output": "こんにちは、Taroさん！",
+    "hints": [
+      "cin >> 変数名; でキーボードからの入力を受け取れます。",
+      "文字列の変数には string 型を使います。",
+      "cout で文字列リテラルと変数を << でつなげて1行で出力できます。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "#include <string>",
@@ -112,8 +131,7 @@
       "    string name;",
       "    cin >> name;",
       "",
-      "    // cin で受け取った name を使って",
-      "    // こんにちは、〇〇さん！ と出力してみよう",
+      "    cout << \"こんにちは、\" << /* */ << \"さん！\" << endl;",
       "",
       "    return 0;",
       "}"
@@ -121,32 +139,15 @@
   },
   "task5": {
     "category": "基本入出力・変数・演算",
-    "title": "課題1-5: 文字列の結合",
-    "description": "姓と名が入力されたとき、\nフルネームを出力してください。\n姓と名の間はスペースで区切ること。",
-    "stdin": "Yamada Taro",
-    "expected_output": "フルネーム: Yamada Taro",
-    "initial_code": [
-      "#include <iostream>",
-      "#include <string>",
-      "using namespace std;",
-      "",
-      "int main() {",
-      "    string lastName, firstName;",
-      "    cin >> lastName >> firstName;",
-      "",
-      "    // lastName と firstName の間に",
-      "    // スペースを入れて出力してみよう",
-      "",
-      "    return 0;",
-      "}"
-    ]
-  },
-  "task6": {
-    "category": "基本入出力・変数・演算",
-    "title": "課題1-6: 温度変換",
-    "description": "摂氏（℃）が入力されたとき、\n華氏（℉）に変換して\n出力してください。\n\n変換式:\n華氏 = 摂氏 × 9 ÷ 5 + 32",
+    "title": "課題1-5: 温度変換",
+    "description": "摂氏（℃）を入力して\n華氏（℉）に変換して\n出力してください。\n\n変換式: 華氏 = 摂氏 × 9 ÷ 5 + 32\n\n出力形式:\n摂氏〇〇度 = 華氏〇〇度",
     "stdin": "100",
     "expected_output": "摂氏100度 = 華氏212度",
+    "hints": [
+      "変換式を C++ の式として書きます（× は *、÷ は /）。",
+      "整数の掛け算・割り算は左から順に計算されます。c * 9 / 5 と書くと意図通りに動きます。",
+      "計算結果を変数 f に代入してから出力すると整理しやすいです。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
@@ -155,22 +156,25 @@
       "    int c;",
       "    cin >> c;",
       "",
-      "    // 9/5 を先に計算すると何になるか確認してみよう",
-      "    int f = c * (9 / 5) + 32;",
+      "    int f = /* 変換式を書こう */;",
       "",
-      "    cout << \"摂氏\" << c",
-      "         << \"度 = 華氏\" << f << \"度\" << endl;",
+      "    cout << \"摂氏\" << c << \"度 = 華氏\" << f << \"度\" << endl;",
       "",
       "    return 0;",
       "}"
     ]
   },
-  "task7": {
+  "task6": {
     "category": "条件分岐",
-    "title": "課題2-1: 条件分岐",
-    "description": "整数が入力されたとき、\n正の数・負の数・ゼロを\n判定して表示してください。",
+    "title": "課題2-1: 正負ゼロ判定",
+    "description": "整数を入力して\n正の数・負の数・ゼロを\n判定して表示してください。\n\n出力形式:\n「正の数」「負の数」「ゼロ」のいずれか",
     "stdin": "-5",
     "expected_output": "負の数",
+    "hints": [
+      "if / else if / else を組み合わせて3通りに分岐します。",
+      "正の数は n > 0、負の数は n < 0 で判定できます。",
+      "最初の if が偽のときだけ else if の条件が評価されます。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
@@ -179,9 +183,9 @@
       "    int n;",
       "    cin >> n;",
       "",
-      "    if (n > 0) {",
+      "    if (/* 正の数の条件 */) {",
       "        cout << \"正の数\" << endl;",
-      "    } else if (n > 0) {  // 条件が正しいか確認してみよう",
+      "    } else if (/* 負の数の条件 */) {",
       "        cout << \"負の数\" << endl;",
       "    } else {",
       "        cout << \"ゼロ\" << endl;",
@@ -191,12 +195,17 @@
       "}"
     ]
   },
-  "task8": {
+  "task7": {
     "category": "条件分岐",
-    "title": "課題2-2: 2つの数の大きい方",
-    "description": "2つの整数が入力されたとき、\n大きい方を表示してください。",
+    "title": "課題2-2: 大きい方を表示",
+    "description": "2つの整数を入力して\n大きい方を表示してください。\n\n出力形式:\n最大値: 〇〇",
     "stdin": "5 3",
     "expected_output": "最大値: 5",
+    "hints": [
+      "if (a > b) { } else { } の形で分岐します。",
+      "条件が真のとき a が大きく、偽のとき b が大きいと判断できます。",
+      "それぞれのブロックで cout を使って出力します。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
@@ -205,19 +214,27 @@
       "    int a, b;",
       "    cin >> a >> b;",
       "",
-      "    // if 文を使って a と b を比較し、",
-      "    // 大きい方を「最大値: 」に続けて出力してみよう",
+      "    if (/* 比較条件を書こう */) {",
+      "        cout << \"最大値: \" << /* */ << endl;",
+      "    } else {",
+      "        cout << \"最大値: \" << /* */ << endl;",
+      "    }",
       "",
       "    return 0;",
       "}"
     ]
   },
-  "task9": {
+  "task8": {
     "category": "条件分岐",
-    "title": "課題2-3: switch文（曜日）",
-    "description": "1〜7の整数が入力されたとき、\n対応する曜日を表示してください。\n\n1=月曜日 2=火曜日 3=水曜日\n4=木曜日 5=金曜日 6=土曜日\n7=日曜日\n\n1〜7以外は「無効な値です」。",
+    "title": "課題2-3: 曜日を表示",
+    "description": "1〜7の整数を入力して\n対応する曜日を表示してください。\n1=月曜日 … 7=日曜日\n1〜7以外は「無効な値です」を表示してください。\n\n出力形式:\n〇曜日 または 無効な値です",
     "stdin": "3",
     "expected_output": "水曜日",
+    "hints": [
+      "switch (変数) { case 値: 処理; break; } の形で書きます。",
+      "break を書かないと次の case の処理も続けて実行されます。",
+      "どの case にも一致しない場合は default: に処理を書きます。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
@@ -226,36 +243,41 @@
       "    int day;",
       "    cin >> day;",
       "",
-      "    // 各 case のあとに必要な文を追加しよう",
       "    switch (day) {",
       "        case 1:",
       "            cout << \"月曜日\" << endl;",
+      "            break;",
       "        case 2:",
-      "            cout << \"火曜日\" << endl;",
+      "            /* 火曜日を出力して break しよう */",
       "        case 3:",
-      "            cout << \"水曜日\" << endl;",
+      "            /* 水曜日を出力して break しよう */",
       "        case 4:",
-      "            cout << \"木曜日\" << endl;",
+      "            /* 木曜日を出力して break しよう */",
       "        case 5:",
-      "            cout << \"金曜日\" << endl;",
+      "            /* 金曜日を出力して break しよう */",
       "        case 6:",
-      "            cout << \"土曜日\" << endl;",
+      "            /* 土曜日を出力して break しよう */",
       "        case 7:",
-      "            cout << \"日曜日\" << endl;",
+      "            /* 日曜日を出力して break しよう */",
       "        default:",
-      "            cout << \"無効な値です\" << endl;",
+      "            /* 無効な値のメッセージを出力しよう */",
       "    }",
       "",
       "    return 0;",
       "}"
     ]
   },
-  "task10": {
+  "task9": {
     "category": "条件分岐",
     "title": "課題2-4: うるう年の判定",
-    "description": "西暦年が入力されたとき、\nうるう年かどうか判定してください。\n\nうるう年の条件:\n4の倍数\nかつ 100の倍数でない\nまたは 400の倍数",
-    "stdin": "1900",
-    "expected_output": "1900年はうるう年ではありません",
+    "description": "西暦年を入力して\nうるう年かどうか判定してください。\n\nうるう年の条件:\n  4の倍数\n  かつ 100の倍数でない\n  または 400の倍数\n\n出力形式:\n〇〇年はうるう年です\n〇〇年はうるう年ではありません",
+    "stdin": "2000",
+    "expected_output": "2000年はうるう年です",
+    "hints": [
+      "n が x の倍数かどうかは n % x == 0 で判定できます。",
+      "「かつ」は &&、「または」は || で表します。",
+      "400の倍数を最初に判定し、次に100の倍数、最後に4の倍数の順に書くと整理しやすいです。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
@@ -264,10 +286,7 @@
       "    int year;",
       "    cin >> year;",
       "",
-      "    // 1900 は 4 の倍数だが",
-      "    // 100 の倍数でもある。",
-      "    // うるう年の条件をすべて確認してみよう",
-      "    if (year % 4 == 0) {",
+      "    if (/* うるう年の条件 */) {",
       "        cout << year << \"年はうるう年です\" << endl;",
       "    } else {",
       "        cout << year << \"年はうるう年ではありません\" << endl;",
@@ -277,12 +296,17 @@
       "}"
     ]
   },
-  "task11": {
+  "task10": {
     "category": "条件分岐",
     "title": "課題2-5: BMI判定",
-    "description": "体重（kg）と身長（cm）が\n入力されたとき、\nBMI と判定を表示してください。\n\nBMI = 体重 ÷ (身長m)²\n※身長は cm → m に変換する\n\n18.5未満: 低体重\n18.5以上25未満: 普通体重\n25以上: 過体重",
+    "description": "体重（kg）と身長（cm）を入力して\nBMI と判定を表示してください。\n\nBMI = 体重 ÷ 身長(m)²\n\n18.5未満: 低体重\n18.5以上25未満: 普通体重\n25以上: 過体重\n\n出力形式:\nBMI: 〇〇\n判定: 〇〇体重",
     "stdin": "70 175",
     "expected_output": "BMI: 22\n判定: 普通体重",
+    "hints": [
+      "身長を cm から m に変換するには 100.0 で割ります（100 だと整数除算になります）。",
+      "BMI の計算結果を int 型に入れると小数点以下が切り捨てられます。",
+      "if / else if / else を使って3段階の判定を書きます。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
@@ -291,15 +315,14 @@
       "    int weight, height;",
       "    cin >> weight >> height;",
       "",
-      "    // 整数 ÷ 整数の結果を確認してみよう",
-      "    double h = height / 100;",
-      "    int bmi = weight / (h * h);",
+      "    double h = height / 100.0;",
+      "    int bmi = /* BMIの計算式を書こう */;",
       "",
       "    cout << \"BMI: \" << bmi << endl;",
       "",
-      "    if (bmi < 18) {",
+      "    if (/* 低体重の条件 */) {",
       "        cout << \"判定: 低体重\" << endl;",
-      "    } else if (bmi < 25) {",
+      "    } else if (/* 普通体重の条件 */) {",
       "        cout << \"判定: 普通体重\" << endl;",
       "    } else {",
       "        cout << \"判定: 過体重\" << endl;",
@@ -309,39 +332,17 @@
       "}"
     ]
   },
-  "task12": {
-    "category": "条件分岐",
-    "title": "課題2-6: 3つの数の中央値",
-    "description": "3つの整数が入力されたとき、\n中央値を表示してください。\n\n中央値:\n3つの中で2番目に大きい値",
-    "stdin": "3 1 2",
-    "expected_output": "中央値: 2",
-    "initial_code": [
-      "#include <iostream>",
-      "using namespace std;",
-      "",
-      "int main() {",
-      "    int a, b, c;",
-      "    cin >> a >> b >> c;",
-      "",
-      "    int mid;",
-      "    // a≦b≦c と a≦c≦b しか考えていない",
-      "    // 残りの並び順も考えてみよう",
-      "    if (a <= b && b <= c) mid = b;",
-      "    else if (a <= c && c <= b) mid = c;",
-      "    else mid = a;",
-      "",
-      "    cout << \"中央値: \" << mid << endl;",
-      "",
-      "    return 0;",
-      "}"
-    ]
-  },
-  "task13": {
+  "task11": {
     "category": "ループ",
-    "title": "課題3-1: forループ",
-    "description": "整数 n が入力されたとき、\n1 から n まで\n1行ずつ出力してください。",
+    "title": "課題3-1: 1からNまで出力",
+    "description": "整数 n を入力して\n1 から n まで\n1行ずつ出力してください。\n\n出力形式:\n1\n2\n…\nn",
     "stdin": "5",
     "expected_output": "1\n2\n3\n4\n5",
+    "hints": [
+      "for (int i = 1; i <= n; i++) の形でループを書きます。",
+      "i <= n と書くと n 回目も実行されます。i < n だと n-1 回で止まります。",
+      "ループの中で cout << i << endl; と書くと各数を出力できます。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
@@ -350,20 +351,25 @@
       "    int n;",
       "    cin >> n;",
       "",
-      "    for (int i = 0; i < n; i++) {",
-      "        cout << i << endl;  // i の値を確認してみよう",
+      "    for (int i = /* 開始値 */; i <= /* 終了値 */; i++) {",
+      "        cout << i << endl;",
       "    }",
       "",
       "    return 0;",
       "}"
     ]
   },
-  "task14": {
+  "task12": {
     "category": "ループ",
-    "title": "課題3-2: whileループ",
-    "description": "整数 n が入力されたとき、\n1 から n までの合計を\n計算して表示してください。",
+    "title": "課題3-2: 合計をwhileで",
+    "description": "整数 n を入力して\n1 から n までの合計を\n計算して表示してください。\nwhile 文を使うこと。\n\n出力形式:\n合計: 〇〇",
     "stdin": "5",
-    "expected_output": "1から5の合計: 15",
+    "expected_output": "合計: 15",
+    "hints": [
+      "while (条件) { } の形でループを書きます。",
+      "合計を入れる変数を 0 で初期化してからループを始めます。",
+      "ループの最後に i を増やし忘れると無限ループになります。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
@@ -374,23 +380,28 @@
       "",
       "    int sum = 0;",
       "    int i = 1;",
-      "    while (i < n) {  // n も合計に含めるか確認してみよう",
+      "    while (/* 繰り返す条件を書こう */) {",
       "        sum += i;",
       "        i++;",
       "    }",
       "",
-      "    cout << \"1から\" << n << \"の合計: \" << sum << endl;",
+      "    cout << \"合計: \" << sum << endl;",
       "",
       "    return 0;",
       "}"
     ]
   },
-  "task15": {
+  "task13": {
     "category": "ループ",
     "title": "課題3-3: 星のピラミッド",
-    "description": "整数 n が入力されたとき、\nn 段の * のピラミッドを\n表示してください。",
+    "description": "整数 n を入力して\nn 段の * のピラミッドを\n表示してください。\n\n出力形式（n=5のとき）:\n*\n**\n***\n****\n*****",
     "stdin": "5",
     "expected_output": "*\n**\n***\n****\n*****",
+    "hints": [
+      "外側のループで段数（1〜n）を、内側のループで * の個数を制御します。",
+      "i 段目には * を i 個出力します。",
+      "内側のループが終わったら endl で改行します。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
@@ -400,8 +411,7 @@
       "    cin >> n;",
       "",
       "    for (int i = 1; i <= n; i++) {",
-      "        // i 段目の * の個数を確認してみよう",
-      "        for (int j = 0; j <= i; j++) {",
+      "        for (int j = 0; j < /* 何個出力するか */; j++) {",
       "            cout << \"*\";",
       "        }",
       "        cout << endl;",
@@ -411,41 +421,52 @@
       "}"
     ]
   },
-  "task16": {
+  "task14": {
     "category": "ループ",
-    "title": "課題3-4: do-whileループ",
-    "description": "0 が入力されるまで整数を読み込み、\n合計を出力してください。\n0 は合計に含めないこと。",
-    "stdin": "10\n20\n30\n0",
-    "expected_output": "合計: 60",
+    "title": "課題3-4: FizzBuzz",
+    "description": "整数 n を入力して\n1 から n まで順に表示してください。\n\n出力ルール:\n3の倍数 → 「Fizz」\n5の倍数 → 「Buzz」\n両方の倍数 → 「FizzBuzz」\nそれ以外 → 数字をそのまま",
+    "stdin": "15",
+    "expected_output": "1\n2\nFizz\n4\nBuzz\nFizz\n7\n8\nFizz\nBuzz\n11\nFizz\n13\n14\nFizzBuzz",
+    "hints": [
+      "n % 3 == 0 で「3の倍数」、n % 5 == 0 で「5の倍数」と判定できます。",
+      "「両方の倍数」の判定を最初に書かないと、FizzBuzz のときに Fizz だけ出力されてしまいます。",
+      "if / else if / else を使って4通りの場合分けをします。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
       "",
       "int main() {",
-      "    int sum = 0;",
-      "    int num = 0;",
+      "    int n;",
+      "    cin >> n;",
       "",
-      "    // num が最初から 0 のとき",
-      "    // num が 0 のとき、このループに入れるか確認してみよう",
-      "    while (num != 0) {",
-      "        cin >> num;",
-      "        if (num != 0) {",
-      "            sum += num;",
+      "    for (int i = 1; i <= n; i++) {",
+      "        if (/* 3と5両方の倍数の条件 */) {",
+      "            cout << \"FizzBuzz\" << endl;",
+      "        } else if (/* 3の倍数の条件 */) {",
+      "            cout << \"Fizz\" << endl;",
+      "        } else if (/* 5の倍数の条件 */) {",
+      "            cout << \"Buzz\" << endl;",
+      "        } else {",
+      "            cout << i << endl;",
       "        }",
       "    }",
-      "",
-      "    cout << \"合計: \" << sum << endl;",
       "",
       "    return 0;",
       "}"
     ]
   },
-  "task17": {
+  "task15": {
     "category": "ループ",
     "title": "課題3-5: 素数判定",
-    "description": "整数 n が入力されたとき、\n素数かどうか判定してください。\n\n素数:\n1 とその数自身以外に\n約数を持たない 2 以上の整数",
+    "description": "整数 n を入力して\n素数かどうか判定してください。\n\n素数: 1 とその数自身以外に\n約数を持たない 2 以上の整数\n\n出力形式:\n〇〇は素数です\n〇〇は素数ではありません",
     "stdin": "17",
     "expected_output": "17は素数です",
+    "hints": [
+      "2 から n-1 まで順に割り切れるか調べます。",
+      "bool isPrime = true; としておき、割り切れたら isPrime = false; に変えます。",
+      "ループの後で isPrime の値によって出力を分岐します。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
@@ -455,10 +476,8 @@
       "    cin >> n;",
       "",
       "    bool isPrime = true;",
-      "    // n % 1 は常に 0 になる",
-      "    // i=1 のとき n%i がどうなるか確認してみよう",
-      "    for (int i = 1; i < n; i++) {",
-      "        if (n % i == 0) {",
+      "    for (int i = 2; i < n; i++) {",
+      "        if (/* n が i で割り切れる条件 */) {",
       "            isPrime = false;",
       "        }",
       "    }",
@@ -473,49 +492,26 @@
       "}"
     ]
   },
-  "task18": {
-    "category": "ループ",
-    "title": "課題3-6: FizzBuzz",
-    "description": "整数 n が入力されたとき、\n1 から n まで順に表示してください。\n\n3の倍数: 「Fizz」\n5の倍数: 「Buzz」\n両方の倍数: 「FizzBuzz」",
-    "stdin": "15",
-    "expected_output": "1\n2\nFizz\n4\nBuzz\nFizz\n7\n8\nFizz\nBuzz\n11\nFizz\n13\n14\nFizzBuzz",
-    "initial_code": [
-      "#include <iostream>",
-      "using namespace std;",
-      "",
-      "int main() {",
-      "    int n;",
-      "    cin >> n;",
-      "",
-      "    for (int i = 1; i <= n; i++) {",
-      "        // 15の倍数のとき、どの条件に入るか確認してみよう",
-      "        if (i % 3 == 0) {",
-      "            cout << \"Fizz\" << endl;",
-      "        } else if (i % 5 == 0) {",
-      "            cout << \"Buzz\" << endl;",
-      "        } else {",
-      "            cout << i << endl;",
-      "        }",
-      "    }",
-      "",
-      "    return 0;",
-      "}"
-    ]
-  },
-  "task19": {
+  "task16": {
     "category": "関数",
-    "title": "課題4-1: 関数の定義",
-    "description": "2つの整数が入力されたとき、\n大きい方を返す関数 maxOf を\n完成させてください。",
+    "title": "課題4-1: 大きい方を返す関数",
+    "description": "2つの整数を受け取り\n大きい方を返す関数 maxOf を\n実装してください。\n\n出力形式:\n最大値: 〇〇",
     "stdin": "3 7",
     "expected_output": "最大値: 7",
+    "hints": [
+      "関数の中で if を使って a と b を比較します。",
+      "return で値を返すと、呼び出し元にその値が渡されます。",
+      "a が大きいとき return a;、そうでないとき return b; と書きます。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
       "",
       "int maxOf(int a, int b) {",
-      "    // a と b を比較して",
-      "    // 大きい方を return してみよう",
-      "",
+      "    if (/* 比較条件を書こう */) {",
+      "        return /* */;",
+      "    }",
+      "    return /* */;",
       "}",
       "",
       "int main() {",
@@ -528,20 +524,26 @@
       "}"
     ]
   },
-  "task20": {
+  "task17": {
     "category": "関数",
     "title": "課題4-2: 絶対値を返す関数",
-    "description": "整数が入力されたとき、\n絶対値を返す関数 absOf を\n完成させてください。",
+    "description": "整数を受け取り\n絶対値を返す関数 absOf を\n実装してください。\n\n出力形式:\n〇〇の絶対値: 〇〇",
     "stdin": "-7",
     "expected_output": "-7の絶対値: 7",
+    "hints": [
+      "負の数の絶対値は符号を反転した値です（例: -7 → 7）。",
+      "C++ では符号の反転に - をつけます（例: -n）。",
+      "n が 0 以上のときはそのまま return n;、負のときは return -n; とします。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
       "",
       "int absOf(int n) {",
-      "    // n が負の数のとき、絶対値はどうなるか考えてみよう",
-      "    // if 文を使って実装してみよう",
-      "",
+      "    if (/* n が負の数の条件 */) {",
+      "        return /* 符号を反転した値 */;",
+      "    }",
+      "    return n;",
       "}",
       "",
       "int main() {",
@@ -554,21 +556,25 @@
       "}"
     ]
   },
-  "task21": {
+  "task18": {
     "category": "関数",
     "title": "課題4-3: 階乗（ループ版）",
-    "description": "整数 n が入力されたとき、\nn の階乗（n!）を計算する\n関数 factorial を完成させてください。",
+    "description": "n の階乗（n!）を\nループを使って計算する\n関数 factorial を実装してください。\n\n出力形式:\n〇! = 〇〇〇",
     "stdin": "6",
     "expected_output": "6! = 720",
+    "hints": [
+      "1 から n まで順に掛け合わせて計算します。",
+      "掛け算の結果を保持する変数の初期値は 1 にします（0 にすると結果が必ず 0 になります）。",
+      "for ループを使って i = 1 から n まで result *= i; を繰り返します。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
       "",
       "int factorial(int n) {",
-      "    // 掛け算の初期値として適切な値を考えてみよう",
-      "    int result = 0;",
+      "    int result = 1;",
       "    for (int i = 1; i <= n; i++) {",
-      "        result *= i;",
+      "        /* result に i を掛ける処理を書こう */",
       "    }",
       "    return result;",
       "}",
@@ -583,19 +589,26 @@
       "}"
     ]
   },
-  "task22": {
+  "task19": {
     "category": "関数",
-    "title": "課題4-4: 再帰関数（階乗）",
-    "description": "再帰を使って\nn の階乗（n!）を計算する\n関数を完成させてください。",
+    "title": "課題4-4: 再帰で階乗",
+    "description": "再帰を使って\nn の階乗（n!）を計算する\n関数 factorial を実装してください。\n\n出力形式:\n〇! = 〇〇〇",
     "stdin": "5",
     "expected_output": "5! = 120",
+    "hints": [
+      "再帰とは、関数の中で自分自身を呼び出すことです。",
+      "n! = n × (n-1)! という関係を使います。",
+      "n が 0 または 1 のとき 1 を返すことで再帰の無限ループを止めます（基底ケース）。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
       "",
       "int factorial(int n) {",
-      "    if (n <= 0) return 0;  // 0! の値を確認してみよう",
-      "    return n * factorial(n - 1);",
+      "    if (/* 基底ケースの条件 */) {",
+      "        return 1;",
+      "    }",
+      "    return /* n と factorial(n-1) を使った再帰式 */;",
       "}",
       "",
       "int main() {",
@@ -608,48 +621,25 @@
       "}"
     ]
   },
-  "task23": {
+  "task20": {
     "category": "関数",
-    "title": "課題4-5: フィボナッチ数列（ループ版）",
-    "description": "整数 n が入力されたとき、\nフィボナッチ数列の最初の n 項を\n1行ずつ表示してください。\n\nフィボナッチ数列:\n1, 1, 2, 3, 5, 8, 13, 21, …",
-    "stdin": "8",
-    "expected_output": "1\n1\n2\n3\n5\n8\n13\n21",
-    "initial_code": [
-      "#include <iostream>",
-      "using namespace std;",
-      "",
-      "int main() {",
-      "    int n;",
-      "    cin >> n;",
-      "",
-      "    // フィボナッチ数列の最初の2項を確認してみよう",
-      "    int a = 0, b = 1;",
-      "",
-      "    for (int i = 0; i < n; i++) {",
-      "        cout << a << endl;",
-      "        int next = a + b;",
-      "        a = b;",
-      "        b = next;",
-      "    }",
-      "",
-      "    return 0;",
-      "}"
-    ]
-  },
-  "task24": {
-    "category": "関数",
-    "title": "課題4-6: 再帰関数（フィボナッチ）",
-    "description": "再帰を使って\nフィボナッチ数列の第 n 項を\n求めてください。\n\nfib(1)=1, fib(2)=1\nfib(3)=2, …",
+    "title": "課題4-5: 再帰でフィボナッチ",
+    "description": "再帰を使って\nフィボナッチ数列の第 n 項を\n返す関数 fib を実装してください。\n\nfib(1)=1, fib(2)=1\nfib(n)=fib(n-1)+fib(n-2)\n\n出力形式:\nfib(〇〇) = 〇〇",
     "stdin": "10",
     "expected_output": "fib(10) = 55",
+    "hints": [
+      "fib(1) と fib(2) はどちらも 1 を返す基底ケースです。",
+      "それ以外の場合は fib(n-1) + fib(n-2) を return します。",
+      "基底ケースを先に書かないと再帰が止まらなくなります。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
       "",
       "int fib(int n) {",
-      "    // fib(1) と fib(2) の基底ケースも考えてみよう",
-      "    if (n <= 0) return 0;",
-      "    return fib(n - 1) + fib(n - 2);",
+      "    if (/* n==1 の基底ケース */) return 1;",
+      "    if (/* n==2 の基底ケース */) return 1;",
+      "    return /* 再帰式を書こう */;",
       "}",
       "",
       "int main() {",
@@ -662,34 +652,47 @@
       "}"
     ]
   },
-  "task25": {
+  "task21": {
     "category": "配列・文字列・構造体",
-    "title": "課題5-1: 配列の基本",
-    "description": "配列 {10, 20, 30, 40, 50} の\n全要素を1行ずつ\n出力してください。",
-    "stdin": "",
+    "title": "課題5-1: 配列に入力して出力",
+    "description": "5つの整数を入力して\n配列に格納し\n全要素を1行ずつ出力してください。\n\n出力形式:\n最初の要素\n2番目の要素\n…\n5番目の要素",
+    "stdin": "10 20 30 40 50",
     "expected_output": "10\n20\n30\n40\n50",
+    "hints": [
+      "int arr[5]; で5要素の配列を宣言できます。",
+      "for ループと cin >> arr[i]; を使って各要素に入力できます。",
+      "別の for ループで添字を 0 から 4 まで変化させて全要素を出力します。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
       "",
       "int main() {",
-      "    int arr[5] = {10, 20, 30, 40, 50};",
+      "    int arr[5];",
       "",
-      "    // 5要素すべてを出力するには上限値を確認してみよう",
-      "    for (int i = 0; i < 4; i++) {",
-      "        cout << arr[i] << endl;",
+      "    for (int i = 0; i < 5; i++) {",
+      "        cin >> arr[i];",
+      "    }",
+      "",
+      "    for (int i = 0; i < 5; i++) {",
+      "        cout << /* i 番目の要素を書こう */ << endl;",
       "    }",
       "",
       "    return 0;",
       "}"
     ]
   },
-  "task26": {
+  "task22": {
     "category": "配列・文字列・構造体",
-    "title": "課題5-2: 配列の合計と平均",
-    "description": "5つの整数が入力されたとき、\n合計と平均を出力してください。\n平均は小数点以下も表示すること。",
+    "title": "課題5-2: 合計と平均",
+    "description": "5つの整数を入力して\n合計と平均を出力してください。\n平均は小数点以下も表示すること。\n\n出力形式:\n合計: 〇〇\n平均: 〇〇",
     "stdin": "1 2 3 4 6",
     "expected_output": "合計: 16\n平均: 3.2",
+    "hints": [
+      "合計は int 型、平均は double 型で宣言します。",
+      "int 同士の割り算は小数点以下が切り捨てられます。(double)sum / 5 のようにキャストすると小数として計算できます。",
+      "for ループの中で sum += arr[i]; と書いて合計を求めます。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
@@ -700,11 +703,10 @@
       "",
       "    for (int i = 0; i < 5; i++) {",
       "        cin >> arr[i];",
-      "        sum += arr[i];",
+      "        /* sum に arr[i] を加算しよう */",
       "    }",
       "",
-      "    // 整数 ÷ 整数の結果を確認してみよう",
-      "    double avg = sum / 5;",
+      "    double avg = /* 平均の計算式を書こう */;",
       "",
       "    cout << \"合計: \" << sum << endl;",
       "    cout << \"平均: \" << avg << endl;",
@@ -713,12 +715,17 @@
       "}"
     ]
   },
-  "task27": {
+  "task23": {
     "category": "配列・文字列・構造体",
     "title": "課題5-3: 最大値と最小値",
-    "description": "5つの整数が入力されたとき、\n最大値と最小値を\n出力してください。",
+    "description": "5つの整数を入力して\n最大値と最小値を\n出力してください。\n\n出力形式:\n最大値: 〇〇\n最小値: 〇〇",
     "stdin": "3 1 4 1 5",
     "expected_output": "最大値: 5\n最小値: 1",
+    "hints": [
+      "最大値・最小値の初期値には arr[0] を使うのが確実です。",
+      "ループで arr[i] と現在の最大値を比較し、大きければ maxVal を更新します。",
+      "最小値も同様に、arr[i] が現在の minVal より小さければ更新します。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",
@@ -730,11 +737,11 @@
       "    }",
       "",
       "    int maxVal = arr[0];",
-      "    int minVal = 0;  // minVal の初期値として適切な値を考えてみよう",
+      "    int minVal = arr[0];",
       "",
       "    for (int i = 1; i < 5; i++) {",
-      "        if (arr[i] > maxVal) maxVal = arr[i];",
-      "        if (arr[i] < minVal) minVal = arr[i];",
+      "        if (/* maxVal を更新する条件 */) maxVal = arr[i];",
+      "        if (/* minVal を更新する条件 */) minVal = arr[i];",
       "    }",
       "",
       "    cout << \"最大値: \" << maxVal << endl;",
@@ -744,12 +751,17 @@
       "}"
     ]
   },
-  "task28": {
+  "task24": {
     "category": "配列・文字列・構造体",
-    "title": "課題5-4: 文字列の逆順",
-    "description": "文字列が入力されたとき、\n逆順に並べ替えて\n出力してください。",
+    "title": "課題5-4: 文字列を逆順に出力",
+    "description": "文字列を入力して\n逆順に並べ替えて\n出力してください。\n\n出力形式:\n入力した文字列を逆にした文字列",
     "stdin": "Hello",
     "expected_output": "olleH",
+    "hints": [
+      "str.length() で文字列の長さを取得できます。",
+      "文字列の末尾の添字は str.length() - 1 です。",
+      "i を末尾の添字から 0 に向かって減らしながら str[i] を出力します。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "#include <string>",
@@ -759,8 +771,7 @@
       "    string str;",
       "    cin >> str;",
       "",
-      "    // 末尾から先頭に向かうループを考えてみよう",
-      "    for (int i = 0; i < (int)str.length(); i++) {",
+      "    for (int i = /* 末尾の添字 */; i >= 0; i--) {",
       "        cout << str[i];",
       "    }",
       "    cout << endl;",
@@ -769,56 +780,24 @@
       "}"
     ]
   },
-  "task29": {
+  "task25": {
     "category": "配列・文字列・構造体",
-    "title": "課題5-5: バブルソート",
-    "description": "5つの整数が入力されたとき、\nバブルソートで昇順に並べ替えて\n1行ずつ出力してください。",
-    "stdin": "5 3 1 4 2",
-    "expected_output": "1\n2\n3\n4\n5",
-    "initial_code": [
-      "#include <iostream>",
-      "using namespace std;",
-      "",
-      "int main() {",
-      "    int arr[5];",
-      "    for (int i = 0; i < 5; i++) {",
-      "        cin >> arr[i];",
-      "    }",
-      "",
-      "    for (int i = 0; i < 4; i++) {",
-      "        for (int j = 0; j < 4 - i; j++) {",
-      "            // 昇順にするには",
-      "            // どのときに入れ替えるか確認してみよう",
-      "            if (arr[j] < arr[j + 1]) {",
-      "                int tmp = arr[j];",
-      "                arr[j] = arr[j + 1];",
-      "                arr[j + 1] = tmp;",
-      "            }",
-      "        }",
-      "    }",
-      "",
-      "    for (int i = 0; i < 5; i++) {",
-      "        cout << arr[i] << endl;",
-      "    }",
-      "",
-      "    return 0;",
-      "}"
-    ]
-  },
-  "task30": {
-    "category": "配列・文字列・構造体",
-    "title": "課題5-6: 構造体",
-    "description": "Student 構造体（名前・点数）を使って、\n名前・スコアを表示し、\n60点以上なら「合格」\n未満なら「不合格」と\n表示してください。",
-    "stdin": "Tanaka 60",
-    "expected_output": "名前: Tanaka\nスコア: 60\n評価: 合格",
+    "title": "課題5-5: 構造体で成績管理",
+    "description": "名前と点数を持つ\n構造体 Student を定義して\n名前・スコア・合否を表示してください。\n\n60点以上で「合格」、60点未満で「不合格」\n\n出力形式:\n名前: 〇〇\nスコア: 〇〇\n評価: 合格 または 不合格",
+    "stdin": "Tanaka 72",
+    "expected_output": "名前: Tanaka\nスコア: 72\n評価: 合格",
+    "hints": [
+      "struct Student { string name; int score; }; の形で構造体を定義します。",
+      "構造体変数のメンバへは . でアクセスします（例: s.name, s.score）。",
+      "60点以上の判定には >= を使います（> だと 60 点が不合格になります）。"
+    ],
     "initial_code": [
       "#include <iostream>",
       "#include <string>",
       "using namespace std;",
       "",
       "struct Student {",
-      "    string name;",
-      "    int score;",
+      "    /* name と score のメンバを書こう */",
       "};",
       "",
       "int main() {",
@@ -828,8 +807,7 @@
       "    cout << \"名前: \"  << s.name  << endl;",
       "    cout << \"スコア: \" << s.score << endl;",
       "",
-      "    // 60点ちょうどのときの合否条件を確認してみよう",
-      "    if (s.score > 60) {",
+      "    if (/* 合格の条件 */) {",
       "        cout << \"評価: 合格\" << endl;",
       "    } else {",
       "        cout << \"評価: 不合格\" << endl;",
@@ -845,6 +823,7 @@
     "description": "自由にコードを書いて実行してみよう。",
     "stdin": "",
     "expected_output": "",
+    "hints": [],
     "initial_code": [
       "#include <iostream>",
       "using namespace std;",

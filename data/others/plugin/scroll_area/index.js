@@ -145,7 +145,7 @@
         "height": pm.height + "px",
         "z-index": pm.zindex,
         "overflow": "hidden",
-        "background-image": "linear-gradient(180deg, #81eeff, #b898ff80)"  // 縦方向のグラデーション
+        "background-image": "linear-gradient(180deg, #0065c480, #001da180)"  // 縦方向のグラデーション
       }).attr('id', pm.id);
 
       var scroll_view = $("<div />").css({
