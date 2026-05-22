@@ -11,11 +11,11 @@ tf.system.backlog=[];
 @layopt layer="message0" visible=true
 [turn_end]
 
-#先生
-じゃあ、各々で課題やっとくように。[l][r]
-分かんなかったら、隣の人にでも聞いてくれ。[p]
-
-#
+;#先生
+;じゃあ、各々で課題やっとくように。[l][r]
+;分かんなかったら、隣の人にでも聞いてくれ。[p]
+;
+;#
 
 
 [chara_show name="mocha" width=600 top =100]
