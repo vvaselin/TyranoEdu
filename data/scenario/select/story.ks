@@ -25,6 +25,17 @@ $('#lecture_area,.sel_back_btn').remove();
 ; ▼ 事前計算（forループ内でのSyntaxError回避のためヘルパー関数化）
 ; ══════════════════════════════════════════════════════════
 [iscript]
+    // f.level を love_level から再計算する
+    // home.ks を経由しない遷移（task.ks → story.ks）でも正しく解放判定するため
+    (function() {
+        var love = parseInt(f.love_level) || 0;
+        var th = [0, 10, 25, 40, 70, 100];
+        f.level = 1;
+        for (var i = 1; i < th.length; i++) {
+            if (love >= th[i]) f.level = i + 1;
+        }
+    })();
+
     var tasks = f.all_tasks;
     var cats  = tasks._categories;
     var BTN_H = 60, BTN_MARGIN = 30, BTN_STEP = BTN_H + BTN_MARGIN;
