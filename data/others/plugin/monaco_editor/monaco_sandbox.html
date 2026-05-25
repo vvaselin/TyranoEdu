@@ -17,21 +17,96 @@
     <script>
         let editor;
 
-        // 親ウィンドウからのメッセージを受け取る
+        const PLUGIN_DIR = './';
+
+        async function loadJSON(path) {
+            const res = await fetch(PLUGIN_DIR + path);
+            if (!res.ok) throw new Error(`Failed to load ${path}: ${res.status}`);
+            return res.json();
+        }
+
+        function registerSnippets(lang, snippetData) {
+            monaco.languages.registerCompletionItemProvider(lang, {
+                triggerCharacters: snippetData.triggerCharacters || [],
+                provideCompletionItems: (model, position) => {
+                    const word = model.getWordUntilPosition(position);
+                    const range = {
+                        startLineNumber: position.lineNumber,
+                        endLineNumber:   position.lineNumber,
+                        startColumn:     word.startColumn,
+                        endColumn:       word.endColumn
+                    };
+                    const kind = monaco.languages.CompletionItemKind;
+                    const suggestions = snippetData.snippets.map(s => ({
+                        label:          s.label,
+                        detail:         s.detail,
+                        documentation:  s.documentation,
+                        insertText:     s.insertText,
+                        filterText:     s.filterText || undefined,
+                        kind:           kind[s.kind] || kind.Snippet,
+                        range:          range,
+                        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+                    }));
+                    return { suggestions };
+                }
+            });
+        }
+
+        function registerTheme(themeData) {
+            monaco.editor.defineTheme(themeData.name, {
+                base:    themeData.base,
+                inherit: themeData.inherit,
+                rules:   themeData.rules,
+                colors:  themeData.colors
+            });
+        }
+
         window.addEventListener('message', event => {
+            // 安全なデストラクチャ（他の拡張機能等からのメッセージ対策）
+            if (!event.data || typeof event.data !== 'object') return;
             const { command, data } = event.data;
 
             if (command === 'init') {
                 require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.0/min/vs' }});
-                require(['vs/editor/editor.main'], () => {
+                require(['vs/editor/editor.main'], async () => {
+
+                    const lang = data.language || 'cpp';
+
+                    try {
+                        const [snippetData, themeData] = await Promise.all([
+                            loadJSON('cpp_snippets.json'),
+                            loadJSON('cpp_theme.json')
+                        ]);
+                        registerSnippets(lang, snippetData);
+                        registerTheme(themeData);
+                    } catch (e) {
+                        console.warn('JSON設定の読み込みに失敗。デフォルト設定で起動します:', e);
+                    }
+
                     editor = monaco.editor.create(document.getElementById('editor-container'), {
-                        value: data.initial_code,
-                        language: 'cpp', // C++に設定
-                        theme: 'vs-dark',
+                        value:    data.initial_code,
+                        language: lang,
+                        theme:    'cpp-dark',
                         fontSize: 16,
+                        minimap:  { enabled: false },
+                        automaticLayout: true,
+                        tabSize: 4,
+                        insertSpaces: true,
+                        wordWrap: 'off',
+                        suggestOnTriggerCharacters: true,
+                        quickSuggestions: true,
+                        snippetSuggestions: 'top',
+                        bracketPairColorization: { enabled: true },
+                        autoClosingBrackets: 'always',
+                        autoClosingQuotes: 'always',
+                        formatOnPaste: true,
+                        scrollBeyondLastLine: false,
+                        renderLineHighlight: 'all',
+                        cursorBlinking: 'smooth',
+                        smoothScrolling: true,
+                        padding: { top: 8 },
                     });
 
-                    // コードが変更されたら親ウィンドウに通知
                     editor.getModel().onDidChangeContent(() => {
                         parent.postMessage({
                             type: 'monaco_change',
@@ -39,6 +114,38 @@
                         }, '*');
                     });
                 });
+            }
+
+            if (command === 'set_code' && editor) {
+                editor.setValue(data.code);
+            }
+
+            if (command === 'get_code' && editor) {
+                parent.postMessage({ type: 'monaco_code', code: editor.getValue() }, '*');
+            }
+
+            // GCCエラー・警告をエディタ上に波線表示するコマンド
+            if (command === 'set_markers' && editor) {
+                console.log('[monaco_sandbox] set_markers received:', JSON.stringify(data));
+                const severityMap = {
+                    'error':   monaco.MarkerSeverity.Error,
+                    'warning': monaco.MarkerSeverity.Warning,
+                };
+                const markers = (data.markers || []).map(m => ({
+                    startLineNumber: m.startLineNumber,
+                    startColumn:     m.startColumn,
+                    endLineNumber:   m.endLineNumber,
+                    endColumn:       m.endColumn,
+                    message:         m.message,
+                    severity:        severityMap[m.severity] ?? monaco.MarkerSeverity.Error,
+                }));
+                console.log('[monaco_sandbox] applying markers:', JSON.stringify(markers));
+                monaco.editor.setModelMarkers(editor.getModel(), 'gcc', markers);
+            }
+
+            // マーカーをすべて消すコマンド（実行成功時に呼ぶ）
+            if (command === 'clear_markers' && editor) {
+                monaco.editor.setModelMarkers(editor.getModel(), 'gcc', []);
             }
         });
     </script>

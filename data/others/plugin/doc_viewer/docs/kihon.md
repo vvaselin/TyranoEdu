@@ -84,7 +84,7 @@ C++のプログラムは、次のような流れで動きます。
 #include <iostream>
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+    std::cout << "おはよう世界!" << std::endl;
     return 0;
 }
 ```
@@ -96,7 +96,7 @@ int main() {
 using namespace std;
 
 int main() {
-    cout << "Hello, World!" << endl;
+    cout << "おはよう世界!" << endl;
     return 0;
 }
 ```

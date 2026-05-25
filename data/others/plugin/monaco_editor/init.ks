@@ -40,7 +40,10 @@
         const initial_code = eval(mp.storage);
         iframe.contentWindow.postMessage({
             command: 'init',
-            data: { initial_code: initial_code }
+            data: {
+                initial_code: initial_code,
+                language: mp.language || 'cpp'
+            }
         }, '*');
     };
 

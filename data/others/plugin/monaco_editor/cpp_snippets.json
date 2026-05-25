@@ -1,0 +1,132 @@
+{
+    "triggerCharacters": ["#"],
+    "snippets": [
+        {
+            "label": "main",
+            "detail": "main関数のテンプレート",
+            "kind": "Snippet",
+            "documentation": "C++プログラムの基本構造（main関数）",
+            "insertText": "#include <iostream>\nusing namespace std;\n\nint main() {\n    ${1:// ここにコードを書く}\n    return 0;\n}"
+        },
+        {
+            "label": "cout",
+            "detail": "コンソール出力",
+            "kind": "Snippet",
+            "documentation": "標準出力に文字列を表示する",
+            "insertText": "cout << ${1:\"にゃあ\"} << endl;"
+        },
+        {
+            "label": "cin",
+            "detail": "コンソール入力",
+            "kind": "Snippet",
+            "documentation": "標準入力から値を読み取る",
+            "insertText": "cin >> ${1:variable};"
+        },
+
+        {
+            "label": "int",
+            "detail": "int変数の宣言",
+            "kind": "Snippet",
+            "documentation": "整数型変数を宣言して初期化する",
+            "insertText": "int ${1:n} = ${2:0};"
+        },
+        {
+            "label": "intcin",
+            "detail": "int変数の宣言＋入力",
+            "kind": "Snippet",
+            "documentation": "整数型変数を宣言してcinで受け取る",
+            "insertText": "int ${1:n};\ncin >> ${1:n};"
+        },
+        {
+            "label": "string",
+            "detail": "string変数の宣言",
+            "kind": "Snippet",
+            "documentation": "文字列型変数を宣言して初期化する",
+            "insertText": "string ${1:s} = \"${2:}\";"
+        },
+        {
+            "label": "stringcin",
+            "detail": "string変数の宣言＋入力",
+            "kind": "Snippet",
+            "documentation": "文字列型変数を宣言してcinで受け取る",
+            "insertText": "string ${1:s};\ncin >> ${1:s};"
+        },
+        {
+            "label": "if",
+            "detail": "if文",
+            "kind": "Snippet",
+            "documentation": "条件分岐（if文）",
+            "insertText": "if (${1:condition}) {\n    ${2}\n}"
+        },
+        {
+            "label": "ifelse",
+            "detail": "if-else文",
+            "kind": "Snippet",
+            "documentation": "条件分岐（if-else文）",
+            "insertText": "if (${1:condition}) {\n    ${2}\n} else {\n    ${3}\n}"
+        },
+        {
+            "label": "for",
+            "detail": "forループ",
+            "kind": "Snippet",
+            "documentation": "繰り返し処理（forループ）",
+            "insertText": "for (int ${1:i} = 0; ${1:i} < ${2:n}; ${1:i}++) {\n    ${3}\n}"
+        },
+        {
+            "label": "while",
+            "detail": "whileループ",
+            "kind": "Snippet",
+            "documentation": "繰り返し処理（whileループ）",
+            "insertText": "while (${1:condition}) {\n    ${2}\n}"
+        },
+        {
+            "label": "dowhile",
+            "detail": "do-whileループ",
+            "kind": "Snippet",
+            "documentation": "繰り返し処理（do-whileループ）",
+            "insertText": "do {\n    ${1}\n} while (${2:condition});"
+        },
+        {
+            "label": "switch",
+            "detail": "switch文",
+            "kind": "Snippet",
+            "documentation": "多分岐（switch文）",
+            "insertText": "switch (${1:expression}) {\n    case ${2:value1}:\n        ${3}\n        break;\n    case ${4:value2}:\n        ${5}\n        break;\n    default:\n        ${6}\n        break;\n}"
+        },
+        {
+            "label": "func",
+            "detail": "関数定義",
+            "kind": "Snippet",
+            "documentation": "関数を定義する",
+            "insertText": "${1:void} ${2:functionName}(${3}) {\n    ${4}\n}"
+        },
+        {
+            "label": "vec",
+            "detail": "vector宣言",
+            "kind": "Snippet",
+            "documentation": "std::vectorの宣言",
+            "insertText": "vector<${1:int}> ${2:v};"
+        },
+        {
+            "label": "map",
+            "detail": "map宣言",
+            "kind": "Snippet",
+            "documentation": "std::mapの宣言",
+            "insertText": "map<${1:string}, ${2:int}> ${3:m};"
+        },
+        {
+            "label": "class",
+            "detail": "クラス定義",
+            "kind": "Snippet",
+            "documentation": "クラスの定義テンプレート",
+            "insertText": "class ${1:ClassName} {\npublic:\n    ${1:ClassName}() {\n        ${2}\n    }\n\nprivate:\n    ${3}\n};"
+        },
+        {
+            "label": "struct",
+            "detail": "構造体定義",
+            "kind": "Snippet",
+            "documentation": "構造体の定義",
+            "insertText": "struct ${1:StructName} {\n    ${2:int member};\n};"
+        }
+    ]
+}
