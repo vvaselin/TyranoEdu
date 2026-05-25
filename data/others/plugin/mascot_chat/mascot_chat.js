@@ -409,7 +409,7 @@ window.initMascotChat = function() {
                 if (prevAiMsg) {
                     addMessage(prevAiMsg.username, prevAiMsg.message, true);
                 } else {
-                    addMessage("モカ", "何か質問ある？", true);
+                    addMessage("モカ", "何か質問……かな？", true);
                 }
 
             } else {
@@ -463,7 +463,7 @@ window.initMascotChat = function() {
             if (lastAiMsg) {
                 addMessage(lastAiMsg.username, lastAiMsg.message, true);
             } else {
-                addMessage("モカ", "何か質問ある？", true);
+                addMessage("モカ", "何か質問……かな？", true);
             }
             if (lastUserMsg) {
                 addMessage(lastUserMsg.username, lastUserMsg.message, true);

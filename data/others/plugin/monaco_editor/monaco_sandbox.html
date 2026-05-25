@@ -9,12 +9,22 @@
         #editor-container { width: 100%; height: 100%; }
         @font-face {
             font-family: 'Cascadia Code';
-            src: url('https://cdn.jsdelivr.net/npm/@fontsource/cascadia-code@4.2.1/files/cascadia-code-latin-400-normal.woff2') format('woff2');
+            src: url('https://cdn.jsdelivr.net/fontsource/fonts/cascadia-code@latest/latin-400-normal.woff2') format('woff2');
             font-weight: 400;
+            font-display: swap;
+        }
+
+        /* Firefox 対策: Monaco の描画要素に font-feature-settings を直接指定 */
+        .monaco-editor,
+        .monaco-editor .view-lines,
+        .monaco-editor .view-line span {
+            font-feature-settings: "calt" 1, "liga" 1 !important;
+            -moz-font-feature-settings: "calt" 1, "liga" 1 !important;
         }
     </style>
 </head>
-<body style="background-color: #1e1e1e;">
+<!-- noctis-minimus の背景色に合わせる -->
+<body style="background-color: #1b2932;">
 
     <div id="editor-container"></div>
 
@@ -66,8 +76,101 @@
             });
         }
 
+        /**
+         * C++ の Monarch トークナイザをカスタム登録する
+         * デフォルトは int 等も keyword トークンになり色分けできないため、
+         * typeKeywords と controlKeywords を分離して type トークンを発行する
+         */
+        function registerCppTokenizer(langData) {
+            const typeKeywords    = langData.typeKeywords    || [];
+            const controlKeywords = langData.controlKeywords || [];
+
+            monaco.languages.setMonarchTokensProvider('cpp', {
+                defaultToken: '',
+                typeKeywords,
+                controlKeywords,
+
+                escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+
+                tokenizer: {
+                    root: [
+                        // プリプロセッサ (#include, #define 等)
+                        [/^\s*#\s*\w+/, 'keyword.directive'],
+
+                        // 識別子 → typeKeywords / controlKeywords / identifier に分岐
+                        [/[a-zA-Z_]\w*/, {
+                            cases: {
+                                '@typeKeywords':    'type',
+                                '@controlKeywords': 'keyword',
+                                '@default':         'identifier'
+                            }
+                        }],
+
+                        { include: '@whitespace' },
+
+                        // 演算子（長いものから先にマッチ）
+                        [/<<=|>>=|<<|>>|->|::|&&|\|\||\+\+|--|[+\-*\/%&|^!=<>]=|[=<>!~?:+\-*\/&|^%]/, 'operator'],
+
+                        [/[{}()\[\]]/, 'delimiter.bracket'],
+                        [/;/,  'delimiter'],
+                        [/,/,  'delimiter'],
+
+                        // 数値リテラル
+                        [/\d*\.\d+([eE][\-+]?\d+)?[fFdD]?/, 'number.float'],
+                        [/0[xX][0-9a-fA-F]+[uUlL]*/, 'number.hex'],
+                        [/0[bB][01]+[uUlL]*/, 'number.binary'],
+                        [/0[0-7]+[uUlL]*/, 'number.octal'],
+                        [/\d+[uUlLfF]*/, 'number'],
+
+                        // 文字列・文字リテラル
+                        [/"([^"\\]|\\.)*$/, 'string.invalid'],
+                        [/"/,  'string', '@string_double'],
+                        [/'/,  'string', '@string_single'],
+                    ],
+
+                    whitespace: [
+                        [/[ \t\r\n]+/, ''],
+                        [/\/\*/, 'comment', '@comment'],
+                        [/\/\/.*$/, 'comment'],
+                    ],
+
+                    comment: [
+                        [/[^\/*]+/, 'comment'],
+                        [/\*\//,   'comment', '@pop'],
+                        [/[\/*]/,  'comment'],
+                    ],
+
+                    string_double: [
+                        [/[^\\"]+/, 'string'],
+                        [/@escapes/, 'string.escape'],
+                        [/\\./,     'string.escape.invalid'],
+                        [/"/,       'string', '@pop'],
+                    ],
+
+                    string_single: [
+                        [/[^\\']+/, 'string'],
+                        [/@escapes/, 'string.escape'],
+                        [/\\./,     'string.escape.invalid'],
+                        [/'/,       'string', '@pop'],
+                    ],
+                }
+            });
+        }
+
+        // ========================================
+        //  Ctrl+S を無効化（ブラウザの保存ダイアログ抑止）
+        // ========================================
+        document.addEventListener('keydown', e => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }, true); // capture phase でブラウザより先に捕まえる
+
+        // ========================================
+        //  親ウィンドウからのメッセージを受け取る
+        // ========================================
         window.addEventListener('message', event => {
-            // 安全なデストラクチャ（他の拡張機能等からのメッセージ対策）
             if (!event.data || typeof event.data !== 'object') return;
             const { command, data } = event.data;
 
@@ -78,10 +181,12 @@
                     const lang = data.language || 'cpp';
 
                     try {
-                        const [snippetData, themeData] = await Promise.all([
+                        const [snippetData, themeData, langData] = await Promise.all([
                             loadJSON('cpp_snippets.json'),
-                            loadJSON('cpp_theme.json')
+                            loadJSON('cpp_theme.json'),
+                            loadJSON('cpp_language.json')
                         ]);
+                        registerCppTokenizer(langData);
                         registerSnippets(lang, snippetData);
                         registerTheme(themeData);
                     } catch (e) {
@@ -91,7 +196,7 @@
                     editor = monaco.editor.create(document.getElementById('editor-container'), {
                         value:    data.initial_code,
                         language: lang,
-                        theme:    'cpp-dark',
+                        theme:    'noctis-minimus',
                         fontSize: 16,
                         fontFamily: "'Cascadia Code', Consolas, monospace",
                         fontLigatures: true,
@@ -114,11 +219,14 @@
                         padding: { top: 8 },
                     });
 
+                    // Ctrl+S をエディタコマンドレベルでも無効化
+                    editor.addCommand(
+                        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+                        () => { /* no-op */ }
+                    );
+
                     editor.getModel().onDidChangeContent(() => {
-                        parent.postMessage({
-                            type: 'monaco_change',
-                            code: editor.getValue()
-                        }, '*');
+                        parent.postMessage({ type: 'monaco_change', code: editor.getValue() }, '*');
                     });
                 });
             }
@@ -131,7 +239,6 @@
                 parent.postMessage({ type: 'monaco_code', code: editor.getValue() }, '*');
             }
 
-            // GCCエラー・警告をエディタ上に波線表示するコマンド
             if (command === 'set_markers' && editor) {
                 console.log('[monaco_sandbox] set_markers received:', JSON.stringify(data));
                 const severityMap = {
@@ -150,7 +257,6 @@
                 monaco.editor.setModelMarkers(editor.getModel(), 'gcc', markers);
             }
 
-            // マーカーをすべて消すコマンド（実行成功時に呼ぶ）
             if (command === 'clear_markers' && editor) {
                 monaco.editor.setModelMarkers(editor.getModel(), 'gcc', []);
             }

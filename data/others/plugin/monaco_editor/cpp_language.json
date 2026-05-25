@@ -1,0 +1,27 @@
+{
+    "typeKeywords": [
+        "int", "void", "char", "float", "double", "bool", "long", "short",
+        "unsigned", "signed", "auto", "wchar_t", "size_t", "string",
+        "int8_t", "int16_t", "int32_t", "int64_t",
+        "uint8_t", "uint16_t", "uint32_t", "uint64_t",
+        "vector", "map", "set", "pair", "array", "list", "deque",
+        "stack", "queue", "unordered_map", "unordered_set",
+        "nullptr_t", "ptrdiff_t"
+    ],
+    "controlKeywords": [
+        "if", "else", "for", "while", "do", "switch", "case", "default",
+        "break", "continue", "return", "goto",
+        "try", "catch", "throw",
+        "new", "delete",
+        "using", "namespace", "typedef", "typename",
+        "class", "struct", "enum", "union",
+        "public", "private", "protected",
+        "virtual", "override", "final",
+        "static", "const", "constexpr", "volatile", "mutable", "extern", "inline",
+        "friend", "explicit", "operator",
+        "template", "sizeof", "alignof", "decltype",
+        "static_cast", "dynamic_cast", "const_cast", "reinterpret_cast",
+        "true", "false", "this",
+        "nullptr"
+    ]
+}

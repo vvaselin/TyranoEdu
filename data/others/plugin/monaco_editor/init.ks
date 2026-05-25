@@ -32,7 +32,7 @@
     const iframe = document.getElementById('monaco-iframe');
 
     // IframeにサンドボックスHTMLを読み込ませる
-    iframe.src = "./data/others/plugin/monaco_editor/monaco_sandbox.html";
+    iframe.src = "./data/others/plugin/monaco_editor/monaco_sandbox.html?t=" + Date.now();
 
     // Iframeの読み込み完了を待つ
     iframe.onload = () => {
