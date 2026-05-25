@@ -142,7 +142,7 @@ $('#task_area,#task_tabs,.sel_back_btn').remove();
                 'font-size':     '34px',
                 'z-index':       11,
                 'pointer-events':'none',
-                color: d.cleared ? '#009959' : 'rgb(252, 252, 252)'
+                color: d.cleared ? '#37ffab' : 'rgb(252, 252, 252)'
             })
             .text(d.cleared ? '☑' : '☐')
             .appendTo($('#task_area_inner'));
