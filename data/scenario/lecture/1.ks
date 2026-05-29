@@ -14,7 +14,7 @@ tf.you = f.user_name;
 
 #&tf.you
 (プログラミングの授業。[l][r]
-C++のプログラミングなんて普段やらないから不安だな。)[p]
+C++なんて普段やらないから不安だな。)[p]
 
 #先生
 じゃあ、あとは各々で課題やっとくように。[l][r]
@@ -35,12 +35,8 @@ C++のプログラミングなんて普段やらないから不安だな。)[p]
 
 隣の人に聞くか……[p]
 
-[keyframe name=appear]
-[frame p=100% x=-350]
-[endkeyframe]
-
 [chara_show name="mocha" width=700 top =100 left="800"  time=200]
-[kanim name=mocha keyframe=appear time=600]
+[chara_move name="mocha" left="350" anim="true" time="500"   ]
 
 ……[cm]
 この人は宮舞モカさん。[l][r]
@@ -53,7 +49,7 @@ C++のプログラミングなんて普段やらないから不安だな。)[p]
 [chara_mod name="mocha" face="surprise" time=200]
 #mocha
 ふぇっ！？[r]
-[haneru chara=mocha]
+[haneru chara=mocha top="100" ]
 わ、私……です……か……っ？[p]
 
 [chara_mod name="mocha" face="aseri" time=200]
@@ -80,7 +76,7 @@ C++のプログラミングなんて普段やらないから不安だな。)[p]
 色々質問しちゃっても、いいかな？[p]
 
 [chara_mod name="mocha" face="huhun" time=200]
-[haneru chara=mocha]
+[haneru chara=mocha top="100" ]
 #mocha
 ……はいっ！ま、任せてください……！[p]
 

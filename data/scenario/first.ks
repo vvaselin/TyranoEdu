@@ -52,12 +52,10 @@
 
 ; マクロ定義
 [macro name=haneru]
-
-[anim name=%chara top =-30 time=100 effect=easeInBounce]
+[anim name=%chara top="&(+mp.top - (mp.jump_h||30))" time=100 effect=easeInBounce]
 [wa]
-[anim name=%chara top =0 time=100 effect=easeInBounce]
+[anim name=%chara top=%top time=100 effect=easeInBounce]
 [wa]
-
 [endmacro]
 
 ; --- 課題データの読み込み (認証チェックの前に移動！) ---
