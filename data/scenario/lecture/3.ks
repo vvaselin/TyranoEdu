@@ -14,9 +14,9 @@ tf.system.backlog=[];
 #モカ
 こんにちは！[l]
 
-[jump target="*back_real"]
+[jump target="*back"]
 
-*back_real
+*back
 ; 元の画面に戻る
 [clearfix]
 [chara_hide name="mocha" time=0]

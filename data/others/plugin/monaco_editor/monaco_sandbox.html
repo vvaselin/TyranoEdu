@@ -28,7 +28,7 @@
 
     <div id="editor-container"></div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.0/min/vs/loader.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.47.0/min/vs/loader.min.js"></script>
     <script>
         let editor;
 
@@ -175,7 +175,7 @@
             const { command, data } = event.data;
 
             if (command === 'init') {
-                require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.0/min/vs' }});
+                require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.47.0/min/vs' }});
                 require(['vs/editor/editor.main'], async () => {
 
                     const lang = data.language || 'cpp';
@@ -208,6 +208,7 @@
                         suggestOnTriggerCharacters: true,
                         quickSuggestions: true,
                         snippetSuggestions: 'top',
+                        wordBasedSuggestions: 'currentDocument',
                         bracketPairColorization: { enabled: true },
                         autoClosingBrackets: 'always',
                         autoClosingQuotes: 'always',
