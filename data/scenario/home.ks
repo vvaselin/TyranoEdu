@@ -205,7 +205,7 @@ $(".logout_btn").off("click").on("click", async function() {
     });
     // 親密度ゲージ
     var totalLove = parseInt(f.love_level) || 0;
-    var thresholds = [1, 11, 26, 41, 71, 101]; 
+    var thresholds = [1, 16, 31, 66, 101, 101]; 
     var currentLv = 1;
     var minLove = 0;
     var maxLove = 0;
@@ -235,7 +235,7 @@ $(".logout_btn").off("click").on("click", async function() {
         displayStr = currentProgress + " / " + range;
 
         if (totalLove >= 100) {
-            displayStr = currentProgress + " (MAX)";
+            displayStr = " (MAX)";
             percent = 100;
             $(".gauge-fill").css(
                 'background',

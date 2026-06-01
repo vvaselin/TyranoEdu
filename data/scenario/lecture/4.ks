@@ -2,6 +2,7 @@
 
 [iscript]
 tf.system.backlog=[];
+tf.you = f.user_name;
 [endscript]
 
 [clearfix]
@@ -9,8 +10,9 @@ tf.system.backlog=[];
 [add_theme_button]
 [bg storage="room.jpg" time="0"]
 @layopt layer="message0" visible=true
+[turn_end]
 
-[chara_show name="mocha" width=600 top =100]
+[chara_show name="mocha" width=700 left=300 top =50]
 #モカ
 こんにちは！[l]
 

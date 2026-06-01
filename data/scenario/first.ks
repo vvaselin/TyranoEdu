@@ -47,6 +47,11 @@
     [chara_face name="mocha" face="doya" storage="chara/mocha/doya.png" ]
     [chara_face name="mocha" face="iya" storage="chara/mocha/iya.png" ]
     [chara_face name="mocha" face="akire" storage="chara/mocha/akire.png" ]
+    [chara_face name="mocha" face="magao" storage="chara/mocha/magao.png" ]
+    [chara_face name="mocha" face="thinking" storage="chara/mocha/thinking.png" ]
+    [chara_face name="mocha" face="sorashi" storage="chara/mocha/sorashi.png" ]
+    [chara_face name="mocha" face="nico" storage="chara/mocha/nico.png" ]
+    [chara_face name="mocha" face="hokkori" storage="chara/mocha/hokkori.png" ]
 
 [chara_new name name="adviser" storage="chara/adviser/lifeform.svg" jname="アドバイザー"]
 

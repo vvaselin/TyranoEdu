@@ -527,7 +527,7 @@ window.initMascotChat = function() {
             sendButton.prop("disabled", true);
             aiMessagesContainer.html('<div class="thinking-indicator">...</div>');
             aiMessagesContainer.scrollTop(0);
-            tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:"frustration", time:200});
+            tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:"thinking", time:200});
         }
         // ================================================================
         // 送信処理 (ユーザー入力)
@@ -606,7 +606,7 @@ window.initMascotChat = function() {
             if (typeof TYRANO.kag.stat.f === "undefined") return;
 
             var totalLove = parseInt(f.love_level) || 0;
-            var thresholds = [1, 11, 26, 41, 71, 101]; 
+            var thresholds = [1, 16, 31, 66, 101, 101]; 
             var currentLv = 1;
             var minLove = 0;
             var maxLove = 0;    
@@ -641,7 +641,7 @@ window.initMascotChat = function() {
                 displayStr = currentProgress + " / " + range;
 
                 if (totalLove >= 100) {
-                    displayStr = currentProgress + " (MAX)";
+                    displayStr = " (MAX)";
                     percent = 100;
                     $(".love-gauge-fill").css(
                         'background',
