@@ -127,6 +127,20 @@ window.initMascotChat = function() {
         var streamAccumulated = "";  // ストリーミング中の蓄積テキスト
         var isStreaming = false;     // ストリーミング受信中フラグ
 
+        function formatAiMessageForDisplay(message) {
+            if (!message) return "";
+
+            var normalized = message.replace(/\\n/g, '\n');
+            var parts = normalized.split(/(```[\s\S]*?```)/g);
+
+            return parts.map(function(part) {
+                if (part.indexOf("```") === 0) {
+                    return part;
+                }
+                return part.replace(/。(?!(\r?\n|$))/g, "。\n");
+            }).join("");
+        }
+
         // ストリーミングチャンク受信時の処理
         function handleStreamChunk(delta) {
             streamAccumulated += delta;
@@ -142,7 +156,7 @@ window.initMascotChat = function() {
             }
 
             // 「考え中...」を消してストリーミングテキストを表示
-            var displayText = streamAccumulated.replace(/\\n/g, '\n');
+            var displayText = formatAiMessageForDisplay(streamAccumulated);
             var messageHtml = DOMPurify.sanitize(marked.parse(displayText, { breaks: true }));
             aiMessagesContainer.html(
                 '<div class="ai-chat-message-simple"><div class="message-body">' + messageHtml + '</div></div>'
@@ -323,7 +337,10 @@ window.initMascotChat = function() {
         function addMessage(username, message, is_history_load = false) {
             if (message) {
                 message = message.replace(/\\n/g, '\n');
-            }   
+            }
+            if (username !== "あなた") {
+                message = formatAiMessageForDisplay(message);
+            }
             var messageHtml = DOMPurify.sanitize(marked.parse(message, { breaks: true }));
             var messageEl = $(`
                 <div class="ai-chat-message-simple"> 
@@ -508,9 +525,10 @@ window.initMascotChat = function() {
             
             // emotion バリデーション: 存在しない表情IDは normal にフォールバック
             var validEmotions = [
-                "normal", "happy", "sad", "surprise", "oko", "komari", 
-                "tere", "terekomari", "aseri", "doya", "huhun", "melt", 
-                "akire", "iya", "doubt"
+                "normal", "happy", "sad", "surprise", "oko", "komari",
+                "tere", "terekomari", "aseri", "doya", "huhun", "melt",
+                "akire", "iya", "doubt", "nico", "hokkori", "thinking",
+                "kowai", "donbiki", "frustration", "magao", "sorashi"
             ];
             if (validEmotions.indexOf(emotion) === -1) {
                 console.warn("[MascotChat] 不正な emotion:", emotion, "→ normal にフォールバック");
