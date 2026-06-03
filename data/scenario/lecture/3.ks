@@ -12,9 +12,6 @@ tf.you = f.user_name;
 @layopt layer="message0" visible=true
 [turn_end]
 
-[chara_show name="mocha" width=700 left=300 top =50]
-#モカ
-こんにちは！[l]
 
 [jump target="*back"]
 

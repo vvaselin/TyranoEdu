@@ -15,6 +15,7 @@
 [plugin name="scroll_area"]
 [plugin name="theme_kopanda_22_HD_anim"]
 [plugin name="turnover"]
+[plugin name="manpu"]
 
 [loadcss file="./tyrano/libs/jquery-ui/jquery-ui.css"]
 [loadcss file="./data/others/css/modal_dark_theme.css"]
