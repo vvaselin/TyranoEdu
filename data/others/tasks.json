@@ -55,7 +55,8 @@
       "    cout << /* 出力する文字列を書こう */ << endl;",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 1
   },
   "task2": {
     "category": "基本入出力・変数・演算",
@@ -81,7 +82,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 2
   },
   "task3": {
     "category": "基本入出力・変数・演算",
@@ -109,7 +111,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 3
   },
   "task4": {
     "category": "基本入出力・変数・演算",
@@ -135,7 +138,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 4
   },
   "task5": {
     "category": "基本入出力・変数・演算",
@@ -162,7 +166,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 5
   },
   "task6": {
     "category": "条件分岐",
@@ -193,7 +198,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 1
   },
   "task7": {
     "category": "条件分岐",
@@ -222,7 +228,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 2
   },
   "task8": {
     "category": "条件分岐",
@@ -265,7 +272,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 3
   },
   "task9": {
     "category": "条件分岐",
@@ -294,7 +302,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 4
   },
   "task10": {
     "category": "条件分岐",
@@ -330,7 +339,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 5
   },
   "task11": {
     "category": "ループ",
@@ -357,7 +367,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 1
   },
   "task12": {
     "category": "ループ",
@@ -389,7 +400,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 2
   },
   "task13": {
     "category": "ループ",
@@ -419,7 +431,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 3
   },
   "task14": {
     "category": "ループ",
@@ -454,7 +467,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 4
   },
   "task15": {
     "category": "ループ",
@@ -490,7 +504,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 5
   },
   "task16": {
     "category": "関数",
@@ -522,7 +537,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 1
   },
   "task17": {
     "category": "関数",
@@ -554,7 +570,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 2
   },
   "task18": {
     "category": "関数",
@@ -587,7 +604,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 3
   },
   "task19": {
     "category": "関数",
@@ -619,7 +637,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 4
   },
   "task20": {
     "category": "関数",
@@ -650,7 +669,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 5
   },
   "task21": {
     "category": "配列・文字列・構造体",
@@ -680,7 +700,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 1
   },
   "task22": {
     "category": "配列・文字列・構造体",
@@ -713,7 +734,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 2
   },
   "task23": {
     "category": "配列・文字列・構造体",
@@ -749,7 +771,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 3
   },
   "task24": {
     "category": "配列・文字列・構造体",
@@ -778,7 +801,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 4
   },
   "task25": {
     "category": "配列・文字列・構造体",
@@ -815,7 +839,8 @@
       "",
       "    return 0;",
       "}"
-    ]
+    ],
+    "difficulty": 5
   },
   "sandbox": {
     "category": null,

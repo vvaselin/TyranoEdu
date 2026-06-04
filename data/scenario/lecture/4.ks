@@ -13,8 +13,8 @@ tf.you = f.user_name;
 [turn_end]
 
 #
-今日の課題は「関数」だった。[p]
-処理に名前をつけて、必要なときに呼び出す。[l][r]
+今日の課題は「関数」だった。[l][r]
+処理に名前をつけて、必要なときに呼び出す。[p]
 説明だけ聞くと便利そうなのに、どこまでを関数に分ければいいのかで手が止まる。[p]
 
 #&tf.you
@@ -27,7 +27,7 @@ tf.you = f.user_name;
 今日は、どこで困ってる？[p]
 
 #&tf.you
-今回は、先に自分で説明できるか試したいんだ。[l][r]
+今回は、先に自分で説明できるか試したいんだ。[p]
 えっと……関数は、よく使う処理に名前をつけて、必要なときに呼び出すもの……だよね。[p]
 
 [chara_mod name="mocha" face="surprise" time=200]
@@ -71,7 +71,7 @@ tf.you = f.user_name;
 ごめん、変な例えだった。[l][r]
 でも、いてくれると処理が進むというか……考えやすいんだ。[p]
 
-[chara_mod name="mocha" face="komari" time=200]
+[chara_mod name="mocha" face="terekomari" time=200]
 #mocha
 ……そう言われると、少し安心する。[p]
 

@@ -13,8 +13,8 @@ tf.you = f.user_name;
 [turn_end]
 
 #
-今日の課題は、同じ処理を何度も繰り返す「ループ」だった。[p]
-黒板には for 文と while 文の例が並んでいる。[l][r]
+今日の課題は、同じ処理を何度も繰り返す「ループ」だった。[l][r]
+黒板には for 文と while 文の例が並んでいる。[p]
 けれど、見本を見ているだけでは簡単そうに見えるものほど、自分で書くと急に難しくなる。[p]
 
 #&tf.you
@@ -53,6 +53,7 @@ tf.you = f.user_name;
 ……ちゃんと見てくれてたんだ。[p]
 
 [chara_mod name="mocha" face="tere" time=200]
+[haneru chara=mocha top=50]
 #mocha
 あっ……す、すみません。勝手に……。[p]
 
@@ -101,12 +102,12 @@ tf.you = f.user_name;
 
 [chara_mod name="mocha" face="komari" time=200]
 #mocha
-……会話を、です。[l][r]
+……会話を、です。[p]
 何か言う前に、頭の中で何回も考えて……それでも、変になったりします。[p]
 
 #&tf.you
 そっか……。[l][r]
-じゃあ、お互い繰り返しながら練習中なんだな。[p]
+じゃあ、お互い繰り返しながら練習中だね。[p]
 
 [chara_mod name="mocha" face="surprise" time=200]
 #mocha

@@ -1,6 +1,7 @@
-; select/task.ks - 課題選択画面
+; select/task.ks - 課題選択画面（固定リスト＋詳細パネル）
 *start
 [mask time=500]
+[hidemenubutton]
 [clearfix]
 [wait time=500]
 [bg storage="黒板.png" time="0"]
@@ -8,11 +9,8 @@
 [stop_keyconfig]
 
 [iscript]
-$('#task_area,#task_tabs,.sel_back_btn').remove();
+$('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#new_episode_tag,.sel_back_btn').remove();
 [endscript]
-
-; ── タイトル ──────────────────────────────────────────────
-[ptext name="task_title" layer="fix" text="🖊 課題パート" size="28" color="0xFFFFFF" bold="true" x="500" y="72" width="700" align="center"]
 
 ; ── 戻るボタン ────────────────────────────────────────────
 [glink name="sel_back_btn" color="mybtn_09" text="戻る↩" target="*back_home" width="200" size="20" x="80" y="15"]
@@ -24,7 +22,6 @@ $('#task_area,#task_tabs,.sel_back_btn').remove();
         var cats = f.all_tasks && f.all_tasks._categories;
         if (!cats) { f.has_unread_lecture = false; return; }
 
-        // 解放済みエピソード数を算出
         var unlockedCount;
         if (f.user_role === 'control') {
             var clearedPerCat = cats.map(function(c) {
@@ -36,7 +33,6 @@ $('#task_area,#task_tabs,.sel_back_btn').remove();
             });
             unlockedCount = clearedPerCat.filter(function(n) { return n >= 3; }).length + 1;
         } else {
-            // f.love_level から直接レベルを算出（f.level に依存しない）
             var love = parseInt(f.love_level) || 0;
             var th = [0, 10, 25, 40, 70, 100];
             unlockedCount = 1;
@@ -56,178 +52,243 @@ $('#task_area,#task_tabs,.sel_back_btn').remove();
     })();
 [endscript]
 
-[ptext name="new_episode_tag" layer="fix" text="NEW" color="0xFF3333" bold="true" size="28" edge="2px white" x="520" y="10" cond="f.has_unread_lecture == true"]
-
-; ── スクロールエリア ──────────────────────────────────────
-[scroll_area_vertical id="task_area" top=157 left=500 width=700 height=508 contents_h=600 zindex=1000000]
-
 ; ══════════════════════════════════════════════════════════
-; ▼ 事前計算
+; ▼ 固定UI
 ; ══════════════════════════════════════════════════════════
 [iscript]
-    var tasks = f.all_tasks;
-    var cats  = tasks._categories;
-    var BTN_H = 60, BTN_MARGIN = 16, BTN_STEP = BTN_H + BTN_MARGIN;
+(function() {
+    var $fix = TYRANO.kag.layer.getLayer("fix");
+    var tasks = f.all_tasks || {};
+    var cats = tasks._categories || [];
+    var clearedTasks = f.cleared_tasks || {};
+
+    function cleanupSelectUi() {
+        $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#new_episode_tag,.sel_back_btn').remove();
+    }
+
+    function escapeHtml(str) {
+        return String(str == null ? '' : str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function nl2br(str) {
+        return escapeHtml(str).replace(/\n/g, '<br>');
+    }
+
+    function summaryDescription(str) {
+        return String(str == null ? '' : str).split(/出力形式[:：]/)[0].trim();
+    }
+
+    function stars(n) {
+        n = Math.max(1, Math.min(5, parseInt(n) || 1));
+        return '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n);
+    }
+
+    function taskNumber(key) {
+        return parseInt(String(key).replace('task', ''), 10) || 0;
+    }
 
     var catTaskLists = {};
     cats.forEach(function(c) { catTaskLists[c.label] = []; });
     Object.keys(tasks).forEach(function(key) {
         if (!/^task\d+$/.test(key) || !tasks[key].category) return;
+        if (!catTaskLists[tasks[key].category]) catTaskLists[tasks[key].category] = [];
         catTaskLists[tasks[key].category].push(key);
     });
     Object.keys(catTaskLists).forEach(function(cat) {
-        catTaskLists[cat].sort(function(a, b) {
-            return parseInt(a.replace('task','')) - parseInt(b.replace('task',''));
-        });
+        catTaskLists[cat].sort(function(a, b) { return taskNumber(a) - taskNumber(b); });
     });
 
-    window._sd_task = {};
-    var maxTaskNum = 0;
-    Object.keys(catTaskLists).forEach(function(cat) {
-        catTaskLists[cat].forEach(function(key, pos) {
-            var i       = parseInt(key.replace('task',''));
-            var cleared = !!(f.cleared_tasks && f.cleared_tasks[key]);
-            if (i > maxTaskNum) maxTaskNum = i;
-            window._sd_task[i] = {
-                y:       pos * BTN_STEP + 50,
-                name:    't_btn_task' + i,
-                chkId:   't_chk_' + key,        // チェックボックス用ID兼クラス名
-                label:   tasks[key].title.replace(/^課題\d+[:：]\s*/, ''),
-                cleared: cleared,
-                color:   'mybtn_08',
-                target:  '*common_task_start',
-                taskId:  key
-            };
-        });
-    });
-    tf.task_max = maxTaskNum;
+    window._sel_curCat = 0;
+    window._sel_selectedTaskId = (catTaskLists[cats[0] && cats[0].label] || [])[0] || null;
 
-    window._getTaskData = function(i) { return window._sd_task[i]; };
-[endscript]
-
-; ══════════════════════════════════════════════════════════
-; ▼ タスクボタン＋チェックボックス
-; ══════════════════════════════════════════════════════════
-[for name="tf.i" from="1" to="&tf.task_max"]
-    [iscript]
-        var d = window._getTaskData(parseInt(tf.i));
-        if (!d) {
-            tf.skip = true;
-        } else {
-            tf.skip       = false;
-            tf.btn_y      = d.y;
-            tf.btn_name   = d.name;
-            tf.btn_label  = d.label;
-            tf.btn_color  = d.color;
-            tf.btn_target = d.target;
-        }
-    [endscript]
-    [if exp="tf.skip == false"]
-        [glink name="&tf.btn_name" color="&tf.btn_color" text="&tf.btn_label" x="50" y="&tf.btn_y" width="500" height="60" size="18" target="&tf.btn_target" exp="&'f.current_task_id = \"task' + tf.i + '\"'"]
-        [scroll_area_vertical_in id="task_area" name="&tf.btn_name"]
-        [iscript]
-        // ボタン右隣にチェックボックスを配置
-        var d = window._getTaskData(parseInt(tf.i));
-        $('<div>')
-            .attr('id', d.chkId)
-            .addClass(d.chkId)
-            .css({
-                position:        'absolute',
-                left:            '600px',
-                top:             d.y + 'px',
-                width:           '60px',
-                height:          '60px',
-                'line-height':   '60px',
-                'text-align':    'center',
-                'font-size':     '34px',
-                'z-index':       11,
-                'pointer-events':'none',
-                color: d.cleared ? '#37ffab' : 'rgb(252, 252, 252)'
-            })
-            .text(d.cleared ? '☑' : '☐')
-            .appendTo($('#task_area_inner'));
-        [endscript]
-    [endif]
-[nextfor]
-
-; ══════════════════════════════════════════════════════════
-; ▼ 課題タブUI
-; ══════════════════════════════════════════════════════════
-[iscript]
-    var $fix = TYRANO.kag.layer.getLayer("fix");
-    var cats = f.all_tasks._categories;
-    var TAB_H = 42;
-    var C_ON = '#27ae60', C_OFF = 'rgba(0,0,0,0.55)', C_HOV = 'rgba(0,110,80,0.65)';
-
-    window._sel_taskMap = {};
-    window._sel_curCat  = 0;
-    cats.forEach(function(c, idx) { window._sel_taskMap[idx] = []; });
-    Object.keys(f.all_tasks).forEach(function(key) {
-        if (!/^task\d+$/.test(key)) return;
-        var catIdx = cats.findIndex(function(c) { return c.label === f.all_tasks[key].category; });
-        if (catIdx >= 0) {
-            window._sel_taskMap[catIdx].push('.t_btn_' + key);
-            window._sel_taskMap[catIdx].push('.t_chk_' + key); // チェックボックスも連動
-        }
+    var $root = $('<div>').addClass('select_ui').attr('id', 'task_select_ui').css({
+        position: 'absolute',
+        left: '0px',
+        top: '0px',
+        width: '1280px',
+        height: '720px',
+        'z-index': 1000000,
+        color: '#fff',
+        'font-family': 'sans-serif',
+        'pointer-events': 'none'
     });
 
-    cats.forEach(function(c, idx) {
-        if (idx === 0) return;
-        window._sel_taskMap[idx].forEach(function(s) { $(s).hide(); });
+    var $title = $('<div>').addClass('select_ui').attr('id', 'task_title').html('🖋️ 課題選択').css({
+        position: 'absolute',
+        top: '100px',
+        width: '1270px',
+        height: '40px',
+        'line-height': '40px',
+        'text-align': 'center',
+        'font-size': '28px',
+        'font-weight': 'bold',
+        'text-shadow': '0 2px 4px rgba(0,0,0,0.55)',
+        'background': 'rgba(0, 0, 0, 0.8)',
+        'pointer-events': 'none'
     });
 
-    window._sel_switch = function(newIdx) {
-        window._sel_taskMap[window._sel_curCat].forEach(function(s) { $(s).hide(); });
-        window._sel_taskMap[newIdx].forEach(function(s) { $(s).show(); });
-        $('#task_area_view').scrollTop(0);
-        window._sel_curCat = newIdx;
+    if (f.has_unread_lecture === true) {
+        $('<div>').addClass('select_ui').attr('id', 'new_episode_tag').text('NEW').css({
+            position: 'absolute',
+            left: '520px',
+            top: '10px',
+            color: '#FF3333',
+            'font-size': '28px',
+            'font-weight': 'bold',
+            '-webkit-text-stroke': '1px white',
+            'pointer-events': 'none'
+        }).appendTo($root);
+    }
+
+    var panelBase = {
+        position: 'absolute',
+        background: 'rgba(8, 42, 58, 0.78)',
+        border: '2px solid rgba(255,255,255,0.78)',
+        'box-shadow': '0 8px 18px rgba(0,0,0,0.28)',
+        'border-radius': '8px',
+        'pointer-events': 'auto'
     };
 
-    // タブラベルにクリア数を表示（例: 基本 3/6）
-    var catTaskLists = {};
-    cats.forEach(function(c) { catTaskLists[c.label] = []; });
-    Object.keys(f.all_tasks).forEach(function(key) {
-        if (!/^task\d+$/.test(key) || !f.all_tasks[key].category) return;
-        catTaskLists[f.all_tasks[key].category].push(key);
+    var $detail = $('<div>').addClass('task_detail_panel').css($.extend({}, panelBase, {
+        left: '700px',
+        top: '160px',
+        width: '500px',
+        height: '530px',
+        padding: '18px',
+        'box-sizing': 'border-box'
+    }));
+
+    var $list = $('<div>').addClass('task_list_panel').css($.extend({}, panelBase, {
+        left: '80px',
+        top: '160px',
+        width: '555px',
+        height: '530px',
+        padding: '62px 22px 20px',
+        'box-sizing': 'border-box'
+    }));
+
+    var $tabs = $('<div>').attr('id', 'task_tabs').addClass('select_ui').css({
+        position: 'absolute',
+        left: '80px',
+        top: '160px',
+        width: '555px',
+        height: '44px',
+        display: 'flex',
+        overflow: 'hidden',
+        'border-radius': '8px 8px 0 0',
+        'z-index': 1000002,
+        'pointer-events': 'auto'
     });
 
-    var $row = $('<div>').attr('id', 'task_tabs').css({
-        position:'absolute', top:'115px', left:'500px',
-        width:'700px', height:TAB_H+'px',
-        display:'flex', 'z-index':1000002,
-        'border-radius':'10px 10px 0 0', overflow:'hidden'
-    });
-    cats.forEach(function(cat, idx) {
-        var total   = catTaskLists[cat.label].length;
-        var cleared = catTaskLists[cat.label].filter(function(k) {
-            return f.cleared_tasks && f.cleared_tasks[k];
-        }).length;
-        var tabLabel = cat.short + ' ' + cleared + '/' + total;
+    function renderDetail(taskId) {
+        var task = tasks[taskId];
+        if (!task) {
+            $detail.html('<div style="font-size:22px;font-weight:bold;">課題データがありません</div>');
+            return;
+        }
+        var cleared = !!clearedTasks[taskId];
+        var desc = summaryDescription(task.description);
 
-        var $tab = $('<div>').text(tabLabel)
-            .addClass('_sel_tab').attr('data-idx', idx).css({
-                flex:'1', height:TAB_H+'px', 'line-height':TAB_H+'px',
-                'text-align':'center', cursor:'pointer', 'font-size':'13px',
-                color:'white',
-                background:    idx === 0 ? C_ON : C_OFF,
-                'font-weight': idx === 0 ? 'bold' : 'normal',
-                'border-right': idx < cats.length - 1 ? '1px solid rgba(255,255,255,0.2)' : 'none',
-                'user-select':'none', transition:'background 0.15s'
-            });
-        $tab.on('mouseenter', function() {
-            if (parseInt($(this).attr('data-idx')) !== window._sel_curCat) $(this).css('background', C_HOV);
-        }).on('mouseleave', function() {
-            if (parseInt($(this).attr('data-idx')) !== window._sel_curCat) $(this).css('background', C_OFF);
-        }).on('click', function() {
-            var newIdx = parseInt($(this).attr('data-idx'));
-            if (newIdx === window._sel_curCat) return;
-            $('._sel_tab').css({ background: C_OFF, 'font-weight': 'normal' });
-            $('._sel_tab[data-idx="' + newIdx + '"]').css({ background: C_ON, 'font-weight': 'bold' });
-            window._sel_switch(newIdx);
+        $detail.html(
+            '<div style="font-size:13px;color:#a7f3d0;margin-bottom:6px;">' + escapeHtml(task.category || '') + '</div>' +
+            '<div style="font-size:24px;font-weight:bold;line-height:1.25;margin-bottom:10px;">' + escapeHtml(task.title || taskId) + '</div>' +
+            '<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;font-size:16px;">' +
+                '<span style="color:#ffd166;">' + stars(task.difficulty || 1) + '</span>' +
+                '<span style="padding:3px 9px;border-radius:999px;background:' + (cleared ? '#1f9d66' : '#666') + ';">' + (cleared ? 'クリア済み' : '未クリア') + '</span>' +
+            '</div>' +
+            '<div style="font-size:16px;line-height:1.65;margin-bottom:70px;min-height:260px;max-height:360px;overflow:hidden;">' + nl2br(desc) + '</div>' +
+            '<button id="task_start_btn" style="position:absolute;left:18px;bottom:18px;width:464px;height:48px;border:2px solid white;border-radius:8px;background:#0f8b8d;color:white;font-size:20px;font-weight:bold;cursor:pointer;">この課題を始める</button>'
+        );
+        $('#task_start_btn').on('click', function() {
+            f.current_task_id = taskId;
+            cleanupSelectUi();
+            TYRANO.kag.ftag.startTag('jump', { target: '*common_task_start' });
         });
-        $row.append($tab);
+    }
+
+    function renderTaskButtons(catIdx) {
+        $list.find('.task_btn_row').remove();
+        var cat = cats[catIdx];
+        var list = cat ? (catTaskLists[cat.label] || []) : [];
+        list.forEach(function(taskId, pos) {
+            var task = tasks[taskId];
+            var cleared = !!clearedTasks[taskId];
+            var selected = taskId === window._sel_selectedTaskId;
+            var $btn = $('<button>').addClass('task_btn_row').attr('data-task-id', taskId).css({
+                position: 'absolute',
+                left: '32px',
+                top: (72 + pos * 90) + 'px',
+                width: '435px',
+                height: '58px',
+                border: selected ? '3px solid #ffd166' : '3px solid white',
+                'border-radius': '8px',
+                background: selected ? '#0b9a9c' : '#087b7d',
+                color: 'white',
+                'font-size': '17px',
+                cursor: 'pointer',
+                'box-shadow': '0 3px 0 rgba(0,0,0,0.35)',
+                overflow: 'hidden',
+                'white-space': 'nowrap',
+                'text-overflow': 'ellipsis'
+            }).text((task && task.title ? task.title : taskId).replace(/^課題\d+[-ー]\d+[:：]\s*/, ''));
+            var $check = $('<span>').addClass('task_btn_row').css({
+                position: 'absolute',
+                left: '485px',
+                top: (72 + pos * 90) + 'px',
+                width: '42px',
+                height: '58px',
+                'line-height': '58px',
+                'text-align': 'center',
+                'font-size': '30px',
+                color: cleared ? '#37ffab' : '#fff'
+            }).text(cleared ? '☑' : '☐');
+            $btn.on('click', function() {
+                window._sel_selectedTaskId = taskId;
+                renderTaskButtons(window._sel_curCat);
+                renderDetail(taskId);
+            });
+            $list.append($btn).append($check);
+        });
+    }
+
+    cats.forEach(function(cat, idx) {
+        var total = (catTaskLists[cat.label] || []).length;
+        var cleared = (catTaskLists[cat.label] || []).filter(function(k) { return clearedTasks[k]; }).length;
+        var $tab = $('<div>').addClass('_sel_tab').attr('data-idx', idx).text(cat.short + ' ' + cleared + '/' + total).css({
+            flex: '1',
+            height: '44px',
+            'line-height': '44px',
+            'text-align': 'center',
+            cursor: 'pointer',
+            'font-size': '13px',
+            color: 'white',
+            background: idx === 0 ? '#27ae60' : 'rgba(0,0,0,0.55)',
+            'font-weight': idx === 0 ? 'bold' : 'normal',
+            'border-right': idx < cats.length - 1 ? '1px solid rgba(255,255,255,0.2)' : 'none',
+            'user-select': 'none'
+        });
+        $tab.on('click', function() {
+            var newIdx = parseInt($(this).attr('data-idx'));
+            window._sel_curCat = newIdx;
+            $('._sel_tab').css({ background: 'rgba(0,0,0,0.55)', 'font-weight': 'normal' });
+            $(this).css({ background: '#27ae60', 'font-weight': 'bold' });
+            window._sel_selectedTaskId = (catTaskLists[cats[newIdx].label] || [])[0] || null;
+            renderTaskButtons(newIdx);
+            renderDetail(window._sel_selectedTaskId);
+        });
+        $tabs.append($tab);
     });
-    $fix.append($row);
+
+    $root.append($title).append($detail).append($list).append($tabs);
+    $fix.append($root);
+    renderTaskButtons(0);
+    renderDetail(window._sel_selectedTaskId);
+})();
 [endscript]
 
 [mask_off time=500]
@@ -238,26 +299,22 @@ $('#task_area,#task_tabs,.sel_back_btn').remove();
 ; ══════════════════════════════════════════════════════════
 
 *back_home
-[scroll_area_vertical_del id="task_area"]
 [iscript]
-$('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();
+$('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#new_episode_tag,.sel_back_btn').remove();
 [endscript]
 [clearfix]
 [jump storage="home.ks" target="*start"]
 
-
 *toSelectStory
-[scroll_area_vertical_del id="task_area"]
 [iscript]
-$('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();
+$('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#new_episode_tag,.sel_back_btn').remove();
 [endscript]
 [clearfix]
 [jump storage="select/story.ks" target="*start"]
 
 *common_task_start
-[scroll_area_vertical_del id="task_area"]
 [iscript]
-    $('#lecture_area,#task_area,#task_tabs,.sel_back_btn').remove();
+    $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#new_episode_tag,.sel_back_btn').remove();
     var taskData = f.all_tasks[f.current_task_id];
     if (taskData) {
         f.my_code = Array.isArray(taskData.initial_code)
