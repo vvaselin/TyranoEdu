@@ -107,8 +107,9 @@ async function completeRegistration(session, displayName) {
     f.user_id = session.user.id;
     f.user_name = displayName;
     f.participant_id = participantId;
+    f.tutorial_from_home = false;
     $("#anon-auth-box").remove();
-    tyrano.plugin.kag.ftag.startTag("jump", { storage: "first.ks", target: "*load_user_data" });
+    tyrano.plugin.kag.ftag.startTag("jump", { storage: "tutorial/intro.ks", target: "*start" });
     tyrano.plugin.kag.ftag.startTag("free_filter");
 }
 

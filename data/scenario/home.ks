@@ -125,6 +125,9 @@ $(".logout_btn").off("click").on("click", async function() {
 [glink name="btn-svg-icon btn-edit-blue" text="" target="*pre_test" x=250 y=600 ]
 [glink name="btn-svg-icon btn-edit-red" text="" target="*post_test" x=400 y=600 ]
 [glink name="btn-svg-icon btn-quiz-red" text="" target="*post_survey" x=550 y=600 ]
+[glink name="btn-svg-icon btn-size-m btn-tutorial" text="" target="*toTutorial" x=900 y=630 ]
+
+
 
 [iscript]
     $(".btn-icon-edit").attr("data-tooltip", "ユーザー名変更");
@@ -132,6 +135,7 @@ $(".logout_btn").off("click").on("click", async function() {
     $(".btn-edit-blue").attr("data-tooltip", "事前テスト");
     $(".btn-edit-red").attr("data-tooltip", "事後テスト");
     $(".btn-quiz-red").attr("data-tooltip", "事後アンケート");
+    $(".btn-tutorial").attr("data-tooltip", "チュートリアル");
 [endscript]
 
 [html]
@@ -282,6 +286,14 @@ $(".logout_btn").off("click").on("click", async function() {
 [clearfix]
 [chara_hide name="mocha" time=50]
 [jump storage="doc.ks" target="*start"]
+
+*toTutorial
+[free_filter]
+[freeimage layer="0" ]
+[clearfix]
+[chara_hide name="mocha" time=50]
+[eval exp="f.tutorial_from_home = true"]
+[jump storage="tutorial/intro.ks" target="*start"]
 
 *toSanbox
 [free_filter]

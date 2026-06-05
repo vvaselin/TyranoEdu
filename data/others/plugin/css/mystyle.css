@@ -158,8 +158,8 @@
 .gauge-box {
     position: absolute;
     top: 62px; 
-    left: 100px;
-    width: 310px;
+    left: 95px;
+    width: 320px;
     z-index: 80;
     align-items: center;
 }

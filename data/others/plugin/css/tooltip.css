@@ -87,6 +87,7 @@
 .btn-edit-blue::before { background-image: url(../../../fgimage/icons/edit_square_blue.svg) !important; }
 .btn-edit-red::before { background-image: url(../../../fgimage/icons/edit_square_red.svg) !important; }
 .btn-quiz-red::before { background-image: url(../../../fgimage/icons/quiz_red.svg) !important; }
+.btn-tutorial::before { background-image: url(../../../fgimage/icons/tutorial.svg) !important; }
 
 /* --- 小さいボタン（40px）用のサイズ --- */
 .btn-size-s {
@@ -95,6 +96,13 @@
 }
 .btn-size-s::before {
     background-size: 100% !important; 
+}
+.btn-size-m {
+    width: 60px !important;
+    height: 60px !important;
+}
+.btn-size-m::before {
+    background-size: 100% !important;
 }
 .btn-svg-icon:hover::before {
     transform: scale(1.1);
