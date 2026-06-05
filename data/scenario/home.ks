@@ -103,7 +103,7 @@ $(".logout_btn").off("click").on("click", async function() {
     TYRANO.kag.stat.f.user_id = null;
     TYRANO.kag.stat.f.ai_memory = null;
     tyrano.plugin.kag.ftag.startTag("chara_hide", { name: "mocha", time: 0 });
-    tyrano.plugin.kag.ftag.startTag("jump", { storage: "auth_google.ks" });
+    tyrano.plugin.kag.ftag.startTag("jump", { storage: "auth_anonymous.ks" });
     tyrano.plugin.kag.ftag.startTag("free_filter");
     tyrano.plugin.kag.ftag.startTag("freeimage", { layer: "0" });
 });
