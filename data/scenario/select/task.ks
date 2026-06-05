@@ -80,7 +80,7 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
     }
 
     function summaryDescription(str) {
-        return String(str == null ? '' : str).split(/出力形式[:：]/)[0].trim();
+        return String(str == null ? '' : str).split(/出力形式(?:[^\n:：]*)?[:：]/)[0].trim();
     }
 
     function stars(n) {
@@ -147,8 +147,8 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
 
     var panelBase = {
         position: 'absolute',
-        background: 'rgba(8, 42, 58, 0.78)',
-        border: '2px solid rgba(255,255,255,0.78)',
+        background: 'rgba(8, 42, 58, 0.90)',
+        border: '2px solid rgba(255,255,255,0.90)',
         'box-shadow': '0 8px 18px rgba(0,0,0,0.28)',
         'border-radius': '8px',
         'pointer-events': 'auto'
@@ -259,7 +259,7 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
     cats.forEach(function(cat, idx) {
         var total = (catTaskLists[cat.label] || []).length;
         var cleared = (catTaskLists[cat.label] || []).filter(function(k) { return clearedTasks[k]; }).length;
-        var $tab = $('<div>').addClass('_sel_tab').attr('data-idx', idx).text(cat.short + ' ' + cleared + '/' + total).css({
+        var $tab = $('<div>').addClass('_sel_tab').attr('data-idx', idx).text(cat.short + ' ' + cleared + '/' + 3).css({
             flex: '1',
             height: '44px',
             'line-height': '44px',

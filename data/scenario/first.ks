@@ -55,12 +55,29 @@
     [chara_face name="mocha" face="hokkori" storage="chara/mocha/hokkori.png" ]
 
 [chara_new name name="adviser" storage="chara/adviser/lifeform.svg" jname="アドバイザー"]
+[chara_new name name="teacher" storage="chara/teacher/normal.png" jname="先生"]
 
 ; マクロ定義
 [macro name=haneru]
 [anim name=%chara top="&(+mp.top - (mp.jump_h||30))" time=100 effect=easeInBounce]
 [wa]
 [anim name=%chara top=%top time=100 effect=easeInBounce]
+[wa]
+[endmacro]
+
+[macro name=yureru_x]
+[iscript]
+mp.amp = parseInt(mp.amp || 15);
+mp.time = parseInt(mp.time || 50);
+mp.count = parseInt(mp.count || 2);
+[endscript]
+[for name=tf.i from=1 to="&mp.count"]
+[anim name=%chara left="&(+mp.left - mp.amp)" time="&mp.time" effect=easeInOutSine]
+[wa]
+[anim name=%chara left="&(+mp.left + mp.amp)" time="&mp.time" effect=easeInOutSine]
+[wa]
+[nextfor]
+[anim name=%chara left=%left time="&mp.time" effect=easeInOutSine]
 [wa]
 [endmacro]
 

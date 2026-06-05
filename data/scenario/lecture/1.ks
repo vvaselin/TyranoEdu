@@ -64,6 +64,7 @@ tf.you = f.user_name;
 わ、私……です……か……っ！？[p]
 
 [chara_mod name="mocha" face="aseri" time=200]
+[yureru_x chara=mocha left=300]
 えっ…えっと、ななな何でしょう、何か気に障ることでも……！？[p]
 
 #&tf.you

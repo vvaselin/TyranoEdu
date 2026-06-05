@@ -6,7 +6,7 @@
     [loadjs storage="./data/others/js/purify.min.js"]
     [loadjs storage="./data/others/plugin/mascot_chat/mascot_chat.js"]
 
-    [chara_show name="mocha" left=950  width=430 top =420]
+    [chara_show name="mocha" left=960  width=430 top =420]
 
     ; --- UI骨格の生成 ---
     [html]
