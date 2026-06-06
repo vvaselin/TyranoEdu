@@ -17,6 +17,8 @@
 [plugin name="turnover"]
 [plugin name="manpu"]
 
+[loadjs storage="./data/others/js/progress_config.js"]
+
 [loadcss file="./tyrano/libs/jquery-ui/jquery-ui.css"]
 [loadcss file="./data/others/css/modal_dark_theme.css"]
 [loadcss file="./data/others/plugin/css/mystyle.css"]
@@ -148,11 +150,11 @@ $.ajax({
         f.ai_memory = data;
         f.user_name = data.name || "ゲスト";
         if (f.user_role == 'control') {
-            f.love_level = 0; 
+            f.love_level = window.AppProgressConfig.getControlLoveLevel();
         }
     },
     error: function() {
-        f.love_level = 0;
+        f.love_level = window.AppProgressConfig.getControlLoveLevel();
         f.ai_memory = {};
         f.user_role = "control";
     }

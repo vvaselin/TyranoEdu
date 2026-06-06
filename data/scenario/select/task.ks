@@ -34,11 +34,7 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
             unlockedCount = clearedPerCat.filter(function(n) { return n >= 3; }).length + 1;
         } else {
             var love = parseInt(f.love_level) || 0;
-            var th = [0, 10, 25, 40, 70, 100];
-            unlockedCount = 1;
-            for (var i = 1; i < th.length; i++) {
-                if (love >= th[i]) unlockedCount = i + 1;
-            }
+            unlockedCount = window.AppProgressConfig.getUnlockedCountByLove(love);
         }
 
         var hasUnread = false;

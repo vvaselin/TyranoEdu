@@ -148,7 +148,6 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
         if (f.user_role === 'control') {
             return '3問以上クリアしたカテゴリ数: ' + clearedCategoryCount + '/' + (ep.idx - 1);
         }
-        var th = [0, 10, 25, 40, 70, 100];
         return '親密度Lv.' + ep.idx + 'で解放（現在 Lv.' + (f.level || 1) + '）';
     }
 

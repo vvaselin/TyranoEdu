@@ -4,6 +4,7 @@
     [loadcss file="./data/others/plugin/mascot_chat/mascot.css?v=2"]
     [loadjs storage="./data/others/js/marked.min.js"]
     [loadjs storage="./data/others/js/purify.min.js"]
+    [loadjs storage="./data/others/js/progress_config.js"]
     [loadjs storage="./data/others/plugin/mascot_chat/mascot_chat.js"]
 
     [chara_show name="mocha" left=960  width=430 top =420]

@@ -7,6 +7,9 @@ window.initMascotChat = function() {
     var f  = TYRANO.kag.stat.f;
     var tf = TYRANO.kag.stat.tf;
     var sf = TYRANO.kag.stat.sf;
+    if (window.AppProgressConfig) {
+        window.AppProgressConfig.applyControlLoveLevel(f);
+    }
 
     var container = $(".ai-chat-container");
     if (container.length > 0) {
@@ -97,6 +100,7 @@ window.initMascotChat = function() {
                     }
 
                     if(f.user_role=='control'){
+                        window.AppProgressConfig.applyControlLoveLevel(f);
                         var loveGaugeBox = container.find(".love-gauge-box");
                         loveGaugeBox.hide();
                     }
@@ -593,7 +597,7 @@ window.initMascotChat = function() {
             var tasks = f.all_tasks;
             var current_id = f.current_task_id;
             var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
-            var currentLove = f.love_level || 0;
+            var currentLove = f.user_role == 'control' ? window.AppProgressConfig.applyControlLoveLevel(f) : (f.love_level || 0);
             var messageToSend = userMessage + historyContext + memoryContext;   
             var payload = {
                 character_id: "mocha",
@@ -624,17 +628,8 @@ window.initMascotChat = function() {
             if (typeof TYRANO.kag.stat.f === "undefined") return;
 
             var totalLove = parseInt(f.love_level) || 0;
-            var thresholds = [1, 16, 31, 66, 101, 101]; 
-            var currentLv = 1;
-            var minLove = 0;
-            var maxLove = 0;    
-            for (var i = 0; i < thresholds.length - 1; i++) {
-                if (totalLove >= thresholds[i]-1) {
-                    currentLv = i + 1;
-                    minLove = thresholds[i]-1;
-                    maxLove = thresholds[i+1]-1;
-                }
-            } 
+            var gaugeState = window.AppProgressConfig.getLoveGaugeState(totalLove);
+            var currentLv = gaugeState.level;
             
            var prevLv = window._mascot_prev_lv || 1;
             if (currentLv > prevLv) {
@@ -645,32 +640,16 @@ window.initMascotChat = function() {
             }
             window._mascot_prev_lv = currentLv;
 
-            var percent = 0;
-            var displayStr = "";
-
-            if (currentLv <= 5) {
-                var range = maxLove - minLove;
-                var currentProgress = totalLove - minLove;  
-                if (range > 0) {
-                    percent = (currentProgress / range) * 100;
-                } else {
-                    percent = 100;
-                }   
-                displayStr = currentProgress + " / " + range;
-
-                if (totalLove >= 100) {
-                    displayStr = " (MAX)";
-                    percent = 100;
-                    $(".love-gauge-fill").css(
-                        'background',
-                        'linear-gradient(90deg, #fff197 0%, #fff12c 100%)'
-                    );
-                }
+            if (totalLove >= 100) {
+                $(".love-gauge-fill").css(
+                    'background',
+                    'linear-gradient(90deg, #fff197 0%, #fff12c 100%)'
+                );
             }   
             var $container = $(".ai-chat-container");
             $container.find(".love-level-num").text(currentLv);
-            $container.find(".love-gauge-fill").css("width", Math.min(100, Math.max(0, percent)) + "%");
-            $container.find(".love-text").text(displayStr);
+            $container.find(".love-gauge-fill").css("width", gaugeState.percent + "%");
+            $container.find(".love-text").text(gaugeState.displayStr);
 
             if(currentLv >= 4) {
                 $container.find(".love-icon").css("color", "#ff4757").css("text-shadow", "0 0 10px #ff4757");
@@ -734,7 +713,7 @@ window.initMascotChat = function() {
             var tasks = f.all_tasks;
             var current_id = f.current_task_id;
             var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
-            var currentLove = f.love_level || 0;
+            var currentLove = f.user_role == 'control' ? window.AppProgressConfig.applyControlLoveLevel(f) : (f.love_level || 0);
 
             var messageToSend = "[SYSTEM] " + systemMessage;    
             // 入力UI を無効化

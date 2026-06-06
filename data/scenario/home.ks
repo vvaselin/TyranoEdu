@@ -65,11 +65,7 @@
         } else {
             // f.love_level から直接レベルを算出（f.level に依存しない）
             var love = parseInt(f.love_level) || 0;
-            var th = [0, 10, 25, 40, 70, 100];
-            unlockedCount = 1;
-            for (var i = 1; i < th.length; i++) {
-                if (love >= th[i]) unlockedCount = i + 1;
-            }
+            unlockedCount = window.AppProgressConfig.getUnlockedCountByLove(love);
         }
 
         var hasUnread = false;
@@ -209,47 +205,16 @@ $(".logout_btn").off("click").on("click", async function() {
     });
     // 親密度ゲージ
     var totalLove = parseInt(f.love_level) || 0;
-    var thresholds = [1, 16, 31, 66, 101, 101]; 
-    var currentLv = 1;
-    var minLove = 0;
-    var maxLove = 0;
-
-    for (var i = 0; i < thresholds.length - 1; i++) {
-        if (totalLove >= thresholds[i] - 1) {
-            currentLv = i + 1;
-            minLove = thresholds[i] - 1;    
-            maxLove = thresholds[i + 1] - 1;
-        }
+    var gaugeState = window.AppProgressConfig.getLoveGaugeState(totalLove);
+    if (totalLove >= 100) {
+        $(".gauge-fill").css(
+            'background',
+            'linear-gradient(90deg, #fff197 0%, #fff12c 100%)'
+        );
     }
-
-    var percent = 0;
-    var displayStr = "";
-
-    if (currentLv <= 5) {
-        var range = maxLove - minLove;
-        var currentProgress = totalLove - minLove;
-
-        if (range > 0) {
-            percent = (currentProgress / range) * 100;
-        } else {
-            percent = 100;
-        }
-
-        // 通常の表示文字列
-        displayStr = currentProgress + " / " + range;
-
-        if (totalLove >= 100) {
-            displayStr = " (MAX)";
-            percent = 100;
-            $(".gauge-fill").css(
-                'background',
-                'linear-gradient(90deg, #fff197 0%, #fff12c 100%)'
-            );
-        }
-    }
-    f.level = currentLv;
-    $(".gauge-fill").css("width", percent + "%");
-    tf.displayStr = displayStr;
+    f.level = gaugeState.level;
+    $(".gauge-fill").css("width", gaugeState.percent + "%");
+    tf.displayStr = gaugeState.displayStr;
 
 [endscript]
 ; レベル表示
