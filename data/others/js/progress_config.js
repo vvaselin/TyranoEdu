@@ -1,7 +1,7 @@
 (function(global) {
     var config = global.AppProgressConfig || {};
 
-    config.controlLoveLevel = 20;
+    config.controlLoveLevel = 50;
     config.loveLevelThresholds = [0, 15, 30, 65, 100, 100];
 
     config.getControlLoveLevel = function() {
