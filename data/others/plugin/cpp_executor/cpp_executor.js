@@ -35,6 +35,13 @@
             f.execution_result = "";
             
             // GoサーバーのAPIを叩く
+            if (window.logExperimentEvent) {
+                window.logExperimentEvent("execute_start", {
+                    silent: pm.silent === "true",
+                    code: code_to_execute,
+                    stdin: input_stdin
+                });
+            }
             fetch(pm.url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -54,6 +61,13 @@
             .then(data => {
                 // 成功した結果を変数に格納
                 f.execution_result = data.result;
+                if (window.logExperimentEvent) {
+                    window.logExperimentEvent("execute_result", {
+                        silent: pm.silent === "true",
+                        result: data.result,
+                        is_error: data.result.startsWith("エラー:\n")
+                    });
+                }
 
                 const isError = data.result.startsWith("エラー:\n");
                 console.log('[cpp_executor] data.result:', data.result.substring(0, 200));
@@ -78,6 +92,14 @@
             .catch(error => {
                 // 通信エラー（fetch自体の失敗）
                 f.execution_result = "エラー:\n" + error.message;
+                if (window.logExperimentEvent) {
+                    window.logExperimentEvent("execute_result", {
+                        silent: pm.silent === "true",
+                        result: f.execution_result,
+                        is_error: true,
+                        error_message: error.message
+                    });
+                }
                 sendMonacoMarkers(null); // 通信エラーはマーカー出せないのでクリアだけ
 
                 if (pm.silent !== "true") {

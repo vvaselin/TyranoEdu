@@ -238,6 +238,19 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
 *lecture_jump
 [iscript]
 if (!f.watched_lectures) f.watched_lectures = {};
+var lectureInfo = window._sd_lec && window._sd_lec[tf.target_lecture_num] ? window._sd_lec[tf.target_lecture_num] : {};
+var wasUnreadLecture = !lectureInfo.locked && !f.watched_lectures[tf.target_lecture_num];
+if (window.logExperimentEvent) {
+    window.logExperimentEvent("lecture_view", {
+        lecture_num: tf.target_lecture_num,
+        lecture_label: lectureInfo.label || ("ep." + tf.target_lecture_num),
+        category: lectureInfo.category || "",
+        was_unread: wasUnreadLecture,
+        user_role: f.user_role || "",
+        love_level: f.love_level || 0,
+        level: f.level || 1
+    }, { task_id: null });
+}
 f.watched_lectures[tf.target_lecture_num] = true;
 var hasUnread = false;
 for (var j = 1; j <= 5; j++) {

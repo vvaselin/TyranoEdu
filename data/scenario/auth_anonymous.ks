@@ -34,6 +34,19 @@
     <input type="text" id="anon-display-name" maxlength="10" placeholder="表示名（2〜10文字）" style="
         width:100%;
         padding:14px 16px;
+        margin-bottom:14px;
+        box-sizing:border-box;
+        border:2px solid rgba(255,255,255,0.35);
+        border-radius:8px;
+        background:#fff;
+        color:#222;
+        font-size:24px;
+        outline:none;
+    ">
+
+    <input type="text" id="anon-participant-id" maxlength="8" placeholder="学籍番号" autocapitalize="characters" autocomplete="off" style="
+        width:100%;
+        padding:14px 16px;
         margin-bottom:22px;
         box-sizing:border-box;
         border:2px solid rgba(255,255,255,0.35);
@@ -87,27 +100,41 @@ function isValidDisplayName(name) {
     return /^[A-Za-z0-9ぁ-んァ-ヶ一-龠々ー]{2,10}$/.test(name);
 }
 
-async function completeRegistration(session, displayName) {
+function normalizeParticipantId(participantId) {
+    return participantId.trim().toUpperCase();
+}
+
+function isValidParticipantId(participantId) {
+    return /^\d{2}[A-Z]{1,2}\d{3}[A-Z]$/.test(participantId);
+}
+
+function isDuplicateParticipantError(error) {
+    var message = String((error && (error.message || error.details || error.hint || error.code)) || "");
+    return message.indexOf("participant_id") >= 0 || message.indexOf("already registered") >= 0 || message.indexOf("duplicate") >= 0 || message.indexOf("23505") >= 0;
+}
+
+async function completeRegistration(session, displayName, participantId) {
     const { data, error } = await window.sb.rpc("complete_anonymous_registration", {
-        display_name: displayName
+        display_name: displayName,
+        input_participant_id: participantId
     });
 
     if (error) {
         throw error;
     }
 
-    var participantId = "";
+    var registeredParticipantId = "";
     if (Array.isArray(data) && data.length > 0) {
-        participantId = data[0].participant_id || "";
+        registeredParticipantId = data[0].participant_id || "";
     } else if (data && data.participant_id) {
-        participantId = data.participant_id;
+        registeredParticipantId = data.participant_id;
     } else if (typeof data === "string") {
-        participantId = data;
+        registeredParticipantId = data;
     }
 
     f.user_id = session.user.id;
     f.user_name = displayName;
-    f.participant_id = participantId;
+    f.participant_id = registeredParticipantId;
     f.tutorial_from_home = false;
     $("#anon-auth-box").remove();
     tyrano.plugin.kag.ftag.startTag("jump", { storage: "tutorial/intro.ks", target: "*start" });
@@ -143,9 +170,15 @@ checkExistingAnonymousSession();
 
 $("#btn-anon-register").off("click").on("click", async function() {
     const displayName = $("#anon-display-name").val().trim();
+    const participantId = normalizeParticipantId($("#anon-participant-id").val());
 
     if (!isValidDisplayName(displayName)) {
         setAnonMessage("表示名は2〜10文字で入力してください。空白や記号は使えません。");
+        return;
+    }
+
+    if (!isValidParticipantId(participantId)) {
+        setAnonMessage("学籍番号は 25NM741R または 25N741R の形式で入力してください。");
         return;
     }
 
@@ -161,11 +194,11 @@ $("#btn-anon-register").off("click").on("click", async function() {
         }
         if (!session) throw new Error("匿名セッションを作成できませんでした。");
 
-        await completeRegistration(session, displayName);
+        await completeRegistration(session, displayName, participantId);
     } catch (error) {
         if (window.sb) await window.sb.auth.signOut();
         console.error("Anonymous registration error:", error);
-        setAnonMessage("登録に失敗しました。時間をおいてもう一度試してください。");
+        setAnonMessage(isDuplicateParticipantError(error) ? "この学籍番号はすでに登録されています。" : "登録に失敗しました。時間をおいてもう一度試してください。");
         setAnonBusy(false);
     }
 });

@@ -75,6 +75,23 @@ window.initResultModal = function() {
     $("#modal_copy_button_id").button("disable");
 };
 
+window.setEditorActionBusy = function(isBusy) {
+    TYRANO.kag.stat.f.editor_action_busy = !!isBusy;
+    var $buttons = $(".editor_action_btn,[data-event-pm*='editor_execute_btn'],[data-event-pm*='editor_submit_btn']");
+    $buttons.css({
+        "opacity": isBusy ? "0.45" : "1",
+        "pointer-events": isBusy ? "none" : "auto"
+    });
+};
+
+window.setEditorBackBusy = function(isBusy) {
+    var $button = $(".back_btn,[data-event-pm*='back_btn']");
+    $button.css({
+        "opacity": isBusy ? "0.45" : "1",
+        "pointer-events": isBusy ? "none" : "auto"
+    });
+};
+
 /**
  * コンソールモーダルの開閉トグル
  */
@@ -113,6 +130,9 @@ window.showExecutionResult = function() {
     
     $("#result_modal_content").text(result_text);
     $("#modal_copy_button_id").button("enable");
+    if (window.setEditorActionBusy) {
+        window.setEditorActionBusy(false);
+    }
     
     console.error("実行時間：", (performance.now() - f.starttime), "ms");
 };

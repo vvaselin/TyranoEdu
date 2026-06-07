@@ -128,6 +128,8 @@ window.initMascotChat = function() {
         var reconnectAttempts = 0;
         var MAX_RECONNECT = 3;
         var WS_TIMEOUT_MS = 60000;   // 60秒タイムアウト（ストリーミング対応で延長）
+        var pendingSystemTriggerCount = 0;
+        var SAVE_TRIGGER_WAIT_MS = 3000;
         var streamAccumulated = "";  // ストリーミング中の蓄積テキスト
         var isStreaming = false;     // ストリーミング受信中フラグ
 
@@ -338,6 +340,49 @@ window.initMascotChat = function() {
             if (typeof TYRANO.kag.stat.tf.ai_chat_log_index === "undefined") TYRANO.kag.stat.tf.ai_chat_log_index = -1;
             return TYRANO.kag.stat.tf.ai_chat_log_index;
         }   
+        function isUserHistoryItem(item) {
+            return item && item.username === "あなた";
+        }
+        function buildHistoryTurns() {
+            var history = getHistory();
+            var turns = [];
+            var pendingUser = null;
+
+            history.forEach(function(item) {
+                if (!item) return;
+                if (isUserHistoryItem(item)) {
+                    if (pendingUser) {
+                        turns.push({ user: pendingUser, ai: null });
+                    }
+                    pendingUser = item;
+                } else {
+                    if (pendingUser) {
+                        turns.push({ user: pendingUser, ai: item });
+                        pendingUser = null;
+                    } else {
+                        turns.push({ user: null, ai: item });
+                    }
+                }
+            });
+
+            if (pendingUser) {
+                turns.push({ user: pendingUser, ai: null });
+            }
+            return turns;
+        }
+        function showHistoryTurn(turn) {
+            if (turn && turn.ai) {
+                addMessage(turn.ai.username, turn.ai.message, true);
+            } else {
+                aiMessagesContainer.html("");
+            }
+
+            if (turn && turn.user) {
+                addMessage(turn.user.username, turn.user.message, true);
+            } else {
+                userMessagesContainer.html("");
+            }
+        }
         function addMessage(username, message, is_history_load = false) {
             if (message) {
                 message = message.replace(/\\n/g, '\n');
@@ -388,66 +433,13 @@ window.initMascotChat = function() {
             }
         }   
         function showLogMessage(index) {
-            var history = getHistory();
-            if (!history[index]) return;
-
-            var item = history[index];
+            var turns = buildHistoryTurns();
+            if (!turns[index]) return;
 
             liveChatView.show();
             logView.hide();
-            container.find(".ai-chat-form").hide(); 
-
-            var messageHtml = DOMPurify.sanitize(marked.parse(item.message));
-            var messageEl = $(`
-                <div class="ai-chat-message-simple"> 
-                    <div class="message-body">${messageHtml}</div>
-                </div>
-            `);
-
-            messageEl.find("pre code").each(function(i, block) {
-                var $block = $(block); var $pre = $block.parent("pre");
-                if ($pre.find('.copy-code-button').length > 0) return; 
-                $pre.css("position", "relative"); 
-                var copyButton = $('<button class="copy-code-button">コピー</button>');
-                copyButton.on("click", function() {
-                    var codeText = $block.text();
-                    navigator.clipboard.writeText(codeText).then(() => {
-                        copyButton.text("コピー完了!");
-                        setTimeout(() => { copyButton.text("コピー"); }, 2000);
-                    });
-                });
-                $pre.append(copyButton);
-            }); 
-            if (item.username === "あなた") {
-                userMessagesContainer.html(messageEl);
-                var prevAiMsg = null;
-                for (var i = index - 1; i >= 0; i--) {
-                    if (history[i].username !== "あなた") {
-                        prevAiMsg = history[i];
-                        break;
-                    }
-                }
-                if (prevAiMsg) {
-                    addMessage(prevAiMsg.username, prevAiMsg.message, true);
-                } else {
-                    addMessage("モカ", "何か質問……かな？", true);
-                }
-
-            } else {
-                aiMessagesContainer.html(messageEl); 
-                var prevUserMsg = null;
-                for (var i = index - 1; i >= 0; i--) {
-                    if (history[i].username === "あなた") {
-                        prevUserMsg = history[i];
-                        break;
-                    }
-                }
-                if (prevUserMsg) {
-                    addMessage(prevUserMsg.username, prevUserMsg.message, true);
-                } else {
-                    userMessagesContainer.html("");
-                }
-            }
+            container.find(".ai-chat-form").hide();
+            showHistoryTurn(turns[index]);
 
             navPrev.prop("disabled", index === 0);
             navNext.prop("disabled", false); 
@@ -464,54 +456,64 @@ window.initMascotChat = function() {
             liveChatView.show();
             container.find(".ai-chat-form").show();
 
-            var history = getHistory(); 
-            var lastAiMsg = null;
-            var lastUserMsg = null;
-
-            for (var i = history.length - 1; i >= 0; i--) {
-                if (history[i].username !== "あなた") {
-                    lastAiMsg = history[i];
-                    break;
-                }
-            }
-            for (var i = history.length - 1; i >= 0; i--) {
-                if (history[i].username === "あなた") {
-                    lastUserMsg = history[i];
-                    break;
-                }
-            }
-
-            if (lastAiMsg) {
-                addMessage(lastAiMsg.username, lastAiMsg.message, true);
+            var turns = buildHistoryTurns();
+            if (turns.length > 0) {
+                showHistoryTurn(turns[turns.length - 1]);
             } else {
                 addMessage("モカ", "何か質問……かな？", true);
-            }
-            if (lastUserMsg) {
-                addMessage(lastUserMsg.username, lastUserMsg.message, true);
-            } else {
                 userMessagesContainer.html("");
             }
-            navPrev.prop("disabled", history.length === 0);
+            navPrev.prop("disabled", turns.length === 0);
             navNext.prop("disabled", true); 
-        }   
+        }
         // ================================================================
         // AIレスポンス受信後の共通処理
         // ================================================================
-        function applyAIResponse(data, isSystemTrigger) {
+        function createRequestId(prefix) {
+            return prefix + "-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+        }
+
+        function applyAIResponse(data, isSystemTrigger, requestId) {
             var aiText = data.text || "";
             var emotion = data.emotion || "normal";
             var loveUpVal = parseInt(data.love_up) || 0;
             var f = TYRANO.kag.stat.f;
+            var currentTaskId = f.current_task_id;
+            var isClearedTask = !f.is_sandbox && currentTaskId && f.cleared_tasks && f.cleared_tasks[currentTaskId] === true;
+            if (isClearedTask && loveUpVal > 0) {
+                console.log("[MascotChat] Cleared task love_up suppressed:", currentTaskId, loveUpVal);
+                loveUpVal = 0;
+            }
             
             // 感情パラメータを保存
             if (data.parameters) {
                 f.prev_params = data.parameters;
+            }
+            if (window.logExperimentEvent) {
+                window.logExperimentEvent("chat_ai_response", {
+                    request_id: requestId || "",
+                    is_system_trigger: !!isSystemTrigger,
+                    text: aiText,
+                    emotion: emotion,
+                    love_up: loveUpVal,
+                    parameters: data.parameters || null,
+                    thought: data.thought || ""
+                });
             }
             
             // 好感度変動（サンドボックスモードでは無効）
             if (f.user_role=='experimental'&&!f.is_sandbox && loveUpVal !== 0) {
                 var current = parseInt(f.love_level) || 0;
                 f.love_level = Math.min(100, Math.max(0, current + loveUpVal));
+                if (window.logExperimentEvent) {
+                    window.logExperimentEvent("love_change", {
+                        request_id: requestId || "",
+                        source: "ai_response",
+                        delta: loveUpVal,
+                        before: current,
+                        after: f.love_level
+                    });
+                }
 
                 console.log("[MascotChat] 好感度変動:", loveUpVal);
                 if (loveUpVal > 0) {
@@ -599,6 +601,7 @@ window.initMascotChat = function() {
             var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
             var currentLove = f.user_role == 'control' ? window.AppProgressConfig.applyControlLoveLevel(f) : (f.love_level || 0);
             var messageToSend = userMessage + historyContext + memoryContext;   
+            var requestId = createRequestId("chat");
             var payload = {
                 character_id: "mocha",
                 message: messageToSend, 
@@ -607,16 +610,32 @@ window.initMascotChat = function() {
                 love_level: parseInt(currentLove),
                 user_id: f.user_id,
                 prev_params: f.prev_params,
-                prev_output: f.prev_output
+                prev_output: f.prev_output,
+                request_id: requestId
             };  
+            if (window.logExperimentEvent) {
+                window.logExperimentEvent("chat_user_payload", {
+                    request_id: requestId,
+                    source: "user_chat",
+                    payload: payload
+                });
+            }
             // WebSocket経由で送信
             sendChatRequest(payload, function(err, data) {
                 if (err) {
                     console.error("[MascotChat] 送信エラー:", err);
+                    if (window.logExperimentEvent) {
+                        window.logExperimentEvent("chat_ai_response", {
+                            request_id: requestId,
+                            source: "user_chat",
+                            error: true,
+                            message: err.message || String(err)
+                        });
+                    }
                     addMessage("エラー", "上手くお話出来ませんでした。", false);
                     tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:"sad", time:200});
                 } else {
-                    applyAIResponse(data, false);
+                    applyAIResponse(data, false, requestId);
                 }
                 var $input = $(".ai-chat-container").find(".ai-chat-input");
                 $input.prop("disabled", false).attr("placeholder", "メッセージを入力...").focus();
@@ -657,72 +676,90 @@ window.initMascotChat = function() {
                 $container.find(".love-icon").css("color", "#ff6b81").css("text-shadow", "none");
             }
         };  
+        function waitForSystemTriggers(done) {
+            var startedAt = Date.now();
+            function check() {
+                if (pendingSystemTriggerCount <= 0 || Date.now() - startedAt >= SAVE_TRIGGER_WAIT_MS) {
+                    if (pendingSystemTriggerCount > 0) {
+                        console.warn("[MascotChat] Save continued with pending system triggers:", pendingSystemTriggerCount);
+                    }
+                    done();
+                    return;
+                }
+                setTimeout(check, 100);
+            }
+            check();
+        }
+
         // グローバル関数として公開
         window.mascot_chat_save = function(callback) {
-            var history = getHistory();
             tyrano.plugin.kag.ftag.startTag("chara_hide", {name:"mocha", time:200});
 
             if ($("#loading_overlay").length === 0) {
                 $('body').append('<div id="loading_overlay" class="loading-overlay" style="display:none;"><div class="loader">Loading...</div></div>');
             }
             $("#loading_overlay").fadeIn(200);  
-            if (!history || history.length === 0) {
-                $("#loading_overlay").fadeOut(200);
-                if (callback) callback();
-                return;
-            }
 
-            alertify.log("学習記録を保存...");  
-            var currentLove = f.love_level || 0;    
-            function parseJsonResponse(response) {
-                return response.text().then(function(text) {
-                    var contentType = response.headers.get("content-type") || "";
-                    if (!response.ok) {
-                        throw new Error("HTTP " + response.status + ": " + (text || response.statusText));
-                    }
-                    if (!text) {
-                        return {};
-                    }
-                    var trimmed = text.trim();
-                    var looksLikeJson = trimmed.charAt(0) === "{" || trimmed.charAt(0) === "[";
-                    if (contentType.indexOf("application/json") === -1 && !looksLikeJson) {
-                        throw new Error("Unexpected response: " + text.slice(0, 120));
-                    }
-                    return JSON.parse(trimmed);
-                });
-            }
-            fetch('/api/summarize', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    user_id: f.user_id,
-                    chat_history: history,
-                    current_love_level: parseInt(currentLove)
-                })
-            })
-            .then(parseJsonResponse)
-            .then(data => {
-                console.log("Save complete:", data);
-                f.ai_chat_history = [];
-                return fetch('/api/memory?user_id=' + f.user_id);
-            })
-            .then(function(response) {
-                if (!response.ok) {
-                    console.warn("Memory reload after save failed:", response.status, response.statusText);
-                    return null;
-                }
-                return parseJsonResponse(response);
-            })
-            .then(data => {
-                if(data) f.ai_memory = data;
-            })
-            .catch(e => {
-                console.error("Save Error:", e);
-                alertify.error("保存に失敗しました");
-            })
-            .finally(() => {
-                $("#loading_overlay").fadeOut(300, function() {
+            waitForSystemTriggers(function() {
+                var history = getHistory();
+                if (!history || history.length === 0) {
+                    $("#loading_overlay").fadeOut(200);
                     if (callback) callback();
+                    return;
+                }
+
+                alertify.log("学習記録を保存...");  
+                var currentLove = f.love_level || 0;    
+                function parseJsonResponse(response) {
+                    return response.text().then(function(text) {
+                        var contentType = response.headers.get("content-type") || "";
+                        if (!response.ok) {
+                            throw new Error("HTTP " + response.status + ": " + (text || response.statusText));
+                        }
+                        if (!text) {
+                            return {};
+                        }
+                        var trimmed = text.trim();
+                        var looksLikeJson = trimmed.charAt(0) === "{" || trimmed.charAt(0) === "[";
+                        if (contentType.indexOf("application/json") === -1 && !looksLikeJson) {
+                            throw new Error("Unexpected response: " + text.slice(0, 120));
+                        }
+                        return JSON.parse(trimmed);
+                    });
+                }
+                fetch('/api/summarize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        user_id: f.user_id,
+                        chat_history: history,
+                        current_love_level: parseInt(currentLove)
+                    })
+                })
+                .then(parseJsonResponse)
+                .then(data => {
+                    console.log("Save complete:", data);
+                    f.ai_chat_history = [];
+                    return fetch('/api/memory?user_id=' + f.user_id);
+                })
+                .then(function(response) {
+                    if (!response.ok) {
+                        console.warn("Memory reload after save failed:", response.status, response.statusText);
+                        return null;
+                    }
+                    return parseJsonResponse(response);
+                })
+                .then(data => {
+                    if(data) f.ai_memory = data;
+                })
+                .catch(e => {
+                    console.error("Save Error:", e);
+                    alertify.error("保存に失敗しました");
+                })
+                .finally(() => {
+                    $("#loading_overlay").fadeOut(300, function() {
+                        if (callback) callback();
+                    });
                 });
             });
         };  
@@ -739,6 +776,8 @@ window.initMascotChat = function() {
             var currentLove = f.user_role == 'control' ? window.AppProgressConfig.applyControlLoveLevel(f) : (f.love_level || 0);
 
             var messageToSend = "[SYSTEM] " + systemMessage;    
+            var requestId = createRequestId("system");
+            pendingSystemTriggerCount++;
             // 入力UI を無効化
             var $input = $(".ai-chat-container").find(".ai-chat-input");
             
@@ -752,23 +791,43 @@ window.initMascotChat = function() {
                 love_level: parseInt(currentLove),
                 user_id: f.user_id,
                 prev_params: f.prev_params || { joy:0, anger:0, fear:0, trust:0, shy:0, surprise:0 },
-                prev_output: f.prev_output || ""
+                prev_output: f.prev_output || "",
+                request_id: requestId
             };  
+            if (window.logExperimentEvent) {
+                window.logExperimentEvent("chat_user_payload", {
+                    request_id: requestId,
+                    source: "system_trigger",
+                    system_message: systemMessage,
+                    payload: payload
+                });
+            }
             // WebSocket経由で送信
             sendChatRequest(payload, function(err, data) {
-                if (err) {
-                    console.error("[MascotChat] Triggerエラー:", err);
-                    // エラー時もUIを更新して「考え中...」のまま止まるのを防ぐ
-                    addMessage("モカ", "ごめんね、うまく応答できなかったみたい…もう一度試してみてね。", false);
-                    tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:"sad", time:200});
-                } else {
-                    applyAIResponse(data, true);
+                try {
+                    if (err) {
+                        console.error("[MascotChat] Triggerエラー:", err);
+                        if (window.logExperimentEvent) {
+                            window.logExperimentEvent("chat_ai_response", {
+                                request_id: requestId,
+                                source: "system_trigger",
+                                error: true,
+                                message: err.message || String(err)
+                            });
+                        }
+                        // エラー時もUIを更新して「考え中...」のまま止まるのを防ぐ
+                        addMessage("モカ", "ごめんね、うまく応答できなかったみたい…もう一度試してみてね。", false);
+                        tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:"sad", time:200});
+                    } else {
+                        applyAIResponse(data, true, requestId);
+                    }
+                    
+                    $input.prop("disabled", false).attr("placeholder", "メッセージを入力...");
+                    sendButton.prop("disabled", false);
+                } finally {
+                    pendingSystemTriggerCount = Math.max(0, pendingSystemTriggerCount - 1);
+                    if (typeof callback === "function") callback();
                 }
-                
-                $input.prop("disabled", false).attr("placeholder", "メッセージを入力...");
-                sendButton.prop("disabled", false);
-
-                if (typeof callback === "function") callback();
             });
         };
 
@@ -787,14 +846,14 @@ window.initMascotChat = function() {
 
         // 履歴ナビゲーション
         navPrev.on("click", function() {
-            var history = getHistory(); 
-            if (history.length === 0) return;
+            var turns = buildHistoryTurns(); 
+            if (turns.length === 0) return;
             var currentLogIndex = getTfLogIndex();
 
             if (currentLogIndex === -1) {
-                currentLogIndex = history.length - 1;
+                currentLogIndex = turns.length - 1;
             } else if (currentLogIndex >= 0) {
-                currentLogIndex -= 2;
+                currentLogIndex -= 1;
             }
             if (currentLogIndex < 0) currentLogIndex = 0;
             TYRANO.kag.stat.tf.ai_chat_log_index = currentLogIndex;
@@ -805,10 +864,10 @@ window.initMascotChat = function() {
             var currentLogIndex = getTfLogIndex();
             if (currentLogIndex === -1) return; 
 
-            var history = getHistory(); 
-            var nextLogIndex = currentLogIndex + 2;
+            var turns = buildHistoryTurns(); 
+            var nextLogIndex = currentLogIndex + 1;
 
-            if (nextLogIndex < history.length - 1) {
+            if (nextLogIndex < turns.length) {
                 TYRANO.kag.stat.tf.ai_chat_log_index = nextLogIndex;
                 showLogMessage(nextLogIndex);
             } else {

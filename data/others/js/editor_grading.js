@@ -6,7 +6,9 @@
  * [execute_cpp] の前に呼び出すこと
  */
 window.showGradingStart = function() {
-    $("[data-event-pm*='back_btn']").hide();
+    if (window.setEditorBackBusy) {
+        window.setEditorBackBusy(true);
+    }
     $("#grade-result-area").show();
     $("#grade-content").html("<span style='color:gray;'>採点中...</span>");
 };
@@ -28,6 +30,9 @@ window.submitForGrading = function() {
         task_desc: task.description,
         expected_output: task.expected_output || ""
     };
+    if (window.logExperimentEvent) {
+        window.logExperimentEvent("grade_start", payload);
+    }
 
     $.ajax({
         url: "/api/grade",
@@ -43,6 +48,15 @@ window.submitForGrading = function() {
             html += "<strong>理由:</strong> " + data.reason + "<br>";
             html += "<strong style='color:#ffffaa;'>アドバイス:</strong> " + data.improvement;
             $("#grade-content").html(html);
+            if (window.logExperimentEvent) {
+                window.logExperimentEvent("grade_result", {
+                    score: data.score,
+                    reason: data.reason,
+                    improvement: data.improvement,
+                    bonus_love: data.bonus_love,
+                    is_new_record: data.is_new_record
+                });
+            }
             
             // 採点結果をキャラに話させる
             if (window.mascot_chat_trigger) {
@@ -50,16 +64,36 @@ window.submitForGrading = function() {
                 
                 window.mascot_chat_trigger(msg, false, function() {
                     handleGradeResult(data);
-                    // 戻るボタン解放
-                    $("[data-event-pm*='back_btn']").show();
+                    if (window.setEditorBackBusy) {
+                        window.setEditorBackBusy(false);
+                    }
+                    if (window.setEditorActionBusy) {
+                        window.setEditorActionBusy(false);
+                    }
                 });
             } else {
-                $("[data-event-pm*='back_btn']").show();
+                if (window.setEditorBackBusy) {
+                    window.setEditorBackBusy(false);
+                }
+                if (window.setEditorActionBusy) {
+                    window.setEditorActionBusy(false);
+                }
             }
         },
         error: function() {
             $("#grade-content").text("採点サーバーとの通信に失敗しました。");
-            $("[data-event-pm*='back_btn']").show();
+            if (window.logExperimentEvent) {
+                window.logExperimentEvent("grade_result", {
+                    error: true,
+                    message: "採点サーバーとの通信に失敗しました。"
+                });
+            }
+            if (window.setEditorBackBusy) {
+                window.setEditorBackBusy(false);
+            }
+            if (window.setEditorActionBusy) {
+                window.setEditorActionBusy(false);
+            }
         }
     });
 };
@@ -102,6 +136,16 @@ function handleGradeResult(data) {
         if (f.user_role == 'experimental' && data.bonus_love > 0) {
             var current = parseInt(f.love_level) || 0;
             f.love_level = current + data.bonus_love;
+            if (window.logExperimentEvent) {
+                window.logExperimentEvent("love_change", {
+                    source: "high_score_bonus",
+                    delta: data.bonus_love,
+                    before: current,
+                    after: f.love_level,
+                    score: data.score,
+                    is_new_record: data.is_new_record
+                });
+            }
             alertify.success("ハイスコアボーナス! 好感度+" + data.bonus_love);
             if (window.saveLoveLevelToSupabase) {
                 window.saveLoveLevelToSupabase(f.love_level);

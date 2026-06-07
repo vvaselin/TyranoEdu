@@ -48,13 +48,35 @@
     };
 
     // Iframe内のエディタからコードの変更を受け取る
-    window.addEventListener('message', (event) => {
+    if (window._monacoExperimentLogTimer) {
+        clearTimeout(window._monacoExperimentLogTimer);
+        window._monacoExperimentLogTimer = null;
+    }
+    window._monacoLastLoggedCode = null;
+    if (window._monacoMessageHandler) {
+        window.removeEventListener('message', window._monacoMessageHandler);
+    }
+
+    window._monacoMessageHandler = (event) => {
         if (event.data.type === 'monaco_change') {
             const code = event.data.code;
             const storage_name = mp.storage.replace('f.', '');
             TYRANO.kag.stat.f[storage_name] = code;
+            if (window.logExperimentEvent) {
+                clearTimeout(window._monacoExperimentLogTimer);
+                window._monacoExperimentLogTimer = setTimeout(function() {
+                    if (window._monacoLastLoggedCode === code) return;
+                    window._monacoLastLoggedCode = code;
+                    window.logExperimentEvent("code_snapshot", {
+                        reason: "idle_snapshot",
+                        code: code,
+                        length: code.length
+                    });
+                }, 3000);
+            }
         }
-    });
+    };
+    window.addEventListener('message', window._monacoMessageHandler);
     [endscript]
 
 [endmacro]

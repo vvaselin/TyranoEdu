@@ -18,6 +18,7 @@
 [plugin name="manpu"]
 
 [loadjs storage="./data/others/js/progress_config.js"]
+[loadjs storage="./data/others/js/experiment_log.js"]
 
 [loadcss file="./tyrano/libs/jquery-ui/jquery-ui.css"]
 [loadcss file="./data/others/css/modal_dark_theme.css"]
@@ -175,6 +176,15 @@ function loadTaskProgressAndHome() {
             }
             
             $("#loading_overlay").fadeOut(300, function(){
+                if (window.ensureExperimentSessionId) window.ensureExperimentSessionId();
+                if (window.logExperimentEvent) {
+                    window.logExperimentEvent("session_start", {
+                        name: f.user_name || "",
+                        love_level: f.love_level || 0,
+                        level: f.level || 1,
+                        cleared_task_count: Object.keys(f.cleared_tasks || {}).length
+                    }, { task_id: null });
+                }
                 tyrano.plugin.kag.ftag.startTag("jump", { storage: "home.ks", target: "*start" });
             });
         });

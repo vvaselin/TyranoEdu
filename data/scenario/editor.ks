@@ -17,6 +17,13 @@
     if (window.clearMascotChatHistory) {
         window.clearMascotChatHistory();
     }
+    if (window.logExperimentEvent) {
+        window.logExperimentEvent("screen_transition", {
+            screen: "editor",
+            action: "enter",
+            is_sandbox: !!f.is_sandbox
+        });
+    }
 [endscript]
 
 ; AIチャットUIを初期化して表示
@@ -50,15 +57,20 @@
 [endscript]
 
 ; 実行ボタン
-[glink fix="true" color="mybtn_01" text="コードを実行" target="*execute_code" width="400" size="20" x="240" y="650"]
+[glink name="editor_execute_btn editor_action_btn" fix="true" color="mybtn_01" text="コードを実行" target="*execute_code" width="400" size="20" x="240" y="650"]
 ; 実行結果モーダル表示ボタン
 [glink fix="true" color="mybtn_06" text="コンソール" target="*open_result_window" width="130" height="50"  size="18" x="645" y="650"]
 ; 採点
 [if exp="f.is_sandbox == false"]
-    [glink fix="true" color="mybtn_07" text="提出" target="*submit" width="200" size="20" x="15" y="655" ]
+    [glink name="editor_submit_btn editor_action_btn" fix="true" color="mybtn_07" text="提出" target="*submit" width="200" size="20" x="15" y="655" ]
 [endif]
 ; 課題選択に戻る
 [glink name="back_btn" color="mybtn_09" text="戻る↩" target="*exit_chat" width="200" size="20" x="20" y="10"]
+
+[iscript]
+    if (window.setEditorActionBusy) window.setEditorActionBusy(false);
+    if (window.setEditorBackBusy) window.setEditorBackBusy(false);
+[endscript]
 
 ; 課題表示UI
 [layopt layer=fix visible=true page=fore]
@@ -200,9 +212,16 @@
 
 *execute_code
 [iscript]
-    window.showExecutionStart();
+    if (f.editor_action_busy) {
+        tf.editor_action_skip = true;
+    } else {
+        tf.editor_action_skip = false;
+        if (window.setEditorActionBusy) window.setEditorActionBusy(true);
+        window.showExecutionStart();
+    }
 [endscript]
 
+[if exp="tf.editor_action_skip != true"]
 ; サーバーにコードを送信 (プラグインが完了するまで待機)
 [execute_cpp code=&f.my_code]
 
@@ -210,19 +229,30 @@
 [iscript]
     window.showExecutionResult();
 [endscript]
+[endif]
+[eval exp="tf.editor_action_skip=false"]
 [return]
 
 *submit
 ; 採点開始表示
 [iscript]
-    window.showGradingStart();
+    if (f.editor_action_busy) {
+        tf.editor_action_skip = true;
+    } else {
+        tf.editor_action_skip = false;
+        if (window.setEditorActionBusy) window.setEditorActionBusy(true);
+        window.showGradingStart();
+    }
 [endscript]
+[if exp="tf.editor_action_skip != true"]
 ; コード実行
 [execute_cpp code=&f.my_code silent="true"]
 ; 採点処理
 [iscript]
     window.submitForGrading();
 [endscript]
+[endif]
+[eval exp="tf.editor_action_skip=false"]
 [return]
 
 *show_clear_dialog
@@ -236,6 +266,13 @@
     if ($("#result_modal").dialog("isOpen")) $("#result_modal").dialog("close");
 
     $(".ai-chat-container").css("pointer-events", "none");
+    if (window.logExperimentEvent) {
+        window.logExperimentEvent("screen_transition", {
+            screen: "editor",
+            action: "exit",
+            is_sandbox: !!f.is_sandbox
+        });
+    }
 
     // 保存処理
     if (window.mascot_chat_save) {
