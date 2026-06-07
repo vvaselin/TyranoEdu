@@ -105,12 +105,17 @@ function normalizeParticipantId(participantId) {
 }
 
 function isValidParticipantId(participantId) {
-    return /^\d{2}[A-Z]{1,2}\d{3}[A-Z]$/.test(participantId);
+    return /^(?:\d{2}[A-Z]{2}\d{3}[A-Z]|\d{2}[A-Z]\d{4}[A-Z])$/.test(participantId);
 }
 
 function isDuplicateParticipantError(error) {
-    var message = String((error && (error.message || error.details || error.hint || error.code)) || "");
-    return message.indexOf("participant_id") >= 0 || message.indexOf("already registered") >= 0 || message.indexOf("duplicate") >= 0 || message.indexOf("23505") >= 0;
+    var message = String((error && (error.message || error.details || error.hint || error.code)) || "").toLowerCase();
+    return message.indexOf("already registered") >= 0 || message.indexOf("duplicate") >= 0 || message.indexOf("23505") >= 0;
+}
+
+function isParticipantFormatServerError(error) {
+    var message = String((error && (error.message || error.details || error.hint || error.code)) || "").toLowerCase();
+    return message.indexOf("participant_id") >= 0 || message.indexOf("check constraint") >= 0 || message.indexOf("constraint") >= 0;
 }
 
 async function completeRegistration(session, displayName, participantId) {
@@ -178,7 +183,7 @@ $("#btn-anon-register").off("click").on("click", async function() {
     }
 
     if (!isValidParticipantId(participantId)) {
-        setAnonMessage("学籍番号は 25NM741R または 25N741R の形式で入力してください。");
+        setAnonMessage("学籍番号を正しい形式で入力してください。");
         return;
     }
 
@@ -198,7 +203,13 @@ $("#btn-anon-register").off("click").on("click", async function() {
     } catch (error) {
         if (window.sb) await window.sb.auth.signOut();
         console.error("Anonymous registration error:", error);
-        setAnonMessage(isDuplicateParticipantError(error) ? "この学籍番号はすでに登録されています。" : "登録に失敗しました。時間をおいてもう一度試してください。");
+        if (isDuplicateParticipantError(error)) {
+            setAnonMessage("この学籍番号はすでに登録されています。");
+        } else if (isParticipantFormatServerError(error)) {
+            setAnonMessage("学籍番号の形式がサーバー側で許可されていません。管理者に設定を確認してください。");
+        } else {
+            setAnonMessage("登録に失敗しました。時間をおいてもう一度試してください。");
+        }
         setAnonBusy(false);
     }
 });
