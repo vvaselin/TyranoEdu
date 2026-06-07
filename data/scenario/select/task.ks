@@ -34,7 +34,9 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
             unlockedCount = clearedPerCat.filter(function(n) { return n >= 3; }).length + 1;
         } else {
             var love = parseInt(f.love_level) || 0;
-            unlockedCount = window.AppProgressConfig.getUnlockedCountByLove(love);
+            var gaugeState = window.AppProgressConfig.getLoveGaugeState(love);
+            f.level = gaugeState.level;
+            unlockedCount = window.AppProgressConfig.getUnlockedCountByLove(love, 5);
         }
 
         var hasUnread = false;

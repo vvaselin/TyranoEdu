@@ -674,6 +674,23 @@ window.initMascotChat = function() {
 
             alertify.log("学習記録を保存...");  
             var currentLove = f.love_level || 0;    
+            function parseJsonResponse(response) {
+                return response.text().then(function(text) {
+                    var contentType = response.headers.get("content-type") || "";
+                    if (!response.ok) {
+                        throw new Error("HTTP " + response.status + ": " + (text || response.statusText));
+                    }
+                    if (!text) {
+                        return {};
+                    }
+                    var trimmed = text.trim();
+                    var looksLikeJson = trimmed.charAt(0) === "{" || trimmed.charAt(0) === "[";
+                    if (contentType.indexOf("application/json") === -1 && !looksLikeJson) {
+                        throw new Error("Unexpected response: " + text.slice(0, 120));
+                    }
+                    return JSON.parse(trimmed);
+                });
+            }
             fetch('/api/summarize', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -683,13 +700,19 @@ window.initMascotChat = function() {
                     current_love_level: parseInt(currentLove)
                 })
             })
-            .then(r => r.json())
+            .then(parseJsonResponse)
             .then(data => {
                 console.log("Save complete:", data);
                 f.ai_chat_history = [];
                 return fetch('/api/memory?user_id=' + f.user_id);
             })
-            .then(r => r.json())
+            .then(function(response) {
+                if (!response.ok) {
+                    console.warn("Memory reload after save failed:", response.status, response.statusText);
+                    return null;
+                }
+                return parseJsonResponse(response);
+            })
             .then(data => {
                 if(data) f.ai_memory = data;
             })

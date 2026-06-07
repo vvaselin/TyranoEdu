@@ -60,6 +60,11 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
     });
     var clearedCategoryCount = clearedPerCat.filter(function(n) { return n >= 3; }).length;
     var unlockedCount = Math.min(5, clearedCategoryCount + 1);
+    if (f.user_role !== 'control') {
+        var love = parseInt(f.love_level) || 0;
+        var gaugeState = window.AppProgressConfig.getLoveGaugeState(love);
+        f.level = gaugeState.level;
+    }
 
     var epSummaries = {
         1: 'C++の授業で、隣の席の宮舞モカに初めて課題の相談をする。',

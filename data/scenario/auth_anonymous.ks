@@ -2,6 +2,7 @@
 
 [cm]
 [clearfix]
+[hidemenubutton]
 [stop_keyconfig]
 @layopt layer="message0" visible=false
 

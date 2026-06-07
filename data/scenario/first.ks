@@ -140,25 +140,28 @@ $("#loading_overlay").fadeIn(200);
 
 var uid = f.user_id;
 
-$.ajax({
-    url: '/api/memory?user_id=' + uid,
-    type: 'GET',
-    dataType: 'json',
-    success: function(data) {
-        f.love_level = data.love_level || 0;
-        f.user_role = data.role || "control";
-        f.ai_memory = data;
-        f.user_name = data.name || "ゲスト";
-        if (f.user_role == 'control') {
-            f.love_level = window.AppProgressConfig.getControlLoveLevel();
-        }
-    },
-    error: function() {
+function applyProfileData(data) {
+    data = data || {};
+    f.love_level = parseInt(data.love_level) || 0;
+    f.user_role = data.role || f.user_role || "control";
+    f.ai_memory = data;
+    f.user_name = data.name || f.user_name || "ゲスト";
+    f.participant_id = data.participant_id || f.participant_id || "";
+    if (f.user_role == 'control') {
         f.love_level = window.AppProgressConfig.getControlLoveLevel();
-        f.ai_memory = {};
-        f.user_role = "control";
     }
-}).always(function(){
+    f.level = window.AppProgressConfig.getLoveGaugeState(f.love_level).level;
+}
+
+function applyProfileFallback() {
+    f.love_level = window.AppProgressConfig.getControlLoveLevel();
+    f.ai_memory = {};
+    f.user_role = "control";
+    f.user_name = f.user_name || "ゲスト";
+    f.level = window.AppProgressConfig.getLoveGaugeState(f.love_level).level;
+}
+
+function loadTaskProgressAndHome() {
     window.sb.from('task_progress')
         .select('task_id')
         .eq('user_id', uid)
@@ -175,6 +178,43 @@ $.ajax({
                 tyrano.plugin.kag.ftag.startTag("jump", { storage: "home.ks", target: "*start" });
             });
         });
+}
+
+$.ajax({
+    url: '/api/memory?user_id=' + uid,
+    type: 'GET',
+    dataType: 'json',
+    success: function(data) {
+        applyProfileData(data);
+        loadTaskProgressAndHome();
+    },
+    error: function(xhr, status, error) {
+        console.warn("Memory API failed. Trying Supabase profile fallback:", status, error);
+        if (!window.sb) {
+            applyProfileFallback();
+            loadTaskProgressAndHome();
+            return;
+        }
+        window.sb.from('profiles')
+            .select('id,love_level,summary,learned_topics,weaknesses,last_updated,role,name,participant_id')
+            .eq('id', uid)
+            .single()
+            .then(({ data, error }) => {
+                if (data && !error) {
+                    applyProfileData(data);
+                } else {
+                    console.warn("Supabase profile fallback failed:", error);
+                    applyProfileFallback();
+                }
+            })
+            .catch(function(e) {
+                console.warn("Supabase profile fallback error:", e);
+                applyProfileFallback();
+            })
+            .finally(function() {
+                loadTaskProgressAndHome();
+            });
+    }
 });
 [endscript]
 
