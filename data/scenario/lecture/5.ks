@@ -14,43 +14,50 @@ tf.you = f.user_name;
 
 #
 配列、文字列、構造体。[l][r]
-今日の範囲は、これまでよりも少しだけ情報量が多かった。[p]
+今日の範囲は、これまでよりも情報量が多かった。[p]
 同じ型の値を並べたり、文字を一つずつ扱ったり、名前と点数をひとまとめにしたりする。[p]
 
 #&tf.you
 覚えること、多いな……。[l][r]
-配列の添字が 0 から始まるの、まだ油断すると間違える。[p]
+配列の添字が 0 から始まるの、意味わかんない。[p]
 
-[chara_show name="mocha" width=700 left=300 top=50 time=500 face="normal" ]
+[chara_show_tilt name="mocha" left=700 top=-100 width=1000 face="sorashi" deg=-15 time=500 origin="50% 50%"]
 
 #mocha
 最初の要素が 0 番目……慣れるまで、不思議だよね。[p]
 
 #&tf.you
-モカもそうだった？[p]
+[font color="0xff4500"]
+モカ
+[font color="0x000000"]
+もそうだった？[p]
+
+[chara_untilt name="mocha" time=100]
+[chara_move name="mocha" left=400 top=50 width=800 anim="true" time="500"]
 
 [chara_mod name="mocha" face="thinking" time=200]
 #mocha
-うん。[l][r]
-でも、並んでいるものを一つずつ見ていく感じは……少し好き。[p]
+うん。でも、構造体とかも色んな要素が組み合わさって一つのものが完成していく感じは……少し好き。[p]
 
 #&tf.you
-一つずつ？[p]
+うーん。でも、色んな要素が混ざりすぎると、情報量多くて全体像がよく分からなくなる……。[p]
 
 [chara_mod name="mocha" face="hokkori" time=200]
 #mocha
-うん。[r]
-配列も文字列も、急に全部を分かろうとすると大変だから……端から順番に、だね。[p]
+ふふ、確かに。[r]
+急に全部を理解しようとすると大変だから……一つずつ順番に、だね。[p]
 
 #&tf.you
 人と仲良くなるのも、そんな感じかも。[p]
 
 [chara_mod name="mocha" face="surprise" time=200]
+[haneru chara=mocha top=50]
+[manpu layer="0" name="mocha" type=hatena]
 #mocha
 人と……？[p]
 
 #&tf.you
-最初から全部知るんじゃなくて、少しずつ覚えていくというか。[p]
+最初から全部知るんじゃなくて、少しずつ理解していくというか。[p]
 モカのことも、最初は静かな人だと思ってたけど、今はそれだけじゃないって分かるし。[p]
 
 [chara_mod name="mocha" face="tere" time=200]
@@ -64,36 +71,33 @@ tf.you = f.user_name;
 [chara_mod name="mocha" face="aseri" time=200]
 #mocha
 最後のは、保存しなくていい……。[p]
+[chara_mod name="mocha" face="thinking" time=200]
+class なら、public とか private とかでアクセス制限できたり……。[p]
 
 #&tf.you
-じゃあ、構造体に入れるなら非公開メンバで。[p]
-
-[chara_mod name="mocha" face="nico" time=200]
-#mocha
-C++の構造体に、非公開メンバは……class の方が近いかも。[p]
-
-#&tf.you
-そこは真面目に返すんだ。[p]
+真面目な解説始まっちゃった……。[p]
 
 [chara_mod name="mocha" face="hokkori" time=200]
 #mocha
-……癖。[p]
+……つい癖で。[p]
 
 [mask time=300]
+[chara_mod name="mocha" face="normal" time=200]
 [wait time=500]
 [mask_off time=300]
 
 #
 課題は、思ったよりも順調に進んだ。[p]
 配列の合計、文字列の逆順、構造体での成績管理。[l][r]
-一つずつ確認していくと、ばらばらに見えた知識が少しずつ並んでいく。[p]
+少しずつ、ばらばらだった知識が少しずつ繋がっていく。[p]
 
 #&tf.you
-よし、今日の分も通った。[l][r]
+よし、今日の分も出来た。[l][r]
 ……モカ、ありがとう。[p]
 
 [chara_mod name="mocha" face="nico" time=200]
 #mocha
+[yureru_x chara=mocha left=300 time=300]
 ううん。[l][r]
 今日は、ほとんど自分で進めてたと思う。[p]
 
@@ -101,14 +105,17 @@ C++の構造体に、非公開メンバは……class の方が近いかも。[p
 でも、隣にいてくれると安心する。[p]
 
 [chara_mod name="mocha" face="tere" time=200]
+[manpu layer="0" name="mocha" type=ase2]
+[yureru_x chara=mocha left=300 time=200]
 #mocha
 ……そう、なんだ。[p]
 
 #&tf.you
-あ、課題の話だけじゃなくて。[l][r]
+……ねぇ、課題の話だけじゃなくて。[l][r]
 少し雑談してもいい？[p]
 
 [chara_mod name="mocha" face="surprise" time=200]
+[haneru chara=mocha top=50]
 #mocha
 雑談……？[p]
 

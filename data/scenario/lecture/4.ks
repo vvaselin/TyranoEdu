@@ -21,7 +21,7 @@ tf.you = f.user_name;
 宮舞さん、ちょっと見てもらってもいい？[p]
 
 [chara_show name="mocha" width=700 left=300 top=50 time=500 face="normal" ]
-
+[manpu layer="0" name="mocha" type=hatena]
 #mocha
 うん……。[l][r]
 今日は、どこで困ってる？[p]
@@ -31,12 +31,13 @@ tf.you = f.user_name;
 えっと……関数は、よく使う処理に名前をつけて、必要なときに呼び出すもの……だよね。[p]
 
 [chara_mod name="mocha" face="surprise" time=200]
+[haneru chara=mocha top=50]
 #mocha
 ……はい。[p]
 
 #&tf.you
-それで、全部 main に書くより、役割を分けた方が読みやすくなる。[l][r]
-例えば、最大値を返す処理だけ maxOf に任せる、みたいな。[p]
+それで、全部 main に書くより、役割を分けた方が読みやすくなる。[p]
+例えば、最大値を返す処理だけ maxOf って名前の関数に任せる、みたいな。[p]
 
 [chara_mod name="mocha" face="hokkori" time=200]
 #mocha
@@ -49,33 +50,28 @@ tf.you = f.user_name;
 
 [chara_mod name="mocha" face="nico" time=200]
 #mocha
-今日は、私は先生役じゃなくて……確認役、だね。[p]
+必要な知識を呼び出すのも、関数みたいだね……。[p]
 
 #&tf.you
-確認役か。[l][r]
-それ、頼もしいな。[p]
-
-[chara_mod name="mocha" face="tere" time=200]
-#mocha
-頼もしい……んだ。[p]
-
-#&tf.you
-うん。[l][r]
-必要なときに呼び出せる関数みたいで。[p]
+宮舞さんも、いざという時に駆けつけてくれて、[r]
+関数みたいに頼りになる存在だよ。[p]
 
 [chara_mod name="mocha" face="aseri" time=200]
+[manpu layer="0" name="mocha" type=ase]
+[yureru_x chara=mocha left=300 time=200]
 #mocha
 わ、私は関数では……。[p]
 
 #&tf.you
-ごめん、変な例えだった。[l][r]
-でも、いてくれると処理が進むというか……考えやすいんだ。[p]
+ごめん、変な例えだった……。[l][r]
+力になってくれる頼りになる存在、って意味で言ったんだ。[p]
 
 [chara_mod name="mocha" face="terekomari" time=200]
 #mocha
 ……そう言われると、少し安心する。[p]
 
 [mask time=300]
+[chara_mod name="mocha" face="magao" ]
 [wait time=500]
 [mask_off time=300]
 
@@ -98,7 +94,11 @@ tf.you = f.user_name;
 
 [chara_mod name="mocha" face="nico" time=200]
 #mocha
-……うん。えっと、[emb exp="tf.you"]さ……[p]
+……うん。えっと、
+[font color="0xff4500"]
+[emb exp="tf.you"]
+[font color="0x000000"]
+さ……[p]
 
 [chara_mod name="mocha" face="surprise" time=200]
 [haneru chara=mocha top="50" ]
@@ -109,37 +109,39 @@ tf.you = f.user_name;
 ん？[p]
 
 [chara_mod name="mocha" face="aseri" time=200]
+[manpu layer="0" name="mocha" type=ase2]
+[yureru_x chara=mocha left=300 time=200]
 #mocha
-な、なんでもないです……！[l][r]
-今のは、呼び出し間違いというか……。[p]
-
-#&tf.you
-呼び出し間違い？[p]
+な、なんでもないです……！[p]
 
 [chara_mod name="mocha" face="tere" time=200]
+[haneru chara=mocha top="50" ]
 #mocha
 ……名前で、呼びそうになった……だけ。[p]
 
 #&tf.you
 呼んでくれてもいいのに。[p]
 
-[chara_mod name="mocha" face="komari" time=200]
+[chara_mod name="mocha" face="sorashi" time=200]
 #mocha
-ま、まだ……コンパイルが通らない気がする。[p]
+あ、あぁ……！それ、ま、まだ……コンパイルが通らない気がする……！[p]
 
 #&tf.you
 そっか。[l][r]
-じゃあ、通りそうになったらで。[p]
+じゃあ、ここ直したら――――。[p]
 
-[chara_mod name="mocha" face="nico" time=200]
+[chara_mod name="mocha" face="tere" time=200]
 #mocha
 ……うん。[l][r]
+[chara_mod name="mocha" face="nico" time=200]
 そのときは、ちゃんと呼ぶ……と思う。[p]
+
+[chara_hide name="mocha" time=500]
 
 #
 答えを教えてもらうだけの時間ではなくなっていた。[p]
-考える役割は自分にあり、宮舞さんは隣でそれを受け止めてくれる。[l][r]
-必要なときに声をかけられる距離が、少しずつ自然になっていた。[p]
+自分で考えて、宮舞さんは隣でそれを受け止めてくれる。[l][r]
+声をかけられる距離が、少しずつ自然になっていた。[p]
 
 [jump target="*back"]
 
