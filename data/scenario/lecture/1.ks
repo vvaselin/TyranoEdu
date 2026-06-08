@@ -20,12 +20,17 @@ tf.you = f.user_name;
 [font color="0x000000"]
 は途方に暮れていた。[p]
 
+[chara_show name="teacher" time=500 left=400 top=40 width=400]
+
 #先生
 じゃあ、あとは各々で課題やっとくように。[l][r]
 分かんなかったら、まぁ……隣の人にでも聞いてくれ。[p]
 
 #
+[haneru chara=teacher top=40]
 担任は最低限の説明をし終えると、教室を後にした。[l][r]
+[chara_move name="teacher" left=1500 anim="true" time=500]
+[chara_hide name="teacher" time=0]
 生徒の質問を自分が受ける気は無いようだ。[p]
 
 #&tf.you
@@ -61,10 +66,12 @@ tf.you = f.user_name;
 #mocha
 ふぇっ！？[r]
 [haneru chara=mocha top="50" ]
+[manpu layer="0" name="mocha" type=bikkuri2]
 わ、私……です……か……っ！？[p]
 
 [chara_mod name="mocha" face="aseri" time=200]
 [yureru_x chara=mocha left=300]
+[manpu layer="0" name="mocha" type=ase2]
 えっ…えっと、ななな何でしょう、何か気に障ることでも……！？[p]
 
 #&tf.you

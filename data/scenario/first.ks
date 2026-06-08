@@ -16,9 +16,11 @@
 [plugin name="theme_kopanda_22_HD_anim"]
 [plugin name="turnover"]
 [plugin name="manpu"]
+[plugin name="scenario_effects"]
 
 [loadjs storage="./data/others/js/progress_config.js"]
 [loadjs storage="./data/others/js/experiment_log.js"]
+[loadjs storage="./data/others/js/filter_time.js"]
 
 [loadcss file="./tyrano/libs/jquery-ui/jquery-ui.css"]
 [loadcss file="./data/others/css/modal_dark_theme.css"]
@@ -62,10 +64,10 @@
 
 ; マクロ定義
 [macro name=haneru]
-[anim name=%chara top="&(+mp.top - (mp.jump_h||30))" time=100 effect=easeInBounce]
-[wa]
-[anim name=%chara top=%top time=100 effect=easeInBounce]
-[wa]
+    [anim name=%chara top="&(+mp.top - (mp.jump_h||30))" time=100 effect=easeInBounce]
+    [wa]
+    [anim name=%chara top=%top time=100 effect=easeInBounce]
+    [wa]
 [endmacro]
 
 [macro name=yureru_x]
