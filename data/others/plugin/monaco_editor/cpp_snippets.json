@@ -1,5 +1,5 @@
 {
-    "triggerCharacters": ["#"],
+    "triggerCharacters": ["#", "_", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"],
     "snippets": [
         {
             "label": "main",
@@ -36,6 +36,20 @@
             "kind": "Snippet",
             "documentation": "整数型変数を宣言してcinで受け取る",
             "insertText": "int ${1:n};\ncin >> ${1:n};"
+        },
+        {
+            "label": "double",
+            "detail": "double variable declaration",
+            "kind": "Snippet",
+            "documentation": "Declare and initialize a double variable.",
+            "insertText": "double ${1:x} = ${2:0.0};"
+        },
+        {
+            "label": "doublecin",
+            "detail": "double variable declaration and input",
+            "kind": "Snippet",
+            "documentation": "Declare a double variable and read it with cin.",
+            "insertText": "double ${1:x};\ncin >> ${1:x};"
         },
         {
             "label": "string",

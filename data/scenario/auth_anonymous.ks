@@ -78,26 +78,12 @@
         line-height:1.6;
     "></p>
 
-    <button id="btn-admin-page" type="button" style="
-        margin-top:8px;
-        background:transparent;
-        border:none;
-        color:rgba(255,255,255,0.55);
-        font-size:14px;
-        cursor:pointer;
-        text-decoration:underline;
-    ">管理者</button>
 </div>
 [endhtml]
 
 [iscript]
 $("#anon-auth-box input").on("keydown keyup keypress", function(e) {
     e.stopPropagation();
-});
-
-$("#btn-admin-page").off("click").on("click", function(e) {
-    e.preventDefault();
-    window.location.href = "/admin.html";
 });
 
 function setAnonMessage(message) {

@@ -42,8 +42,9 @@ window.submitForGrading = function() {
         dataType: "json",
         
         success: function(data) {
+            var isPassed = data.score >= 80;
             var html = "";
-            var scoreColor = (data.score >= 80) ? "#00ff00" : "#ff4444";
+            var scoreColor = isPassed ? "#00ff00" : "#ff4444";
             html += "<strong style='font-size:18px; color:" + scoreColor + ";'>" + data.score + "点</strong><br>";
             html += "<strong>理由:</strong> " + data.reason + "<br>";
             html += "<strong style='color:#ffffaa;'>アドバイス:</strong> " + data.improvement;
@@ -64,7 +65,7 @@ window.submitForGrading = function() {
                 
                 window.mascot_chat_trigger(msg, false, function() {
                     handleGradeResult(data);
-                    if (window.setEditorBackBusy) {
+                    if (!isPassed && window.setEditorBackBusy) {
                         window.setEditorBackBusy(false);
                     }
                     if (window.setEditorActionBusy) {
@@ -72,7 +73,8 @@ window.submitForGrading = function() {
                     }
                 });
             } else {
-                if (window.setEditorBackBusy) {
+                handleGradeResult(data);
+                if (!isPassed && window.setEditorBackBusy) {
                     window.setEditorBackBusy(false);
                 }
                 if (window.setEditorActionBusy) {

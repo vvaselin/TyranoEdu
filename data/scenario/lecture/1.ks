@@ -49,8 +49,12 @@ tf.you = f.user_name;
 
 隣の人に聞くか……[p]
 
-[chara_show name="mocha" width=700 top =50 left="800"  time=500 face="magao" ]
-[chara_move name="mocha" left="300" anim="true" time="1000"   ]
+[filter layer=0 blur=5]
+[chara_show name="mocha" width=1000 top =50 left="1000"  time=500 face="magao" ]
+[chara_move name="mocha" left="400" anim="true" time="1000"]
+
+[free_filter layer=0]
+[chara_move name="mocha" left=300 top=50 width=800 time="500"]
 
 #
 隣には、黙々とタイピングをする少女、

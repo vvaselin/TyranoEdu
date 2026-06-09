@@ -378,14 +378,20 @@ function buildAnalysisEvents(rawEvents) {
 }
 
 function assignLoveValues(events) {
-  let current = state.selectedProfile ? parseInt(state.selectedProfile.love_level, 10) || 0 : 0;
-  const start = events.find((e) => e.kind === "session" && e.data && e.data.love_level != null);
-  if (start) current = parseInt(start.data.love_level, 10) || 0;
+  const sessionStart = events.find((e) => e.kind === "session" && Number.isFinite(getEventLoveFromData(e)));
+  const firstLoggedLove = sessionStart
+    ? getEventLoveFromData(sessionStart)
+    : events.map(getEventLoveFromData).find((v) => Number.isFinite(v));
+  let current = Number.isFinite(firstLoggedLove) ? firstLoggedLove : 0;
 
   events.forEach((item) => {
-    const rawLove = item.raw.map(getEventLoveFromData).find((v) => Number.isFinite(v));
-    if (Number.isFinite(rawLove)) current = rawLove;
-    if (item.kind === "love" && item.data.after != null) current = parseInt(item.data.after, 10) || current;
+    if (item.kind === "session") {
+      const sessionLove = getEventLoveFromData(item.raw[0]);
+      if (Number.isFinite(sessionLove)) current = sessionLove;
+    } else if (item.kind === "love" && item.data.after != null) {
+      const next = parseInt(item.data.after, 10);
+      if (Number.isFinite(next)) current = next;
+    }
     item.love = current;
   });
 }
@@ -920,7 +926,6 @@ function bindEvents() {
   $("filter-event-type").addEventListener("change", buildAndRender);
   $("show-code-snapshots").addEventListener("change", buildAndRender);
   window.addEventListener("resize", renderChart);
-  $("back-app").addEventListener("click", () => { location.href = "/"; });
   $("admin-password").addEventListener("keydown", (e) => {
     if (e.key === "Enter") loadProfiles();
   });

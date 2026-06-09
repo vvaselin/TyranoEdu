@@ -68,7 +68,8 @@ tf.you = f.user_name;
 [image storage="tutorial/課題選択.png" layer="2"  width=800 time=500 x=100 y=50]
 これが課題選択。[p]
 [chara_mod name="mocha" face="thinking" time=200]
-まずは、各カテゴリ2問以上クリアするのを目指してほしいです。[p]
+どのカテゴリからやってもいいですけど、[l][r]
+各カテゴリ2問以上クリアするのを目指してほしいです。[p]
 
 [rect_show name="task_button" x=545 y=430 width=300 height=50 color="#ff4500" border=4 bg="rgb(0,0,0,0)" radius=5]
 やりたい課題を選択して、「この課題を始める」のボタンを押して演習画面に進んでください。[p]
@@ -86,6 +87,8 @@ tf.you = f.user_name;
 ここで、コードを書いて課題を解いていきます。[p]
 [rect_show name="exe_button" x=250 y=450 width=260 height=50 color="#ff4500" border=4 bg="rgb(0,0,0,0)" radius=5]
 積極的に実行して、コードがどう動くか試してみてください。[p]
+本来、実行後にキーボードで文字を入力するプログラムもあるんですけど、[l]
+このシステムでは、課題ごとに入力が勝手に用意されてます。[p]
 
 課題についてでも、C++についてでも、[l][r]
 [rect_hide name="exe_button"]
@@ -104,6 +107,8 @@ tf.you = f.user_name;
 [rect_show name="doc" x=650 y=450 width=180 height=50 color="#ff4500" border=4 bg="rgb(0,0,0,0)" radius=5]
 [haneru chara=mocha top=100]
 教材を開いて、読んでみるのも良いかもしれません。[p]
+基本的なC++の知識は、ほとんど教材に書いてありますけど、[l][r]
+私に沢山質問してもらってもいいですよ。[p]
 
 [rect_hide name="hint"]
 [rect_hide name="doc"]
@@ -126,6 +131,8 @@ tf.you = f.user_name;
 ここで、コードを書いて課題を解いていきます。[p]
 [rect_show name="exe_button" x=250 y=450 width=260 height=50 color="#ff4500" border=4 bg="rgb(0,0,0,0)" radius=5]
 積極的に実行して、コードがどう動くか試してみてください。[p]
+本来、実行後にキーボードで文字を入力するプログラムもあるんですけど、[l]
+このシステムでは、課題ごとに入力が勝手に用意されてます。[p]
 
 課題についてでも、C++についてでも、[l][r]
 [rect_hide name="exe_button"]
@@ -140,6 +147,8 @@ tf.you = f.user_name;
 [rect_show name="doc" x=650 y=450 width=180 height=50 color="#ff4500" border=4 bg="rgb(0,0,0,0)" radius=5]
 [haneru chara=mocha top=100]
 教材を開いて、読んでみるのも良いかもしれません。[p]
+基本的なC++の知識は、ほとんど教材に書いてありますけど、[l][r]
+私に沢山質問してもらってもいいですよ。[p]
 
 [rect_hide name="hint"]
 [rect_hide name="doc"]

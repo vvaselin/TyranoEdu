@@ -41,6 +41,39 @@
         }
 
         function registerSnippets(lang, snippetData) {
+            const variableTypes = [
+                "int", "double", "float", "string", "char", "bool",
+                "long", "short", "size_t", "auto"
+            ];
+            const variableDeclRegex = new RegExp("\\b(?:" + variableTypes.join("|") + ")\\s+([^;(){}]+);", "g");
+
+            function stripCommentsAndStrings(code) {
+                return String(code || "")
+                    .replace(/\/\*[\s\S]*?\*\//g, " ")
+                    .replace(/\/\/.*$/gm, " ")
+                    .replace(/"(?:\\.|[^"\\])*"/g, "\"\"")
+                    .replace(/'(?:\\.|[^'\\])*'/g, "''");
+            }
+
+            function extractVariables(model) {
+                const code = stripCommentsAndStrings(model.getValue());
+                const variables = new Set();
+                let match;
+                variableDeclRegex.lastIndex = 0;
+                while ((match = variableDeclRegex.exec(code)) !== null) {
+                    match[1].split(",").forEach(part => {
+                        const cleaned = part
+                            .replace(/=.*/, "")
+                            .replace(/\[[^\]]*\]/g, "")
+                            .replace(/[&*]/g, " ")
+                            .trim();
+                        const name = cleaned.match(/[A-Za-z_]\w*$/);
+                        if (name) variables.add(name[0]);
+                    });
+                }
+                return Array.from(variables);
+            }
+
             monaco.languages.registerCompletionItemProvider(lang, {
                 triggerCharacters: snippetData.triggerCharacters || [],
                 provideCompletionItems: (model, position) => {
@@ -62,6 +95,17 @@
                         range:          range,
                         insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
                     }));
+                    extractVariables(model).forEach(name => {
+                        suggestions.push({
+                            label: name,
+                            detail: "declared variable",
+                            documentation: "現在のコードで宣言済みの変数",
+                            insertText: name,
+                            kind: kind.Variable,
+                            range: range,
+                            sortText: "0_" + name
+                        });
+                    });
                     return { suggestions };
                 }
             });
@@ -206,9 +250,10 @@
                         insertSpaces: true,
                         wordWrap: 'off',
                         suggestOnTriggerCharacters: true,
-                        quickSuggestions: true,
+                        quickSuggestions: { other: true, comments: false, strings: false },
                         snippetSuggestions: 'top',
                         wordBasedSuggestions: 'currentDocument',
+                        suggest: { snippetsPreventQuickSuggestions: false },
                         bracketPairColorization: { enabled: true },
                         autoClosingBrackets: 'always',
                         autoClosingQuotes: 'always',

@@ -256,6 +256,9 @@
 [return]
 
 *show_clear_dialog
+[iscript]
+    if (window.setEditorBackBusy) window.setEditorBackBusy(false);
+[endscript]
 [dialog type="alert" text="課題クリア！選択画面に戻ろう" ]
 [s]
 
