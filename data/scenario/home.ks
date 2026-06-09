@@ -318,5 +318,10 @@ alert("ただいま開発中です。");
 
 *post_survey
 ; 事後アンケート
-[web url="https://forms.cloud.microsoft/r/EMPTPmkMMp" ]
+[if exp="f.user_role == 'experimental'" ]
+    [web url="https://forms.cloud.microsoft/r/Rbb9wzZdGA" ]
+[else]
+    [web url="https://forms.cloud.microsoft/r/EMPTPmkMMp" ]
+[endif]
+
 [jump target="*menu_loop"]
