@@ -4,6 +4,7 @@
   rawEvents: [],
   analysisEvents: [],
   taskProgress: [],
+  selectedUserId: "",
   selectedParticipantId: "",
   selectedEventId: "",
   selectedProfile: null,
@@ -33,6 +34,15 @@ const RAW_LABELS = {
   code_snapshot: "コード保存",
   love_change: "親密度変化",
   screen_transition: "画面移動",
+};
+
+const EMOTION_LABELS = {
+  joy: "喜び",
+  trust: "信頼",
+  fear: "不安",
+  anger: "怒り",
+  shy: "照れ",
+  surprise: "驚き",
 };
 
 const $ = (id) => document.getElementById(id);
@@ -129,8 +139,9 @@ async function loadProfiles() {
   try {
     const data = await fetchJSON("/api/admin/profiles");
     state.profiles = data.profiles || [];
-    if (state.selectedParticipantId) {
-      state.selectedProfile = state.profiles.find((p) => p.participant_id === state.selectedParticipantId) || null;
+    if (state.selectedUserId) {
+      state.selectedProfile = state.profiles.find((p) => p.id === state.selectedUserId) || null;
+      state.selectedParticipantId = (state.selectedProfile && state.selectedProfile.participant_id) || "";
     }
     renderProfiles();
     renderManagePanel();
@@ -141,10 +152,10 @@ async function loadProfiles() {
 
 function renderProfiles() {
   $("profiles-body").innerHTML = state.profiles.map((p) => `
-    <tr class="clickable ${p.participant_id === state.selectedParticipantId ? "selected" : ""}" data-pid="${escapeHtml(p.participant_id)}">
-      <td title="${escapeHtml(p.participant_id)}">${escapeHtml(p.participant_id)}</td>
+    <tr class="clickable ${p.id === state.selectedUserId ? "selected" : ""}" data-user-id="${escapeHtml(p.id)}">
+      <td title="${escapeHtml(p.participant_id || p.id)}">${escapeHtml(p.participant_id || "未完了")}</td>
       <td title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</td>
-      <td>${escapeHtml(p.role)}</td>
+      <td>${escapeHtml(p.role || "未割当")}</td>
       <td>${escapeHtml(p.love_level)}</td>
       <td>${escapeHtml(p.log_count)}</td>
     </tr>
@@ -152,8 +163,9 @@ function renderProfiles() {
 
   $("profiles-body").querySelectorAll("tr").forEach((row) => {
     row.addEventListener("click", () => {
-      state.selectedParticipantId = row.dataset.pid;
-      state.selectedProfile = state.profiles.find((p) => p.participant_id === state.selectedParticipantId) || null;
+      state.selectedUserId = row.dataset.userId;
+      state.selectedProfile = state.profiles.find((p) => p.id === state.selectedUserId) || null;
+      state.selectedParticipantId = (state.selectedProfile && state.selectedProfile.participant_id) || "";
       state.selectedEventId = "";
       renderProfiles();
       renderManagePanel();
@@ -167,18 +179,19 @@ function renderProfiles() {
 }
 
 async function loadEvents() {
-  if (!state.selectedParticipantId) return;
+  if (!state.selectedProfile) return;
 
   $("load-events").disabled = false;
   $("download-events-csv").disabled = false;
   $("download-events-json").disabled = false;
-  $("timeline-title").textContent = `親密度タイムライン: ${state.selectedParticipantId}`;
+  $("timeline-title").textContent = `親密度タイムライン: ${state.selectedParticipantId || "未完了"}`;
   setStatus("event-status", "読み込み中...");
 
   const params = new URLSearchParams({
-    participant_id: state.selectedParticipantId,
     limit: $("filter-limit").value || "5000",
   });
+  if (state.selectedParticipantId) params.set("participant_id", state.selectedParticipantId);
+  else params.set("user_id", state.selectedProfile.id);
   if ($("filter-session-id").value.trim()) params.set("session_id", $("filter-session-id").value.trim());
   if ($("filter-task-id").value.trim()) params.set("task_id", $("filter-task-id").value.trim());
 
@@ -194,7 +207,9 @@ async function loadEvents() {
 async function loadTaskProgress() {
   if (!state.selectedProfile) return;
   try {
-    const params = new URLSearchParams({ participant_id: state.selectedProfile.participant_id });
+    const params = new URLSearchParams();
+    if (state.selectedProfile.participant_id) params.set("participant_id", state.selectedProfile.participant_id);
+    else params.set("user_id", state.selectedProfile.id);
     const data = await fetchJSON(`/api/admin/task-progress?${params.toString()}`);
     state.taskProgress = data.task_progress || [];
     renderManagePanel();
@@ -331,6 +346,7 @@ function renderChart() {
   const height = 430;
   const pad = { left: 54, right: 22, top: 24, bottom: 44 };
   svg.innerHTML = "";
+  renderChartLegend();
 
   if (events.length === 0) {
     svg.innerHTML = `<text x="${width / 2}" y="${height / 2}" text-anchor="middle" fill="#64748b">表示できるイベントがありません</text>`;
@@ -360,6 +376,17 @@ function renderChart() {
   });
 
   svg.querySelectorAll("[data-id]").forEach((node) => node.addEventListener("click", () => selectAnalysisEvent(node.dataset.id)));
+}
+
+function renderChartLegend() {
+  const legend = $("chart-legend");
+  if (!legend) return;
+  legend.innerHTML = Object.keys(EVENT_META).map((key) => `
+    <span class="legend-item">
+      <span class="legend-dot" style="background:${eventColor(key)}"></span>
+      <span>${escapeHtml(EVENT_META[key].label)}</span>
+    </span>
+  `).join("");
 }
 
 function summarizeAnalysisEvent(item) {
@@ -419,6 +446,41 @@ function block(title, content) {
   return content == null || content === "" ? "" : `<div class="block"><h3>${escapeHtml(title)}</h3><pre>${escapeHtml(content)}</pre></div>`;
 }
 
+function getEmotionParameters(data) {
+  const ai = data && data.ai ? data.ai : {};
+  const parameters = ai.parameters || ai.params || (ai.payload && ai.payload.parameters);
+  if (!parameters || typeof parameters !== "object" || Array.isArray(parameters)) return [];
+
+  return Object.keys(parameters).map((key) => {
+    const value = Number(parameters[key]);
+    if (!Number.isFinite(value)) return null;
+    return {
+      key,
+      label: EMOTION_LABELS[key] || key,
+      value,
+    };
+  }).filter(Boolean);
+}
+
+function emotionParametersBlock(data) {
+  const rows = getEmotionParameters(data);
+  if (rows.length === 0) return "";
+
+  const maxValue = Math.max(1, ...rows.map((row) => Math.abs(row.value)));
+  const body = rows.map((row) => {
+    const width = Math.min(100, Math.round((Math.abs(row.value) / maxValue) * 100));
+    return `
+      <div class="emotion-row">
+        <div class="emotion-label" title="${escapeHtml(row.key)}">${escapeHtml(row.label)}</div>
+        <div class="emotion-track"><div class="emotion-fill" style="width:${width}%"></div></div>
+        <div class="emotion-value">${escapeHtml(row.value)}</div>
+      </div>
+    `;
+  }).join("");
+
+  return `<div class="block"><h3>感情パラメータ</h3><div class="emotion-chart">${body}</div></div>`;
+}
+
 function renderDetail(item) {
   if (!item) {
     $("detail-title").textContent = "詳細";
@@ -442,6 +504,7 @@ function renderDetail(item) {
     const payload = d.user && d.user.payload ? d.user.payload : {};
     html += block("ユーザー/システム送信", getChatUserText(d));
     html += block("AI応答", ai.text || ai.message || "");
+    html += emotionParametersBlock(d);
     html += block("送信時コード", payload.code || "");
     html += block("直前出力", payload.prev_output || "");
   } else if (item.kind === "execute") {
@@ -485,7 +548,7 @@ function renderManagePanel(errorMessage) {
       <h2>参加者管理</h2>
       ${errorMessage ? `<p class="error">${escapeHtml(errorMessage)}</p>` : ""}
       <div class="kv">
-        <div class="key">participant_id</div><div>${escapeHtml(p.participant_id)}</div>
+        <div class="key">participant_id</div><div>${escapeHtml(p.participant_id || "未完了")}</div>
         <div class="key">user_id</div><div>${escapeHtml(p.id)}</div>
       </div>
       <div class="form-grid">
@@ -507,8 +570,8 @@ function renderManagePanel(errorMessage) {
     </div>
     <div class="block danger-zone">
       <h3>参加者削除</h3>
-      <p class="note">task_progress、experiment_events、profiles を削除した後、Supabase Auth の匿名ユーザー本体も削除します。</p>
-      <input id="delete-confirm" placeholder="${escapeHtml(p.participant_id)} と入力" class="full-input">
+      <p class="note">task_progress、experiment_events、profiles を削除した後、Supabase Auth の匿名ユーザー本体も削除します。未完了ユーザーは DELETE_INCOMPLETE と入力します。</p>
+      <input id="delete-confirm" placeholder="${escapeHtml(p.participant_id || "DELETE_INCOMPLETE")} と入力" class="full-input">
       <div class="actions"><button class="danger" id="delete-user">この参加者を削除</button></div>
     </div>
     ${renderGlobalResetBlock()}
@@ -587,11 +650,12 @@ async function deleteSelectedUser() {
   if (!state.selectedProfile) return;
   setManageStatus("削除中...");
   try {
-    await postJSON("/api/admin/user/delete", {
-      user_id: state.selectedProfile.id,
-      participant_id: state.selectedProfile.participant_id,
-      confirm: $("delete-confirm").value.trim().toUpperCase(),
-    });
+        await postJSON("/api/admin/user/delete", {
+          user_id: state.selectedProfile.id,
+          participant_id: state.selectedProfile.participant_id || "",
+          confirm: $("delete-confirm").value.trim().toUpperCase(),
+        });
+    state.selectedUserId = "";
     state.selectedParticipantId = "";
     state.selectedProfile = null;
     state.rawEvents = [];
@@ -674,7 +738,7 @@ function downloadProfilesCSV() {
 function downloadEventsCSV() {
   const headers = ["created_at", "participant_id", "role", "session_id", "task_id", "event_type", "event_data", "user_id", "id"];
   const rows = state.rawEvents.map((e) => headers.map((h) => csvEscape(h === "event_data" ? JSON.stringify(e.event_data || {}) : e[h])).join(","));
-  downloadCSV(`${state.selectedParticipantId}_events.csv`, [headers.join(","), ...rows].join("\r\n"));
+  downloadCSV(`${state.selectedParticipantId || state.selectedUserId || "incomplete"}_events.csv`, [headers.join(","), ...rows].join("\r\n"));
 }
 
 function setActiveTab(tab) {
@@ -741,7 +805,7 @@ function bindEvents() {
   $("download-profiles").addEventListener("click", downloadProfilesCSV);
   $("download-events-csv").addEventListener("click", downloadEventsCSV);
   $("download-events-json").addEventListener("click", () => {
-    downloadFile(`${state.selectedParticipantId}_events.json`, JSON.stringify(state.rawEvents, null, 2), "application/json;charset=utf-8");
+    downloadFile(`${state.selectedParticipantId || state.selectedUserId || "incomplete"}_events.json`, JSON.stringify(state.rawEvents, null, 2), "application/json;charset=utf-8");
   });
   $("filter-event-type").addEventListener("change", buildAndRender);
   $("show-code-snapshots").addEventListener("change", buildAndRender);

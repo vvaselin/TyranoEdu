@@ -1,4 +1,4 @@
-*start
+﻿*start
 
 [cm]
 [clearfix]
@@ -28,7 +28,7 @@
 ">
     <h3 style="margin:0 0 24px 0; font-size:30px;">利用登録</h3>
     <p style="margin:0 0 26px 0; font-size:18px; line-height:1.8; color:#ddd;">
-        アプリ内で表示する名前を入力してください。
+        アプリ内で表示する名前と学籍番号を入力してください。
     </p>
 
     <input type="text" id="anon-display-name" maxlength="10" placeholder="表示名（2〜10文字）" style="
@@ -133,6 +133,31 @@ function isParticipantFormatServerError(error) {
     return message.indexOf("participant_id") >= 0 || message.indexOf("check constraint") >= 0 || message.indexOf("constraint") >= 0;
 }
 
+async function checkParticipantIdBeforeAuth(participantId) {
+    const { data, error } = await window.sb.rpc("check_participant_id_available", {
+        input_participant_id: participantId
+    });
+
+    if (error) {
+        throw error;
+    }
+
+    var result = null;
+    if (Array.isArray(data) && data.length > 0) {
+        result = data[0];
+    } else {
+        result = data;
+    }
+
+    if (!result || result.valid !== true) {
+        return { ok: false, reason: "format" };
+    }
+    if (result.available !== true) {
+        return { ok: false, reason: "duplicate" };
+    }
+    return { ok: true };
+}
+
 async function completeRegistration(session, displayName, participantId) {
     const { data, error } = await window.sb.rpc("complete_anonymous_registration", {
         display_name: displayName,
@@ -217,6 +242,17 @@ $("#btn-anon-register").off("click").on("click", async function() {
     setAnonMessage("");
 
     try {
+        const participantCheck = await checkParticipantIdBeforeAuth(participantId);
+        if (!participantCheck.ok) {
+            if (participantCheck.reason === "duplicate") {
+                setAnonMessage("この学籍番号はすでに登録されています。");
+            } else {
+                setAnonMessage("学籍番号を正しい形式で入力してください。");
+            }
+            setAnonBusy(false);
+            return;
+        }
+
         let session = await getCurrentSession();
         if (!session) {
             const { data, error } = await window.sb.auth.signInAnonymously();
@@ -232,7 +268,7 @@ $("#btn-anon-register").off("click").on("click", async function() {
         if (isDuplicateParticipantError(error)) {
             setAnonMessage("この学籍番号はすでに登録されています。");
         } else if (isParticipantFormatServerError(error)) {
-            setAnonMessage("学籍番号の形式がサーバー側で許可されていません。管理者に設定を確認してください。");
+            setAnonMessage("学籍番号の形式がサーバーで許可されていません。管理者に設定を確認してください。");
         } else {
             setAnonMessage("登録に失敗しました。時間をおいてもう一度試してください。");
         }
