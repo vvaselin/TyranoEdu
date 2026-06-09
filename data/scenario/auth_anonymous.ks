@@ -137,9 +137,20 @@ async function completeRegistration(session, displayName, participantId) {
         registeredParticipantId = data;
     }
 
+    const { data: profile, error: profileError } = await window.sb
+        .from("profiles")
+        .select("name, participant_id, role")
+        .eq("id", session.user.id)
+        .single();
+
+    if (profileError) {
+        throw profileError;
+    }
+
     f.user_id = session.user.id;
-    f.user_name = displayName;
-    f.participant_id = registeredParticipantId;
+    f.user_name = (profile && profile.name) || displayName;
+    f.participant_id = (profile && profile.participant_id) || registeredParticipantId;
+    f.user_role = (profile && profile.role) || "control";
     f.tutorial_from_home = false;
     $("#anon-auth-box").remove();
     tyrano.plugin.kag.ftag.startTag("jump", { storage: "tutorial/intro.ks", target: "*start" });

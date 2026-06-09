@@ -69,9 +69,9 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
     var epSummaries = {
         1: 'C++の授業で、隣の席の宮舞モカに初めて課題の相談をする。',
         2: '条件分岐の課題を通して、モカが少し落ち着いて話してくれるようになる。',
-        3: 'ループ課題で同じ失敗を繰り返しながら、一緒に考える関係へ近づく。',
-        4: '関数の考え方をきっかけに、教わるだけでなく確認し合う距離になる。',
-        5: '配列や構造体の課題後、課題以外の雑談も自然にできる相棒感が生まれる。'
+        3: 'ループ課題で失敗を繰り返しながら、一緒に考える関係へ近づく。',
+        4: '関数の課題を通し、教わるだけではない関係になる。',
+        5: '配列や構造体の課題後、モカは課題以外の雑談もしてくれるように――。'
     };
 
     window._sd_lec = {};
@@ -203,10 +203,10 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
             }).text(ep.label);
             var $tag = $('<span>').addClass('story_btn_row').css({
                 position: 'absolute',
-                left: '444px',
+                left: '440px',
                 top: (40 + (i - 1) * 95) + 'px',
                 color: ep.isUnread ? '#ff3333' : 'rgba(255,255,255,0.55)',
-                'font-size': '22px',
+                'font-size': '24px',
                 'font-weight': 'bold',
                 '-webkit-text-stroke': ep.isUnread ? '0.6px white' : '0',
                 display: ep.isUnread ? 'block' : 'none'

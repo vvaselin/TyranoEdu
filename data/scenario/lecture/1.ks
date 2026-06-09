@@ -10,6 +10,7 @@ tf.you = f.user_name;
 [add_theme_button]
 [bg storage="room.jpg" time="0"]
 @layopt layer="message0" visible=true
+[filter layer="base" blur=2]
 [turn_end]
 
 #
@@ -107,5 +108,6 @@ tf.you = f.user_name;
 *back
 ; 元の画面に戻る
 [clearfix]
+[free_filter]
 [chara_hide name="mocha" time=0]
 [jump storage="select/story.ks" target="*start"]

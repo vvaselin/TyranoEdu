@@ -7,6 +7,12 @@
 [bg storage="standard.png" time="0"]
 [free_filter layer="base"]
 [layopt layer="message0" visible=true]
+
+[iscript]
+tf.system.backlog=[];
+tf.you = f.user_name;
+[endscript]
+
 [mask_off time=500]
 
 [chara_show name="mocha" face="normal" time="50" left=300 width=800 top=50 wait="true"]
@@ -17,14 +23,20 @@
 
 チュートリアルを読みますか？[p]
 
-[glink color="ts22" text="チュートリアルを読む" target="*read_tutorial" width="500" size="30" x="500" y="200"]
+[glink color="ts22" text="チュートリアルを読む" target="*read_tutorial" width="500" size="30" x="400" y="200"]
 
-[glink color="ts22" text="チュートリアルを読まない" target="*after_role_intro" width="500" size="30" x="500" y="400"]
+[glink color="ts22" text="チュートリアルを読まない" target="*after_role_intro" width="500" size="30" x="400" y="400"]
 
 [s]
 
 *read_tutorial
 では、このシステムでできることを少しだけ説明します。[p]
+
+[font color="0xff4500"]
+[emb exp="tf.you"]
+[font color="0x000000"]
+さんには、これからC++を勉強しながら、物語を進めてもらいます。[p]
+
 [chara_tilt name="mocha" deg=-20 time=180 origin="50% 30%"]
 [chara_mod name="mocha" face="hokkori" time=200]
 [chara_move name="mocha" left="1000" top=100 width=600 anim="true" time="500" ]
@@ -41,9 +53,13 @@
 これがホーム画面です。[l][r]
 ここから色々な機能を選択できます。[p]
 
+[chara_mod name="mocha" face="sorashi" time=200]
+一部開発中の機能もありますけど……。[p]
+
 [freeimage layer="2" ]
 [image storage="tutorial/エピソード選択.png" layer="2"  width=800 time=500 x=100 y=50]
 
+[chara_mod name="mocha" face="normal" time=200]
 これがエピソード選択。[l][r]
 [chara_mod name="mocha" face="huhun" time=200]
 解放条件などは、個別に書いてあるので見てみてください。[p]
@@ -77,11 +93,21 @@
 [chara_mod name="mocha" face="nico" time=200]
 わからないことがあったら、右のチャットから聞いてくださいね。[p]
 
-[haneru chara=mocha top=100]
 [chara_mod name="mocha" face="tere" time=200]
+[yureru_x chara=mocha left=1000 time=200]
 勉強を頑張ると、私との親密度が上がりますよ……。[p]
-
 [rect_hide name="chat"]
+
+[rect_show name="hint" x=650 y=450 width=180 height=50 color="#ff4500" border=4 bg="rgb(0,0,0,0)" radius=5]
+[chara_mod name="mocha" face="thinking" time=200]
+ヒントが読みたいときはヒント開いたり、[l][r]
+[rect_show name="doc" x=650 y=450 width=180 height=50 color="#ff4500" border=4 bg="rgb(0,0,0,0)" radius=5]
+[haneru chara=mocha top=100]
+教材を開いて、読んでみるのも良いかもしれません。[p]
+
+[rect_hide name="hint"]
+[rect_hide name="doc"]
+
 [rect_show name="sub_button" x=100 y=450 width=150 height=50 color="#ff4500" border=4 bg="rgb(0,0,0,0)" radius=5]
 [chara_mod name="mocha" face="huhun" time=200]
 コードを書いて上手く実行出来たら、採点ボタンを押してみてください。[p]
@@ -106,8 +132,18 @@
 [rect_show name="chat" x=650 y=450 width=180 height=50 color="#ff4500" border=4 bg="rgb(0,0,0,0)" radius=5]
 [chara_mod name="mocha" face="nico" time=200]
 わからないことがあったら、右のチャットから聞いてくださいね。[p]
-
 [rect_hide name="chat"]
+
+[rect_show name="hint" x=650 y=450 width=180 height=50 color="#ff4500" border=4 bg="rgb(0,0,0,0)" radius=5]
+[chara_mod name="mocha" face="thinking" time=200]
+ヒントが読みたいときはヒント開いたり、[l][r]
+[rect_show name="doc" x=650 y=450 width=180 height=50 color="#ff4500" border=4 bg="rgb(0,0,0,0)" radius=5]
+[haneru chara=mocha top=100]
+教材を開いて、読んでみるのも良いかもしれません。[p]
+
+[rect_hide name="hint"]
+[rect_hide name="doc"]
+
 [rect_show name="sub_button" x=100 y=450 width=150 height=50 color="#ff4500" border=4 bg="rgb(0,0,0,0)" radius=5]
 [chara_mod name="mocha" face="huhun" time=200]
 コードを書いて上手く実行出来たら、採点ボタンを押してみてください。[p]
@@ -122,6 +158,7 @@
 [chara_mod name="mocha" face="nico"]
 #モカ
 [haneru chara=mocha top=50]
+[manpu layer="0" name="mocha" type=onpu]
 それじゃあ、はじめましょう。[p]
 
 [mask time=500]

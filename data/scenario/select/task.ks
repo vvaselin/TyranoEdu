@@ -133,8 +133,8 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
     if (f.has_unread_lecture === true) {
         $('<div>').addClass('select_ui').attr('id', 'new_episode_tag').text('NEW').css({
             position: 'absolute',
-            left: '520px',
-            top: '10px',
+            left: '470px',
+            top: '2px',
             color: '#FF3333',
             'font-size': '28px',
             'font-weight': 'bold',
