@@ -45,6 +45,22 @@ const EMOTION_LABELS = {
   surprise: "驚き",
 };
 
+const EMOTION_ORDER = ["joy", "trust", "fear", "anger", "shy", "surprise"];
+const EMOTION_MAX_VALUE = 5;
+const CHART_METRICS = {
+  fallbackWidth: 900,
+  fallbackHeight: 430,
+  minWidth: 320,
+  minHeight: 180,
+  minPointGap: 32,
+  pad: { left: 54, right: 22, top: 24, bottom: 36 },
+  labelFont: 12,
+  pointRadius: 5,
+  selectedPointRadius: 6,
+  pointStroke: 2,
+  lineStroke: 2,
+};
+
 const $ = (id) => document.getElementById(id);
 
 function escapeHtml(value) {
@@ -106,6 +122,18 @@ function getData(e) {
 function getRequestId(e) {
   const data = getData(e);
   return data.request_id || (data.payload && data.payload.request_id) || "";
+}
+
+function isSystemTriggerLog(e) {
+  const data = getData(e);
+  return data.source === "system_trigger" || data.is_system_trigger === true;
+}
+
+function classifySystemFeedback(data) {
+  const text = String((data && (data.system_message || data.message)) || (data && data.payload && data.payload.message) || "");
+  if (/採点|score|grade/i.test(text)) return "grade";
+  if (/実行|execute|コード実行|コンパイル/i.test(text)) return "execute";
+  return "";
 }
 
 function getEventLoveFromData(e) {
@@ -223,8 +251,11 @@ function buildAnalysisEvents(rawEvents) {
   const raw = rawEvents.slice().sort((a, b) => asTime(a.created_at) - asTime(b.created_at));
   const out = [];
   const chatByRequest = new Map();
+  const systemFeedbackByRequest = new Map();
   const pendingExecute = new Map();
   const pendingGrade = new Map();
+  const latestExecute = new Map();
+  const latestGrade = new Map();
   const keyFor = (e) => `${e.session_id || ""}|${e.task_id || ""}`;
   const add = (item) => {
     out.push(item);
@@ -242,10 +273,52 @@ function buildAnalysisEvents(rawEvents) {
     raw: [e],
     love: 0,
   });
+  const attachFeedbackToTarget = (feedback, target) => {
+    if (!feedback || !target) return;
+    if (!target.data.feedback) target.data.feedback = {};
+    Object.assign(target.data.feedback, feedback);
+    feedback.raw.forEach((rawEvent) => {
+      if (!target.raw.some((existing) => existing.id === rawEvent.id)) target.raw.push(rawEvent);
+    });
+  };
+  const attachPendingFeedbackForTarget = (targetKind, key, target) => {
+    systemFeedbackByRequest.forEach((feedback) => {
+      if (feedback.key !== key) return;
+      if (feedback.targetKind && feedback.targetKind !== targetKind) return;
+      attachFeedbackToTarget(feedback, target);
+    });
+  };
+  const attachSystemFeedback = (e, data) => {
+    const rid = getRequestId(e) || `${e.session_id || ""}-${e.created_at}`;
+    let feedback = systemFeedbackByRequest.get(rid);
+    if (!feedback) {
+      feedback = { request_id: rid, raw: [] };
+      systemFeedbackByRequest.set(rid, feedback);
+    }
+    feedback.key = keyFor(e);
+    if (e.event_type === "chat_user_payload") {
+      feedback.user = data;
+      feedback.targetKind = classifySystemFeedback(data);
+    } else {
+      feedback.ai = data;
+    }
+    feedback.raw.push(e);
+
+    const key = keyFor(e);
+    let target = null;
+    if (feedback.targetKind === "grade") target = latestGrade.get(key);
+    else if (feedback.targetKind === "execute") target = latestExecute.get(key);
+    else target = latestGrade.get(key) || latestExecute.get(key);
+    attachFeedbackToTarget(feedback, target);
+  };
 
   raw.forEach((e) => {
     const d = getData(e);
     if (e.event_type === "chat_user_payload" || e.event_type === "chat_ai_response") {
+      if (isSystemTriggerLog(e) || systemFeedbackByRequest.has(getRequestId(e))) {
+        attachSystemFeedback(e, d);
+        return;
+      }
       const rid = getRequestId(e) || `${e.session_id || ""}-${e.created_at}`;
       let item = chatByRequest.get(rid);
       if (!item) {
@@ -271,6 +344,8 @@ function buildAnalysisEvents(rawEvents) {
       item.data.result = d;
       item.raw.push(e);
       pendingExecute.delete(key);
+      latestExecute.set(key, item);
+      attachPendingFeedbackForTarget("execute", key, item);
       return;
     }
     if (e.event_type === "grade_start") {
@@ -285,6 +360,8 @@ function buildAnalysisEvents(rawEvents) {
       item.data.result = d;
       item.raw.push(e);
       pendingGrade.delete(key);
+      latestGrade.set(key, item);
+      attachPendingFeedbackForTarget("grade", key, item);
       return;
     }
     if (e.event_type === "session_start") add(base(e, "session", d));
@@ -342,14 +419,20 @@ function updateEventTypeOptions() {
 function renderChart() {
   const svg = $("chart");
   const events = filteredAnalysisEvents();
-  const width = 900;
-  const height = 430;
-  const pad = { left: 54, right: 22, top: 24, bottom: 44 };
+  const rect = svg.getBoundingClientRect();
+  const viewportWidth = Math.max(CHART_METRICS.minWidth, Math.round((svg.parentElement && svg.parentElement.clientWidth) || rect.width || CHART_METRICS.fallbackWidth));
+  const requiredWidth = CHART_METRICS.pad.left + CHART_METRICS.pad.right + Math.max(0, events.length - 1) * CHART_METRICS.minPointGap;
+  const width = Math.max(CHART_METRICS.minWidth, viewportWidth, requiredWidth);
+  const height = Math.max(CHART_METRICS.minHeight, Math.round(rect.height || CHART_METRICS.fallbackHeight));
+  const pad = CHART_METRICS.pad;
+  svg.style.width = `${width}px`;
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("preserveAspectRatio", "none");
   svg.innerHTML = "";
-  renderChartLegend();
+  renderChartLegend(events);
 
   if (events.length === 0) {
-    svg.innerHTML = `<text x="${width / 2}" y="${height / 2}" text-anchor="middle" fill="#64748b">表示できるイベントがありません</text>`;
+    svg.innerHTML = `<text x="${width / 2}" y="${height / 2}" text-anchor="middle" fill="#64748b" font-size="${CHART_METRICS.labelFont}">表示できるイベントがありません</text>`;
     return;
   }
 
@@ -363,25 +446,27 @@ function renderChart() {
   for (let i = 0; i <= 5; i++) {
     const val = minLove + ((maxLove - minLove) / 5) * i;
     const yy = y(val);
-    svg.insertAdjacentHTML("beforeend", `<line x1="${pad.left}" y1="${yy}" x2="${width - pad.right}" y2="${yy}" stroke="#e2e8f0"/><text x="${pad.left - 10}" y="${yy + 4}" text-anchor="end" fill="#64748b" font-size="12">${Math.round(val)}</text>`);
+    svg.insertAdjacentHTML("beforeend", `<line x1="${pad.left}" y1="${yy}" x2="${width - pad.right}" y2="${yy}" stroke="#e2e8f0" stroke-width="1"/><text x="${pad.left - 10}" y="${yy + 4}" text-anchor="end" fill="#64748b" font-size="${CHART_METRICS.labelFont}">${Math.round(val)}</text>`);
   }
 
-  svg.insertAdjacentHTML("beforeend", `<polyline points="${events.map((e, index) => `${x(index)},${y(e.love || 0)}`).join(" ")}" fill="none" stroke="#334155" stroke-width="2" opacity=".65"/>`);
+  svg.insertAdjacentHTML("beforeend", `<polyline points="${events.map((e, index) => `${x(index)},${y(e.love || 0)}`).join(" ")}" fill="none" stroke="#334155" stroke-width="${CHART_METRICS.lineStroke}" opacity=".65"/>`);
 
   events.forEach((item, index) => {
     const cx = x(index);
     const cy = y(item.love || 0);
     const selected = item.id === state.selectedEventId;
-    svg.insertAdjacentHTML("beforeend", `<circle data-id="${escapeHtml(item.id)}" cx="${cx}" cy="${cy}" r="${selected ? 6 : 5}" fill="${eventColor(item.kind)}" stroke="${selected ? "#111827" : "white"}" stroke-width="2" style="cursor:pointer"><title>${escapeHtml(eventLabel(item.kind))} / ${escapeHtml(fmtTime(item.created_at))}</title></circle>`);
+    svg.insertAdjacentHTML("beforeend", `<circle data-id="${escapeHtml(item.id)}" cx="${cx}" cy="${cy}" r="${selected ? CHART_METRICS.selectedPointRadius : CHART_METRICS.pointRadius}" fill="${eventColor(item.kind)}" stroke="${selected ? "#111827" : "white"}" stroke-width="${CHART_METRICS.pointStroke}" style="cursor:pointer"><title>${escapeHtml(eventLabel(item.kind))} / ${escapeHtml(fmtTime(item.created_at))}</title></circle>`);
   });
 
   svg.querySelectorAll("[data-id]").forEach((node) => node.addEventListener("click", () => selectAnalysisEvent(node.dataset.id)));
 }
 
-function renderChartLegend() {
+function renderChartLegend(events) {
   const legend = $("chart-legend");
   if (!legend) return;
-  legend.innerHTML = Object.keys(EVENT_META).map((key) => `
+  const visibleKinds = Array.from(new Set((events || []).map((event) => event.kind || "other")));
+  const orderedKinds = Object.keys(EVENT_META).filter((key) => visibleKinds.includes(key));
+  legend.innerHTML = orderedKinds.map((key) => `
     <span class="legend-item">
       <span class="legend-dot" style="background:${eventColor(key)}"></span>
       <span>${escapeHtml(EVENT_META[key].label)}</span>
@@ -398,11 +483,13 @@ function summarizeAnalysisEvent(item) {
   }
   if (item.kind === "execute") {
     const result = d.result && d.result.result ? String(d.result.result) : "";
-    return d.result ? (d.result.is_error ? "実行エラー" : result.replace(/\s+/g, " ").slice(0, 70)) : "実行開始";
+    const suffix = d.feedback && d.feedback.ai ? " / AIフィードバックあり" : "";
+    return (d.result ? (d.result.is_error ? "実行エラー" : result.replace(/\s+/g, " ").slice(0, 70)) : "実行開始") + suffix;
   }
   if (item.kind === "grade") {
     const r = d.result || {};
-    return r.score != null ? `${r.score}点 / 新記録:${r.is_new_record ? "はい" : "いいえ"} / ボーナス:${r.bonus_love || 0}` : "採点開始";
+    const suffix = d.feedback && d.feedback.ai ? " / AIフィードバックあり" : "";
+    return (r.score != null ? `${r.score}点 / 新記録:${r.is_new_record ? "はい" : "いいえ"} / ボーナス:${r.bonus_love || 0}` : "採点開始") + suffix;
   }
   if (item.kind === "love") return `${d.delta > 0 ? "+" : ""}${d.delta || 0}: ${d.before ?? ""} -> ${d.after ?? ""}`;
   if (item.kind === "lecture") return `${d.lecture_label || ""} ${d.category || ""}`;
@@ -439,7 +526,14 @@ function getChatUserText(data) {
   const user = data.user || {};
   if (user.system_message) return user.system_message;
   const payload = user.payload || {};
-  return payload.message || "";
+  return stripInjectedChatContext(payload.message || "");
+}
+
+function stripInjectedChatContext(message) {
+  return String(message || "")
+    .replace(/\n*\[Conversation History\][\s\S]*$/i, "")
+    .replace(/\n*\[Long Term Memory Info\][\s\S]*$/i, "")
+    .trim();
 }
 
 function block(title, content) {
@@ -451,7 +545,8 @@ function getEmotionParameters(data) {
   const parameters = ai.parameters || ai.params || (ai.payload && ai.payload.parameters);
   if (!parameters || typeof parameters !== "object" || Array.isArray(parameters)) return [];
 
-  return Object.keys(parameters).map((key) => {
+  const keys = EMOTION_ORDER.concat(Object.keys(parameters).filter((key) => !EMOTION_ORDER.includes(key)));
+  return keys.map((key) => {
     const value = Number(parameters[key]);
     if (!Number.isFinite(value)) return null;
     return {
@@ -466,19 +561,30 @@ function emotionParametersBlock(data) {
   const rows = getEmotionParameters(data);
   if (rows.length === 0) return "";
 
-  const maxValue = Math.max(1, ...rows.map((row) => Math.abs(row.value)));
   const body = rows.map((row) => {
-    const width = Math.min(100, Math.round((Math.abs(row.value) / maxValue) * 100));
+    const clampedValue = clamp(row.value, 0, EMOTION_MAX_VALUE);
+    const width = Math.round((clampedValue / EMOTION_MAX_VALUE) * 100);
     return `
       <div class="emotion-row">
         <div class="emotion-label" title="${escapeHtml(row.key)}">${escapeHtml(row.label)}</div>
         <div class="emotion-track"><div class="emotion-fill" style="width:${width}%"></div></div>
-        <div class="emotion-value">${escapeHtml(row.value)}</div>
+        <div class="emotion-value">${escapeHtml(row.value)}/${EMOTION_MAX_VALUE}</div>
       </div>
     `;
   }).join("");
 
   return `<div class="block"><h3>感情パラメータ</h3><div class="emotion-chart">${body}</div></div>`;
+}
+
+function feedbackBlock(feedback) {
+  if (!feedback) return "";
+  const ai = feedback.ai || {};
+  const user = feedback.user || {};
+  let html = "";
+  html += block("AIフィードバック", ai.text || ai.message || "");
+  html += emotionParametersBlock({ ai });
+  html += block("フィードバック生成トリガー", user.system_message || (user.payload && user.payload.message) || "");
+  return html;
 }
 
 function renderDetail(item) {
@@ -511,11 +617,13 @@ function renderDetail(item) {
     html += block("実行コード", (d.start || {}).code || "");
     html += block("標準入力", (d.start || {}).stdin || "");
     html += block("実行結果", (d.result || {}).result || (d.result || {}).error_message || "");
+    html += feedbackBlock(d.feedback);
   } else if (item.kind === "grade") {
     const r = d.result || {};
     html += `<div class="kv"><div class="key">score</div><div>${escapeHtml(r.score ?? "-")}</div><div class="key">新記録</div><div>${escapeHtml(r.is_new_record == null ? "-" : (r.is_new_record ? "はい" : "いいえ"))}</div><div class="key">bonus_love</div><div>${escapeHtml(r.bonus_love ?? "-")}</div></div>`;
     html += block("理由", r.reason || "");
     html += block("改善点", r.improvement || "");
+    html += feedbackBlock(d.feedback);
     html += block("コード", (d.start || {}).code || "");
   } else if (item.kind === "code") {
     html += block("コード", d.code || "");
@@ -783,6 +891,7 @@ function setupResizableLayout() {
         } else if (mode === "timeline") {
           shell.style.setProperty("--events-h", clamp(startEvents - (moveEvent.clientY - startY), 160, maxEvents) + "px");
         }
+        renderChart();
       }
 
       function onUp() {
@@ -790,6 +899,7 @@ function setupResizableLayout() {
         handle.removeEventListener("pointermove", onMove);
         handle.removeEventListener("pointerup", onUp);
         handle.removeEventListener("pointercancel", onUp);
+        renderChart();
       }
 
       handle.addEventListener("pointermove", onMove);
@@ -809,6 +919,7 @@ function bindEvents() {
   });
   $("filter-event-type").addEventListener("change", buildAndRender);
   $("show-code-snapshots").addEventListener("change", buildAndRender);
+  window.addEventListener("resize", renderChart);
   $("back-app").addEventListener("click", () => { location.href = "/"; });
   $("admin-password").addEventListener("keydown", (e) => {
     if (e.key === "Enter") loadProfiles();

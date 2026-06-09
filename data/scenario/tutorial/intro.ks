@@ -68,7 +68,7 @@ tf.you = f.user_name;
 [image storage="tutorial/課題選択.png" layer="2"  width=800 time=500 x=100 y=50]
 これが課題選択。[p]
 [chara_mod name="mocha" face="thinking" time=200]
-どれから初めてもいいですけど、各カテゴリ3問以上クリアするのを目指してほしいです。[p]
+まずは、各カテゴリ2問以上クリアするのを目指してほしいです。[p]
 
 [rect_show name="task_button" x=545 y=430 width=300 height=50 color="#ff4500" border=4 bg="rgb(0,0,0,0)" radius=5]
 やりたい課題を選択して、「この課題を始める」のボタンを押して演習画面に進んでください。[p]

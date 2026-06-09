@@ -31,7 +31,7 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
                     return f.cleared_tasks && f.cleared_tasks[k];
                 }).length;
             });
-            unlockedCount = clearedPerCat.filter(function(n) { return n >= 3; }).length + 1;
+            unlockedCount = clearedPerCat.filter(function(n) { return n >= 2; }).length + 1;
         } else {
             var love = parseInt(f.love_level) || 0;
             var gaugeState = window.AppProgressConfig.getLoveGaugeState(love);
@@ -100,6 +100,29 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
     Object.keys(catTaskLists).forEach(function(cat) {
         catTaskLists[cat].sort(function(a, b) { return taskNumber(a) - taskNumber(b); });
     });
+
+    function lowDifficultyClearedCount(catLabel) {
+        return (catTaskLists[catLabel] || []).filter(function(key) {
+            var task = tasks[key] || {};
+            var difficulty = parseInt(task.difficulty, 10) || 1;
+            return difficulty <= 2 && clearedTasks[key];
+        }).length;
+    }
+
+    function highDifficultyTasksUnlocked() {
+        if (!cats.length) return true;
+        return cats.every(function(cat) {
+            return lowDifficultyClearedCount(cat.label) >= 2;
+        });
+    }
+
+    var isHighDifficultyUnlocked = highDifficultyTasksUnlocked();
+
+    function isTaskLocked(taskId) {
+        var task = tasks[taskId] || {};
+        var difficulty = parseInt(task.difficulty, 10) || 1;
+        return difficulty >= 3 && !isHighDifficultyUnlocked;
+    }
 
     window._sel_curCat = 0;
     window._sel_selectedTaskId = (catTaskLists[cats[0] && cats[0].label] || [])[0] || null;
@@ -190,7 +213,11 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
             return;
         }
         var cleared = !!clearedTasks[taskId];
+        var locked = isTaskLocked(taskId);
         var desc = summaryDescription(task.description);
+        var lockMessage = locked
+            ? '<div style="font-size:15px;line-height:1.5;margin-bottom:10px;color:#ffd166;">難易度3以上の課題は、全カテゴリで難易度2以下を2問ずつクリアすると解放されます。</div>'
+            : '';
 
         $detail.html(
             '<div style="font-size:13px;color:#a7f3d0;margin-bottom:6px;">' + escapeHtml(task.category || '') + '</div>' +
@@ -198,11 +225,14 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
             '<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;font-size:16px;">' +
                 '<span style="color:#ffd166;">' + stars(task.difficulty || 1) + '</span>' +
                 '<span style="padding:3px 9px;border-radius:999px;background:' + (cleared ? '#1f9d66' : '#666') + ';">' + (cleared ? 'クリア済み' : '未クリア') + '</span>' +
+                (locked ? '<span style="padding:3px 9px;border-radius:999px;background:#777;">ロック中</span>' : '') +
             '</div>' +
+            lockMessage +
             '<div style="font-size:16px;line-height:1.65;margin-bottom:70px;min-height:260px;max-height:360px;overflow:hidden;">' + nl2br(desc) + '</div>' +
-            '<button id="task_start_btn" style="position:absolute;left:18px;bottom:18px;width:464px;height:48px;border:2px solid white;border-radius:8px;background:#0f8b8d;color:white;font-size:20px;font-weight:bold;cursor:pointer;">この課題を始める</button>'
+            '<button id="task_start_btn" ' + (locked ? 'disabled' : '') + ' style="position:absolute;left:18px;bottom:18px;width:464px;height:48px;border:2px solid white;border-radius:8px;background:' + (locked ? '#777' : '#0f8b8d') + ';color:white;font-size:20px;font-weight:bold;cursor:' + (locked ? 'default' : 'pointer') + ';">' + (locked ? '未解放' : 'この課題を始める') + '</button>'
         );
         $('#task_start_btn').on('click', function() {
+            if (locked) return;
             f.current_task_id = taskId;
             cleanupSelectUi();
             TYRANO.kag.ftag.startTag('jump', { target: '*common_task_start' });
@@ -216,6 +246,7 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
         list.forEach(function(taskId, pos) {
             var task = tasks[taskId];
             var cleared = !!clearedTasks[taskId];
+            var locked = isTaskLocked(taskId);
             var selected = taskId === window._sel_selectedTaskId;
             var $btn = $('<button>').addClass('task_btn_row').attr('data-task-id', taskId).css({
                 position: 'absolute',
@@ -225,7 +256,7 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
                 height: '58px',
                 border: selected ? '3px solid #ffd166' : '3px solid white',
                 'border-radius': '8px',
-                background: selected ? '#0b9a9c' : '#087b7d',
+                background: locked ? '#777' : (selected ? '#0b9a9c' : '#087b7d'),
                 color: 'white',
                 'font-size': '17px',
                 cursor: 'pointer',
@@ -233,7 +264,7 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
                 overflow: 'hidden',
                 'white-space': 'nowrap',
                 'text-overflow': 'ellipsis'
-            }).text((task && task.title ? task.title : taskId).replace(/^課題\d+[-ー]\d+[:：]\s*/, ''));
+            }).text((locked ? '未解放: ' : '') + (task && task.title ? task.title : taskId).replace(/^課題\d+[-ー]\d+[:：]\s*/, ''));
             var $check = $('<span>').addClass('task_btn_row').css({
                 position: 'absolute',
                 left: '485px',
@@ -255,9 +286,8 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
     }
 
     cats.forEach(function(cat, idx) {
-        var total = (catTaskLists[cat.label] || []).length;
-        var cleared = (catTaskLists[cat.label] || []).filter(function(k) { return clearedTasks[k]; }).length;
-        var $tab = $('<div>').addClass('_sel_tab').attr('data-idx', idx).text(cat.short + ' ' + cleared + '/' + 3).css({
+        var cleared = lowDifficultyClearedCount(cat.label);
+        var $tab = $('<div>').addClass('_sel_tab').attr('data-idx', idx).text(cat.short + ' ' + Math.min(cleared, 2) + '/' + 2).css({
             flex: '1',
             height: '44px',
             'line-height': '44px',
@@ -313,15 +343,33 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
 *common_task_start
 [iscript]
     $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#new_episode_tag,.sel_back_btn').remove();
-    var taskData = f.all_tasks[f.current_task_id];
-    if (taskData) {
+    var allTasks = f.all_tasks || {};
+    var cats = allTasks._categories || [];
+    var clearedTasks = f.cleared_tasks || {};
+    var currentTask = allTasks[f.current_task_id] || {};
+    var currentDifficulty = parseInt(currentTask.difficulty, 10) || 1;
+    var highDifficultyUnlocked = !cats.length || cats.every(function(cat) {
+        var count = Object.keys(allTasks).filter(function(key) {
+            var task = allTasks[key] || {};
+            var difficulty = parseInt(task.difficulty, 10) || 1;
+            return /^task\d+$/.test(key) && task.category === cat.label && difficulty <= 2 && clearedTasks[key];
+        }).length;
+        return count >= 2;
+    });
+    f.current_task_locked = currentDifficulty >= 3 && !highDifficultyUnlocked;
+    var taskData = allTasks[f.current_task_id];
+    if (!f.current_task_locked && taskData) {
         f.my_code = Array.isArray(taskData.initial_code)
             ? taskData.initial_code.join('\n')
             : taskData.initial_code;
-    } else {
+    } else if (!f.current_task_locked) {
         f.my_code = '// 課題データが見つかりません: ' + f.current_task_id;
     }
 [endscript]
+[if exp="f.current_task_locked == true"]
+[dialog type="alert" text="この課題はまだ解放されていません。全カテゴリで難易度2以下の課題を2問ずつクリアすると解放されます。"]
+[jump storage="select/task.ks" target="*start"]
+[endif]
 [clearfix]
 [eval exp="f.is_sandbox=false"]
 @layopt layer="message0" visible=true

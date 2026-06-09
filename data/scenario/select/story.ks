@@ -58,7 +58,7 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
             return f.cleared_tasks && f.cleared_tasks[key];
         }).length;
     });
-    var clearedCategoryCount = clearedPerCat.filter(function(n) { return n >= 3; }).length;
+    var clearedCategoryCount = clearedPerCat.filter(function(n) { return n >= 2; }).length;
     var unlockedCount = Math.min(5, clearedCategoryCount + 1);
     if (f.user_role !== 'control') {
         var love = parseInt(f.love_level) || 0;
@@ -151,7 +151,7 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
     function unlockText(ep) {
         if (ep.idx === 1) return '最初から解放';
         if (f.user_role === 'control') {
-            return '3問以上クリアしたカテゴリ数: ' + clearedCategoryCount + '/' + (ep.idx - 1);
+            return '2問以上クリアしたカテゴリ数: ' + clearedCategoryCount + '/' + (ep.idx - 1);
         }
         return '親密度Lv.' + ep.idx + 'で解放（現在 Lv.' + (f.level || 1) + '）';
     }

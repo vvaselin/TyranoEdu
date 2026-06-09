@@ -61,7 +61,7 @@
                     return f.cleared_tasks && f.cleared_tasks[k];
                 }).length;
             });
-            unlockedCount = Math.min(clearedPerCat.filter(function(n) { return n >= 3; }).length + 1, 5);
+            unlockedCount = Math.min(clearedPerCat.filter(function(n) { return n >= 2; }).length + 1, 5);
         } else {
             // f.love_level から直接レベルを算出（f.level に依存しない）
             var love = parseInt(f.love_level) || 0;
