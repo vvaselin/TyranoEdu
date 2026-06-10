@@ -236,6 +236,7 @@
 *submit
 ; 採点開始表示
 [iscript]
+
     if (f.editor_action_busy) {
         tf.editor_action_skip = true;
     } else {

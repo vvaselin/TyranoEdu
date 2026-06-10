@@ -104,6 +104,13 @@ window.toggleResultModal = function() {
     }
 };
 
+window.closeResultModal = function() {
+    var $dialog = $("#result_modal");
+    if ($dialog.length && $dialog.hasClass("ui-dialog-content") && $dialog.dialog("isOpen")) {
+        $dialog.dialog("close");
+    }
+};
+
 /**
  * コード実行開始時のUI更新（「実行中...」表示）
  */

@@ -165,6 +165,38 @@ function applyProfileFallback() {
 }
 
 function loadTaskProgressAndHome() {
+    function enterHome() {
+        $("#loading_overlay").fadeOut(300, function(){
+            if (window.ensureExperimentSessionId) window.ensureExperimentSessionId();
+            if (window.logExperimentEvent) {
+                window.logExperimentEvent("session_start", {
+                    name: f.user_name || "",
+                    love_level: f.love_level || 0,
+                    level: f.level || 1,
+                    cleared_task_count: Object.keys(f.cleared_tasks || {}).length
+                }, { task_id: null });
+            }
+            tyrano.plugin.kag.ftag.startTag("jump", { storage: "home.ks", target: "*start" });
+        });
+    }
+
+    function loadWatchedLecturesAndHome() {
+        $.ajax({
+            url: '/api/lecture-views?user_id=' + encodeURIComponent(uid),
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                f.watched_lectures = data && data.watched_lectures ? data.watched_lectures : {};
+                enterHome();
+            },
+            error: function(xhr, status, error) {
+                console.warn("Lecture views restore failed:", status, error);
+                f.watched_lectures = f.watched_lectures || {};
+                enterHome();
+            }
+        });
+    }
+
     window.sb.from('task_progress')
         .select('task_id')
         .eq('user_id', uid)
@@ -176,19 +208,7 @@ function loadTaskProgressAndHome() {
                     f.cleared_tasks[row.task_id] = true;
                 });
             }
-            
-            $("#loading_overlay").fadeOut(300, function(){
-                if (window.ensureExperimentSessionId) window.ensureExperimentSessionId();
-                if (window.logExperimentEvent) {
-                    window.logExperimentEvent("session_start", {
-                        name: f.user_name || "",
-                        love_level: f.love_level || 0,
-                        level: f.level || 1,
-                        cleared_task_count: Object.keys(f.cleared_tasks || {}).length
-                    }, { task_id: null });
-                }
-                tyrano.plugin.kag.ftag.startTag("jump", { storage: "home.ks", target: "*start" });
-            });
+            loadWatchedLecturesAndHome();
         });
 }
 

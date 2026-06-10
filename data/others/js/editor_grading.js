@@ -108,6 +108,9 @@ function handleGradeResult(data) {
     var f = TYRANO.kag.stat.f;
 
     if (data.score >= 80) {
+        if (window.closeResultModal) {
+            window.closeResultModal();
+        }
         // クリア演出
         TYRANO.kag.ftag.startTag("image", {
             storage: "clear.svg",

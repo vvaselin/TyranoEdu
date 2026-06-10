@@ -52,24 +52,38 @@
         if (!cats) { f.has_unread_lecture = false; return; }
 
         // 解放済みエピソード数を算出
-        var unlockedCount;
+        var unlockedLectures = {};
+        var clearedPerCat = cats.map(function(c) {
+            return Object.keys(f.all_tasks).filter(function(k) {
+                return /^task\d+$/.test(k) && f.all_tasks[k].category === c.label;
+            }).filter(function(k) {
+                return f.cleared_tasks && f.cleared_tasks[k];
+            }).length;
+        });
         if (f.user_role === 'control') {
-            var clearedPerCat = cats.map(function(c) {
-                return Object.keys(f.all_tasks).filter(function(k) {
-                    return /^task\d+$/.test(k) && f.all_tasks[k].category === c.label;
-                }).filter(function(k) {
-                    return f.cleared_tasks && f.cleared_tasks[k];
-                }).length;
-            });
-            unlockedCount = Math.min(clearedPerCat.filter(function(n) { return n >= 2; }).length + 1, 5);
+            for (var i = 1; i <= 5; i++) {
+                unlockedLectures[i] = i === 1 || (cats.length >= i && cats.slice(0, i).every(function(cat, catIdx) {
+                    return clearedPerCat[catIdx] >= 2;
+                }));
+            }
         } else {
             // f.love_level から直接レベルを算出（f.level に依存しない）
             var love = parseInt(f.love_level) || 0;
-            unlockedCount = window.AppProgressConfig.getUnlockedCountByLove(love);
+            var unlockedCount = window.AppProgressConfig.getUnlockedCountByLove(love);
+            for (var i = 1; i <= 5; i++) {
+                unlockedLectures[i] = i === 1 || (
+                    i <= Math.min(unlockedCount, 5) &&
+                    cats.length >= i &&
+                    cats.slice(0, i).every(function(cat, catIdx) {
+                        return clearedPerCat[catIdx] >= 1;
+                    })
+                );
+            }
         }
 
         var hasUnread = false;
-        for (var j = 1; j <= Math.min(unlockedCount, 5); j++) {
+        for (var j = 1; j <= 5; j++) {
+            if (!unlockedLectures[j]) continue;
             if (!f.watched_lectures || !f.watched_lectures[j]) {
                 hasUnread = true;
                 break;
