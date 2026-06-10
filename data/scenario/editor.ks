@@ -197,6 +197,9 @@
 ; --- 課題データをUIに反映 ---
 [iscript]
     window.initTaskDisplay();
+    if (window.triggerMascotTaskIntro) {
+        window.triggerMascotTaskIntro();
+    }
 [endscript]
 [mask_off time=1000]
 

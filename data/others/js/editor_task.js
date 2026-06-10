@@ -80,3 +80,96 @@ window.initTaskDisplay = function() {
         }
     });
 };
+
+window.buildEditorTaskContext = function(taskData) {
+    if (!taskData) return "タスクがありません";
+
+    var lines = [];
+    if (taskData.title) lines.push("[Title]\n" + taskData.title);
+    if (taskData.description) lines.push("[Description]\n" + taskData.description);
+    if (taskData.stdin) lines.push("[Fixed stdin]\n" + taskData.stdin);
+    if (taskData.expected_output) lines.push("[Expected Output]\n" + taskData.expected_output);
+    if (taskData.hints && taskData.hints.length > 0) {
+        lines.push("[Hints]\n" + taskData.hints.join("\n"));
+    }
+    return lines.join("\n\n");
+};
+
+window.triggerMascotTaskIntro = function() {
+    if (typeof TYRANO === "undefined" || !TYRANO.kag || !TYRANO.kag.stat) return;
+
+    var f = TYRANO.kag.stat.f || {};
+    if (f.is_sandbox) return;
+
+    var tasks = f.all_tasks;
+    var currentId = f.current_task_id;
+    var taskData = (tasks && currentId && tasks[currentId]) ? tasks[currentId] : null;
+    if (!taskData || !currentId) return;
+
+    if (!f._mascot_intro_task_ids) {
+        f._mascot_intro_task_ids = {};
+    }
+    if (f._mascot_intro_task_ids[currentId]) return;
+
+    var attempts = 0;
+    var maxAttempts = 10;
+    var retryMs = 300;
+
+    function tryTrigger() {
+        attempts++;
+        if (typeof window.mascot_chat_trigger !== "function") {
+            if (attempts < maxAttempts) {
+                setTimeout(tryTrigger, retryMs);
+            } else {
+                console.warn("[EditorTask] mascot_chat_trigger is not ready.");
+            }
+            return;
+        }
+
+        f._mascot_intro_task_ids[currentId] = true;
+
+        var learnedTopics = [];
+        if (f.ai_memory && Array.isArray(f.ai_memory.learned_topics)) {
+            learnedTopics = f.ai_memory.learned_topics;
+        }
+
+        var stdinNote = "";
+        if (taskData.stdin && taskData.stdin !== "") {
+            stdinNote = "\n- このシステムでは cin で入る入力内容は課題側で固定されています。今回の固定stdin: " + taskData.stdin;
+        }
+
+        var systemMessage =
+            "課題に取り組み始めた直後の自動説明です。\n" +
+            "現在の課題に必要なC++の書き方を、正解コード全文なしで2〜3個だけ簡潔に教えてください。\n" +
+            "- 例: `cout << \"こんにちは\" << endl;` で文字を出力できる、`cin >> a;` でaに入力できる、`for (int i = 0; i < 5; i++)`で繰り返せる、のような短い構文説明にしてください。\n" +
+            "- 課題の答えそのもの、完成コード、複数行の解答コードは出さないでください。" +
+            stdinNote + "\n" +
+            "- learned_topicsにある内容と重なる説明は、可能なら省いてください。\n\n" +
+            "[learned_topics]\n" + (learnedTopics.length ? learnedTopics.join(", ") : "なし") + "\n\n" +
+            "[Task Context]\n" + window.buildEditorTaskContext(taskData);
+
+        window.mascot_chat_trigger(systemMessage, false, function(err, data, requestId) {
+            if (!window.logExperimentEvent) return;
+
+            var eventData = {
+                request_id: requestId || "",
+                task_id: currentId,
+                task_title: taskData.title || "",
+                learned_topics: learnedTopics,
+                fixed_stdin: taskData.stdin || "",
+                system_message: systemMessage,
+                ai_text: data && data.text ? data.text : "",
+                emotion: data && data.emotion ? data.emotion : ""
+            };
+
+            if (err) {
+                eventData.error = true;
+                eventData.error_message = err.message || String(err);
+            }
+
+            window.logExperimentEvent("task_intro_knowledge", eventData);
+        });
+    }
+
+    tryTrigger();
+};

@@ -606,7 +606,7 @@ window.initMascotChat = function() {
                 character_id: "mocha",
                 message: messageToSend, 
                 code: f['my_code'],
-                task: task_data ? task_data.description : "タスクがありません",
+                task: window.buildEditorTaskContext ? window.buildEditorTaskContext(task_data) : (task_data ? task_data.description : "タスクがありません"),
                 love_level: parseInt(currentLove),
                 user_id: f.user_id,
                 prev_params: f.prev_params,
@@ -787,7 +787,7 @@ window.initMascotChat = function() {
                 character_id: "mocha",
                 message: messageToSend, 
                 code: f['my_code'],
-                task: task_data ? task_data.description : "タスクがありません",
+                task: window.buildEditorTaskContext ? window.buildEditorTaskContext(task_data) : (task_data ? task_data.description : "タスクがありません"),
                 love_level: parseInt(currentLove),
                 user_id: f.user_id,
                 prev_params: f.prev_params || { joy:0, anger:0, fear:0, trust:0, shy:0, surprise:0 },
@@ -826,7 +826,7 @@ window.initMascotChat = function() {
                     sendButton.prop("disabled", false);
                 } finally {
                     pendingSystemTriggerCount = Math.max(0, pendingSystemTriggerCount - 1);
-                    if (typeof callback === "function") callback();
+                    if (typeof callback === "function") callback(err, data, requestId);
                 }
             });
         };
