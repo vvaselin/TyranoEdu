@@ -9,6 +9,14 @@
 [layopt layer="message0" visible=true]
 
 [iscript]
+var $anonAuthBox = $("#anon-auth-box");
+if ($anonAuthBox.length) {
+    $anonAuthBox.closest(".layer_free > div").remove();
+    $anonAuthBox.remove();
+    if ($(".layer_free").children().length === 0) {
+        $(".layer_free").hide();
+    }
+}
 tf.system.backlog=[];
 tf.you = f.user_name;
 [endscript]

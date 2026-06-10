@@ -50,8 +50,8 @@ tf.you = f.user_name;
 隣の人に聞くか……[p]
 
 [filter layer=0 blur=5]
-[chara_show name="mocha" width=1000 top =50 left="1000"  time=500 face="magao" ]
-[chara_move name="mocha" left="400" anim="true" time="1000"]
+[chara_show name="mocha" width=1000 top =-100 left="1000"  time=500 face="magao" ]
+[chara_move name="mocha" left="200" anim="true" time="1000"]
 
 [free_filter layer=0]
 [chara_move name="mocha" left=300 top=50 width=800 time="500"]
