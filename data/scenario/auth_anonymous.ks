@@ -86,6 +86,16 @@ $("#anon-auth-box input").on("keydown keyup keypress", function(e) {
     e.stopPropagation();
 });
 
+function cleanupAnonAuthUi() {
+    var $box = $("#anon-auth-box");
+    $box.find("input, button").off();
+    $box.closest(".layer_free > div").remove();
+    $box.remove();
+    if ($(".layer_free").children().length === 0) {
+        $(".layer_free").hide();
+    }
+}
+
 function setAnonMessage(message) {
     $("#anon-auth-msg").text(message || "");
 }
@@ -178,9 +188,8 @@ async function completeRegistration(session, displayName, participantId) {
     f.participant_id = (profile && profile.participant_id) || registeredParticipantId;
     f.user_role = (profile && profile.role) || "control";
     f.tutorial_from_home = false;
-    $("#anon-auth-box").remove();
+    cleanupAnonAuthUi();
     tyrano.plugin.kag.ftag.startTag("jump", { storage: "tutorial/intro.ks", target: "*start" });
-    tyrano.plugin.kag.ftag.startTag("free_filter");
 }
 
 async function getCurrentSession() {
@@ -202,9 +211,8 @@ async function checkExistingAnonymousSession() {
         f.user_id = session.user.id;
         f.user_name = profile.name;
         f.participant_id = profile.participant_id;
-        $("#anon-auth-box").remove();
+        cleanupAnonAuthUi();
         tyrano.plugin.kag.ftag.startTag("jump", { storage: "first.ks", target: "*load_user_data" });
-        tyrano.plugin.kag.ftag.startTag("free_filter");
     }
 }
 
