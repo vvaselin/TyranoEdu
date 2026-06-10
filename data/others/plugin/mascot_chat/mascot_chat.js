@@ -100,7 +100,11 @@ window.initMascotChat = function() {
                     }
 
                     if(f.user_role=='control'){
-                        window.AppProgressConfig.applyControlLoveLevel(f);
+                        if (window.AppProgressConfig && typeof window.AppProgressConfig.applyControlLoveLevel === "function") {
+                            window.AppProgressConfig.applyControlLoveLevel(f);
+                        } else {
+                            f.love_level = 50;
+                        }
                         var loveGaugeBox = container.find(".love-gauge-box");
                         loveGaugeBox.hide();
                     }
@@ -473,6 +477,17 @@ window.initMascotChat = function() {
             return prefix + "-" + Date.now() + "-" + Math.random().toString(36).slice(2);
         }
 
+        function getCurrentLoveLevel(f) {
+            if (f.user_role === "control") {
+                if (window.AppProgressConfig && typeof window.AppProgressConfig.applyControlLoveLevel === "function") {
+                    return window.AppProgressConfig.applyControlLoveLevel(f);
+                }
+                f.love_level = 50;
+                return f.love_level;
+            }
+            return f.love_level || 0;
+        }
+
         function applyAIResponse(data, isSystemTrigger, requestId) {
             var aiText = data.text || "";
             var emotion = data.emotion || "normal";
@@ -599,7 +614,7 @@ window.initMascotChat = function() {
             var tasks = f.all_tasks;
             var current_id = f.current_task_id;
             var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
-            var currentLove = f.user_role == 'control' ? window.AppProgressConfig.applyControlLoveLevel(f) : (f.love_level || 0);
+            var currentLove = getCurrentLoveLevel(f);
             var messageToSend = userMessage + historyContext + memoryContext;   
             var requestId = createRequestId("chat");
             var payload = {
@@ -647,7 +662,9 @@ window.initMascotChat = function() {
             if (typeof TYRANO.kag.stat.f === "undefined") return;
 
             var totalLove = parseInt(f.love_level) || 0;
-            var gaugeState = window.AppProgressConfig.getLoveGaugeState(totalLove);
+            var gaugeState = window.AppProgressConfig && typeof window.AppProgressConfig.getLoveGaugeState === "function"
+                ? window.AppProgressConfig.getLoveGaugeState(totalLove)
+                : { level: 1, percent: 0, displayStr: totalLove + " / 100" };
             var currentLv = gaugeState.level;
             
            var prevLv = window._mascot_prev_lv || 1;
@@ -773,7 +790,7 @@ window.initMascotChat = function() {
             var tasks = f.all_tasks;
             var current_id = f.current_task_id;
             var task_data = (tasks && tasks[current_id]) ? tasks[current_id] : null;
-            var currentLove = f.user_role == 'control' ? window.AppProgressConfig.applyControlLoveLevel(f) : (f.love_level || 0);
+            var currentLove = getCurrentLoveLevel(f);
 
             var messageToSend = "[SYSTEM] " + systemMessage;    
             var requestId = createRequestId("system");
