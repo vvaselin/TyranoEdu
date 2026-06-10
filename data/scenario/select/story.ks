@@ -58,12 +58,26 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
             return f.cleared_tasks && f.cleared_tasks[key];
         }).length;
     });
-    var clearedCategoryCount = clearedPerCat.filter(function(n) { return n >= 2; }).length;
-    var unlockedCount = Math.min(5, clearedCategoryCount + 1);
+    var controlLectureUnlocked = {};
+    for (var unlockIdx = 1; unlockIdx <= 5; unlockIdx++) {
+        controlLectureUnlocked[unlockIdx] = unlockIdx === 1 || (cats.length >= unlockIdx && cats.slice(0, unlockIdx).every(function(cat, catIdx) {
+            return clearedPerCat[catIdx] >= 2;
+        }));
+    }
+    var experimentalLectureUnlocked = {};
     if (f.user_role !== 'control') {
         var love = parseInt(f.love_level) || 0;
         var gaugeState = window.AppProgressConfig.getLoveGaugeState(love);
         f.level = gaugeState.level;
+        for (var expUnlockIdx = 1; expUnlockIdx <= 5; expUnlockIdx++) {
+            experimentalLectureUnlocked[expUnlockIdx] = expUnlockIdx === 1 || (
+                f.level >= expUnlockIdx &&
+                cats.length >= expUnlockIdx &&
+                cats.slice(0, expUnlockIdx).every(function(cat, catIdx) {
+                    return clearedPerCat[catIdx] >= 1;
+                })
+            );
+        }
     }
 
     var epSummaries = {
@@ -78,9 +92,9 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
     for (var i = 1; i <= 5; i++) {
         var locked;
         if (f.user_role === 'control') {
-            locked = i > unlockedCount;
+            locked = !controlLectureUnlocked[i];
         } else {
-            locked = f.level < i;
+            locked = !experimentalLectureUnlocked[i];
         }
         var cat = cats[i - 1];
         window._sd_lec[i] = {
@@ -151,9 +165,11 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
     function unlockText(ep) {
         if (ep.idx === 1) return '最初から解放';
         if (f.user_role === 'control') {
-            return '2問以上クリアしたカテゴリ数: ' + clearedCategoryCount + '/' + (ep.idx - 1);
+            var categoryClear = Math.min(clearedPerCat[ep.idx - 1] || 0, 2);
+            return '前のエピソード解放 + 該当カテゴリ2問クリア: ' + categoryClear + '/2';
         }
-        return '親密度Lv.' + ep.idx + 'で解放（現在 Lv.' + (f.level || 1) + '）';
+        var expCategoryClear = Math.min(clearedPerCat[ep.idx - 1] || 0, 1);
+        return '親密度Lv.' + ep.idx + ' + 該当カテゴリ1問クリア: ' + expCategoryClear + '/1（現在 Lv.' + (f.level || 1) + '）';
     }
 
     function renderDetail(idx) {
