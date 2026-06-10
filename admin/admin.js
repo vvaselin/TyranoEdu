@@ -563,6 +563,13 @@ function getEmotionParameters(data) {
   }).filter(Boolean);
 }
 
+function emotionChoiceBlock(data) {
+  const ai = data && data.ai ? data.ai : {};
+  const emotion = ai.emotion || (ai.payload && ai.payload.emotion);
+  if (!emotion) return "";
+  return `<div class="block"><h3>選択emotion</h3><pre>${escapeHtml(emotion)}</pre></div>`;
+}
+
 function emotionParametersBlock(data) {
   const rows = getEmotionParameters(data);
   if (rows.length === 0) return "";
@@ -588,6 +595,7 @@ function feedbackBlock(feedback) {
   const user = feedback.user || {};
   let html = "";
   html += block("AIフィードバック", ai.text || ai.message || "");
+  html += emotionChoiceBlock({ ai });
   html += emotionParametersBlock({ ai });
   html += block("フィードバック生成トリガー", user.system_message || (user.payload && user.payload.message) || "");
   return html;
@@ -616,6 +624,7 @@ function renderDetail(item) {
     const payload = d.user && d.user.payload ? d.user.payload : {};
     html += block("ユーザー/システム送信", getChatUserText(d));
     html += block("AI応答", ai.text || ai.message || "");
+    html += emotionChoiceBlock(d);
     html += emotionParametersBlock(d);
     html += block("送信時コード", payload.code || "");
     html += block("直前出力", payload.prev_output || "");
