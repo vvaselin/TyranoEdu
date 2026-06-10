@@ -164,12 +164,13 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
 
     function unlockText(ep) {
         if (ep.idx === 1) return '最初から解放';
+        var categoryName = ep.category || 'この';
         if (f.user_role === 'control') {
             var categoryClear = Math.min(clearedPerCat[ep.idx - 1] || 0, 2);
-            return '前のエピソード解放 + 該当カテゴリ2問クリア: ' + categoryClear + '/2';
+            return '前のエピソード解放\n+ 「' + categoryName + '」カテゴリ2問クリア: ' + categoryClear + '/2';
         }
         var expCategoryClear = Math.min(clearedPerCat[ep.idx - 1] || 0, 1);
-        return '親密度Lv.' + ep.idx + ' + 該当カテゴリ1問クリア: ' + expCategoryClear + '/1（現在 Lv.' + (f.level || 1) + '）';
+        return '親密度Lv.' + ep.idx + '（現在 Lv.' + (f.level || 1) + '）\n+ 「' + categoryName + '」カテゴリ1問クリア: ' + expCategoryClear + '/1';
     }
 
     function renderDetail(idx) {
@@ -187,7 +188,7 @@ $('.select_ui,#task_tabs,#lecture_area,#task_area,#task_title,#lecture_title,#ne
             '<div style="font-size:18px;font-weight:bold;margin-bottom:8px;">概要</div>' +
             summaryHtml +
             '<div style="font-size:18px;font-weight:bold;margin-bottom:8px;">解放条件</div>' +
-            '<div style="font-size:16px;line-height:1.55;margin-bottom:22px;">' + escapeHtml(unlockText(ep)) + '</div>' +
+            '<div style="font-size:16px;line-height:1.45;margin-bottom:22px;">' + escapeHtml(unlockText(ep)).replace(/\n/g, '<br>') + '</div>' +
             '<button id="story_start_btn" ' + (ep.locked ? 'disabled' : '') + ' style="position:absolute;left:20px;bottom:20px;width:460px;height:52px;border:2px solid white;border-radius:8px;background:' + (ep.locked ? '#777' : '#0f8b8d') + ';color:white;font-size:20px;font-weight:bold;cursor:' + (ep.locked ? 'default' : 'pointer') + ';">' + (ep.locked ? '未解放' : 'このエピソードを見る') + '</button>'
         );
         $('#story_start_btn').on('click', function() {

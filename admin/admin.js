@@ -16,6 +16,7 @@ const EVENT_META = {
   chat: { label: "会話", color: "#2563eb" },
   execute: { label: "実行", color: "#0f9f6e" },
   grade: { label: "採点", color: "#7c3aed" },
+  intro: { label: "入場時知識", color: "#0891b2" },
   love: { label: "親密度変化", color: "#dc2626" },
   code: { label: "コード保存", color: "#6b7280" },
   screen: { label: "画面移動", color: "#94a3b8" },
@@ -27,6 +28,7 @@ const RAW_LABELS = {
   lecture_view: "エピソード閲覧",
   chat_user_payload: "会話送信",
   chat_ai_response: "AI応答",
+  task_intro_knowledge: "入場時知識",
   execute_start: "実行開始",
   execute_result: "実行結果",
   grade_start: "採点開始",
@@ -332,6 +334,10 @@ function buildAnalysisEvents(rawEvents) {
       item.time = asTime(item.created_at);
       return;
     }
+    if (e.event_type === "task_intro_knowledge") {
+      add(base(e, "intro", d));
+      return;
+    }
     if (e.event_type === "execute_start") {
       const item = base(e, "execute", { start: d });
       pendingExecute.set(keyFor(e), item);
@@ -487,6 +493,10 @@ function summarizeAnalysisEvent(item) {
     const text = getChatUserText(d).replace(/\s+/g, " ").slice(0, 60);
     return `${src}: ${text || "送信内容なし"}`;
   }
+  if (item.kind === "intro") {
+    if (d.error) return `入場時知識生成エラー: ${d.error_message || ""}`;
+    return `入場時知識: ${String(d.ai_text || "").replace(/\s+/g, " ").slice(0, 70)}`;
+  }
   if (item.kind === "execute") {
     const result = d.result && d.result.result ? String(d.result.result) : "";
     const suffix = d.feedback && d.feedback.ai ? " / AIフィードバックあり" : "";
@@ -628,6 +638,13 @@ function renderDetail(item) {
     html += emotionParametersBlock(d);
     html += block("送信時コード", payload.code || "");
     html += block("直前出力", payload.prev_output || "");
+  } else if (item.kind === "intro") {
+    if (d.error) html += block("エラー", d.error_message || "");
+    html += block("AI応答", d.ai_text || "");
+    html += block("生成トリガー", d.system_message || "");
+    html += block("learned_topics", Array.isArray(d.learned_topics) ? d.learned_topics.join("\n") : d.learned_topics || "");
+    html += block("固定stdin", d.fixed_stdin || "");
+    html += emotionChoiceBlock({ ai: { emotion: d.emotion } });
   } else if (item.kind === "execute") {
     html += block("実行コード", (d.start || {}).code || "");
     html += block("標準入力", (d.start || {}).stdin || "");
