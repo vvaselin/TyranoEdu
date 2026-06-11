@@ -2,8 +2,13 @@
   password: "",
   profiles: [],
   rawEvents: [],
+  allEvents: [],
   analysisEvents: [],
   taskProgress: [],
+  allTaskProgress: [],
+  groupAnalysisLoaded: false,
+  groupMetrics: [],
+  groupTaskRows: [],
   selectedUserId: "",
   selectedParticipantId: "",
   selectedEventId: "",
@@ -175,6 +180,7 @@ async function loadProfiles() {
     }
     renderProfiles();
     renderManagePanel();
+    renderGroupPanel();
   } catch (error) {
     setStatus("profile-status", error.message, true);
   }
@@ -719,6 +725,599 @@ function renderManagePanel(errorMessage) {
   bindManageEvents();
 }
 
+const GROUP_METRICS = [
+  { key: "finalLove", label: "最終親密度", fmt: fmtNumber },
+  { key: "loveGain", label: "親密度増加量", fmt: fmtNumber },
+  { key: "clearedTasks", label: "80点以上到達課題数", fmt: fmtNumber },
+  { key: "avgScore", label: "平均スコア", fmt: fmtNumber },
+  { key: "maxScore", label: "最高スコア", fmt: fmtNumber },
+  { key: "executeCount", label: "実行回数", fmt: fmtNumber },
+  { key: "executeErrorRate", label: "実行エラー率", fmt: fmtPercent },
+  { key: "gradeCount", label: "採点回数", fmt: fmtNumber },
+  { key: "gradeFailCount", label: "採点失敗回数", fmt: fmtNumber },
+  { key: "regularChatCount", label: "通常AI会話回数", fmt: fmtNumber },
+  { key: "systemFeedbackCount", label: "システムAIフィードバック回数", fmt: fmtNumber },
+  { key: "avgAiScoreImprovement", label: "AI利用後スコア改善", fmt: fmtNumber },
+  { key: "editorMinutes", label: "editor滞在分", fmt: fmtNumber },
+  { key: "editorExitCount", label: "editor離脱回数", fmt: fmtNumber },
+  { key: "firstExecuteMinutes", label: "初回実行まで分", fmt: fmtNumber },
+  { key: "firstGradeMinutes", label: "初回採点まで分", fmt: fmtNumber },
+  { key: "firstClearMinutes", label: "初回クリアまで分", fmt: fmtNumber },
+];
+
+function fmtNumber(value) {
+  return Number.isFinite(value) ? (Math.round(value * 10) / 10).toLocaleString("ja-JP") : "-";
+}
+
+function fmtPercent(value) {
+  return Number.isFinite(value) ? `${Math.round(value * 1000) / 10}%` : "-";
+}
+
+function fmtMinutes(value) {
+  return Number.isFinite(value) ? `${fmtNumber(value)}分` : "-";
+}
+
+function mean(values) {
+  const xs = values.filter(Number.isFinite);
+  return xs.length ? xs.reduce((sum, v) => sum + v, 0) / xs.length : NaN;
+}
+
+function median(values) {
+  const xs = values.filter(Number.isFinite).sort((a, b) => a - b);
+  if (!xs.length) return NaN;
+  const mid = Math.floor(xs.length / 2);
+  return xs.length % 2 ? xs[mid] : (xs[mid - 1] + xs[mid]) / 2;
+}
+
+function stddev(values) {
+  const xs = values.filter(Number.isFinite);
+  if (xs.length < 2) return NaN;
+  const avg = mean(xs);
+  return Math.sqrt(xs.reduce((sum, v) => sum + Math.pow(v - avg, 2), 0) / (xs.length - 1));
+}
+
+function standardizedDiff(a, b) {
+  const pooled = Math.sqrt((Math.pow(a.std, 2) + Math.pow(b.std, 2)) / 2);
+  if (!Number.isFinite(pooled) || pooled === 0) return NaN;
+  return (a.mean - b.mean) / pooled;
+}
+
+function statFor(metrics, key, role) {
+  const values = metrics.filter((m) => m.role === role).map((m) => m[key]);
+  return { n: values.filter(Number.isFinite).length, mean: mean(values), median: median(values), std: stddev(values) };
+}
+
+function getGroupFilters() {
+  const taskEl = $("group-filter-task");
+  const participantEl = $("group-filter-participant");
+  const excludeSandboxEl = $("group-exclude-sandbox");
+  const excludeIncompleteEl = $("group-exclude-incomplete");
+  return {
+    taskId: taskEl ? taskEl.value.trim() : "",
+    participantText: participantEl ? participantEl.value.trim().toLowerCase() : "",
+    excludeSandbox: !excludeSandboxEl || excludeSandboxEl.checked,
+    excludeIncomplete: !excludeIncompleteEl || excludeIncompleteEl.checked,
+  };
+}
+
+function isAnalysisRole(role) {
+  return role === "experimental" || role === "control";
+}
+
+function isSandboxEvent(event) {
+  const data = getData(event);
+  return event.task_id === "sandbox" || data.is_sandbox === true;
+}
+
+function profileMatchesFilter(profile, filters) {
+  if (!isAnalysisRole(profile.role)) return false;
+  if (filters.excludeIncomplete && !profile.participant_id) return false;
+  if (!filters.participantText) return true;
+  const haystack = `${profile.participant_id || ""} ${profile.name || ""} ${profile.id || ""}`.toLowerCase();
+  return haystack.includes(filters.participantText);
+}
+
+function eventBelongsToProfile(event, profile) {
+  if (event.user_id && profile.id && event.user_id === profile.id) return true;
+  if (event.participant_id && profile.participant_id && event.participant_id === profile.participant_id) return true;
+  return false;
+}
+
+function taskProgressBelongsToProfile(row, profile) {
+  return row.user_id && profile.id && row.user_id === profile.id;
+}
+
+function eventPassesGroupFilters(event, filters) {
+  if (filters.excludeSandbox && isSandboxEvent(event)) return false;
+  if (filters.taskId && event.task_id !== filters.taskId) return false;
+  return true;
+}
+
+function uniqueEventTasks(events) {
+  return Array.from(new Set(events.map((e) => e.task_id).filter((taskId) => taskId && taskId !== "sandbox"))).sort((a, b) => a.localeCompare(b, "ja", { numeric: true }));
+}
+
+async function loadGroupAnalysis() {
+  if (!state.password) {
+    setGroupStatus("管理パスワードを入力して参加者を読み込んでください", true);
+    return;
+  }
+  setGroupStatus("群間分析データ読み込み中...");
+  try {
+    const [eventsData, progressData] = await Promise.all([
+      fetchJSON("/api/admin/events?limit=200000"),
+      fetchJSON("/api/admin/task-progress"),
+    ]);
+    state.allEvents = eventsData.events || [];
+    state.allTaskProgress = progressData.task_progress || [];
+    state.groupAnalysisLoaded = true;
+    renderGroupPanel();
+    setGroupStatus(`${state.allEvents.length}件の生ログ / ${state.allTaskProgress.length}件の進捗`);
+  } catch (error) {
+    setGroupStatus(error.message, true);
+  }
+}
+
+function setGroupStatus(text, isError) {
+  const el = $("group-status");
+  if (!el) return;
+  el.textContent = text;
+  el.classList.toggle("error", !!isError);
+  el.classList.toggle("ok", !isError && /件|完了|成功/.test(text));
+}
+
+function buildParticipantMetric(profile, allEvents, allTaskProgress, filters) {
+  const events = allEvents
+    .filter((event) => eventBelongsToProfile(event, profile))
+    .filter((event) => eventPassesGroupFilters(event, filters))
+    .sort((a, b) => asTime(a.created_at) - asTime(b.created_at));
+  const progressRows = allTaskProgress.filter((row) => taskProgressBelongsToProfile(row, profile));
+  const filteredProgressRows = progressRows.filter((row) => {
+    if (filters.taskId && row.task_id !== filters.taskId) return false;
+    if (filters.excludeSandbox && row.task_id === "sandbox") return false;
+    return true;
+  });
+  const perTask = new Map();
+  const scoreEvents = [];
+  const regularChatTimes = [];
+  const regularChatTasks = new Set();
+  const systemFeedbackRequests = new Set();
+  const loveValues = [];
+  const clearedTasks = new Set();
+  const openEditors = new Map();
+  const lastEventTimeByKey = new Map();
+
+  const ensureTask = (taskId) => {
+    const key = taskId || "(taskなし)";
+    if (!perTask.has(key)) {
+      perTask.set(key, {
+        taskId: key,
+        scoreValues: [],
+        maxScore: NaN,
+        executeCount: 0,
+        executeErrorCount: 0,
+        gradeCount: 0,
+        gradeFailCount: 0,
+        regularChatCount: 0,
+        systemFeedbackCount: 0,
+        editorMs: 0,
+        estimatedEditorSessions: 0,
+        editorExitCount: 0,
+        cleared: false,
+      });
+    }
+    return perTask.get(key);
+  };
+
+  let executeCount = 0;
+  let executeErrorCount = 0;
+  let gradeCount = 0;
+  let gradeFailCount = 0;
+  let regularChatCount = 0;
+  let systemFeedbackCount = 0;
+  let loveChangeCount = 0;
+  let firstEditorAt = NaN;
+  let firstExecuteAt = NaN;
+  let firstGradeAt = NaN;
+  let firstClearAt = NaN;
+
+  events.forEach((event) => {
+    const data = getData(event);
+    const time = asTime(event.created_at);
+    const taskId = event.task_id || "";
+    const key = `${event.session_id || ""}|${taskId}`;
+    if (time) lastEventTimeByKey.set(key, time);
+    if (taskId) ensureTask(taskId);
+
+    const loggedLove = getEventLoveFromData(event);
+    if (Number.isFinite(loggedLove)) loveValues.push(loggedLove);
+    if (event.event_type === "love_change") loveChangeCount++;
+
+    if (event.event_type === "screen_transition" && data.screen === "editor") {
+      if (data.action === "enter") {
+        if (!Number.isFinite(firstEditorAt)) firstEditorAt = time;
+        if (!openEditors.has(key)) openEditors.set(key, { time, taskId });
+      } else if (data.action === "exit") {
+        const open = openEditors.get(key);
+        const task = ensureTask(taskId);
+        task.editorExitCount++;
+        if (open && time >= open.time) {
+          task.editorMs += time - open.time;
+          openEditors.delete(key);
+        }
+      }
+    }
+
+    if (event.event_type === "execute_start") {
+      executeCount++;
+      ensureTask(taskId).executeCount++;
+      if (!Number.isFinite(firstExecuteAt) && Number.isFinite(firstEditorAt)) firstExecuteAt = time;
+    }
+    if (event.event_type === "execute_result") {
+      const isError = data.is_error === true;
+      if (isError) {
+        executeErrorCount++;
+        ensureTask(taskId).executeErrorCount++;
+      }
+    }
+    if (event.event_type === "grade_result") {
+      gradeCount++;
+      const score = Number(data.score);
+      const task = ensureTask(taskId);
+      task.gradeCount++;
+      if (Number.isFinite(score)) {
+        task.scoreValues.push(score);
+        task.maxScore = Number.isFinite(task.maxScore) ? Math.max(task.maxScore, score) : score;
+        scoreEvents.push({ time, taskId, score });
+        if (score >= 80) {
+          task.cleared = true;
+          clearedTasks.add(taskId);
+          if (!Number.isFinite(firstClearAt) && Number.isFinite(firstEditorAt)) firstClearAt = time;
+        } else {
+          gradeFailCount++;
+          task.gradeFailCount++;
+        }
+      }
+      if (!Number.isFinite(firstGradeAt) && Number.isFinite(firstEditorAt)) firstGradeAt = time;
+    }
+    if (event.event_type === "chat_user_payload") {
+      const rid = getRequestId(event) || `${event.session_id || ""}-${event.created_at}`;
+      const task = ensureTask(taskId);
+      if (isSystemTriggerLog(event)) {
+        systemFeedbackRequests.add(rid);
+        task.systemFeedbackCount++;
+      } else {
+        regularChatCount++;
+        task.regularChatCount++;
+        regularChatTimes.push({ time, taskId });
+        if (taskId) regularChatTasks.add(taskId);
+      }
+    }
+  });
+
+  openEditors.forEach((open, key) => {
+    const end = lastEventTimeByKey.get(key);
+    if (!Number.isFinite(end) || end < open.time) return;
+    const task = ensureTask(open.taskId);
+    task.editorMs += end - open.time;
+    task.estimatedEditorSessions++;
+  });
+
+  filteredProgressRows.forEach((row) => {
+    const task = ensureTask(row.task_id);
+    task.taskProgressCleared = row.is_cleared;
+    task.taskProgressHighScore = row.high_score;
+  });
+
+  const scoreValues = scoreEvents.map((row) => row.score);
+  const aiImprovements = regularChatTimes.map((chat) => {
+    const previous = scoreEvents.filter((s) => s.taskId === chat.taskId && s.time < chat.time).pop();
+    const next = scoreEvents.find((s) => s.taskId === chat.taskId && s.time > chat.time);
+    return previous && next ? next.score - previous.score : NaN;
+  }).filter(Number.isFinite);
+  const editorMs = Array.from(perTask.values()).reduce((sum, task) => sum + task.editorMs, 0);
+  const editorExitCount = Array.from(perTask.values()).reduce((sum, task) => sum + task.editorExitCount, 0);
+  const estimatedEditorSessions = Array.from(perTask.values()).reduce((sum, task) => sum + task.estimatedEditorSessions, 0);
+  const initialLove = loveValues.length ? loveValues[0] : NaN;
+  const finalLove = Number.isFinite(Number(profile.love_level)) ? Number(profile.love_level) : (loveValues.length ? loveValues[loveValues.length - 1] : NaN);
+
+  return {
+    profile,
+    participant_id: profile.participant_id || "",
+    name: profile.name || "",
+    user_id: profile.id || "",
+    role: profile.role || "",
+    eventCount: events.length,
+    finalLove,
+    initialLove,
+    loveGain: Number.isFinite(initialLove) && Number.isFinite(finalLove) ? finalLove - initialLove : NaN,
+    loveChangeCount,
+    clearedTasks: clearedTasks.size,
+    taskProgressClearedCount: filteredProgressRows.filter((row) => row.is_cleared).length,
+    avgScore: mean(scoreValues),
+    maxScore: scoreValues.length ? Math.max(...scoreValues) : NaN,
+    passScoreCount: scoreValues.filter((score) => score >= 80).length,
+    executeCount,
+    executeErrorCount,
+    executeErrorRate: executeCount ? executeErrorCount / executeCount : NaN,
+    gradeCount,
+    gradeFailCount,
+    regularChatCount,
+    systemFeedbackCount: systemFeedbackRequests.size || systemFeedbackCount,
+    avgAiScoreImprovement: mean(aiImprovements),
+    editorMinutes: editorMs / 60000,
+    editorExitCount,
+    estimatedEditorSessions,
+    firstExecuteMinutes: Number.isFinite(firstEditorAt) && Number.isFinite(firstExecuteAt) ? (firstExecuteAt - firstEditorAt) / 60000 : NaN,
+    firstGradeMinutes: Number.isFinite(firstEditorAt) && Number.isFinite(firstGradeAt) ? (firstGradeAt - firstEditorAt) / 60000 : NaN,
+    firstClearMinutes: Number.isFinite(firstEditorAt) && Number.isFinite(firstClearAt) ? (firstClearAt - firstEditorAt) / 60000 : NaN,
+    aiTouchedTasks: regularChatTasks.size,
+    perTask,
+  };
+}
+
+function buildGroupAnalysis() {
+  const filters = getGroupFilters();
+  const profiles = state.profiles.filter((profile) => profileMatchesFilter(profile, filters));
+  const metrics = profiles.map((profile) => buildParticipantMetric(profile, state.allEvents, state.allTaskProgress, filters));
+  const taskRows = buildTaskComparisonRows(metrics);
+  state.groupMetrics = metrics;
+  state.groupTaskRows = taskRows;
+  return { filters, metrics, taskRows };
+}
+
+function buildTaskComparisonRows(metrics) {
+  const taskIds = Array.from(new Set(metrics.flatMap((metric) => Array.from(metric.perTask.keys()).filter((taskId) => taskId && taskId !== "(taskなし)")))).sort((a, b) => a.localeCompare(b, "ja", { numeric: true }));
+  return taskIds.map((taskId) => {
+    const roleStats = {};
+    ["experimental", "control"].forEach((role) => {
+      const rows = metrics.filter((metric) => metric.role === role).map((metric) => metric.perTask.get(taskId)).filter(Boolean);
+      const participantCount = rows.length;
+      roleStats[role] = {
+        participantCount,
+        clearRate: participantCount ? rows.filter((row) => row.cleared || row.taskProgressCleared).length / participantCount : NaN,
+        avgScore: mean(rows.map((row) => row.maxScore)),
+        avgExecute: mean(rows.map((row) => row.executeCount)),
+        avgChat: mean(rows.map((row) => row.regularChatCount)),
+        avgEditorMinutes: mean(rows.map((row) => row.editorMs / 60000)),
+        errorRate: mean(rows.map((row) => row.executeCount ? row.executeErrorCount / row.executeCount : NaN)),
+      };
+    });
+    return { taskId, experimental: roleStats.experimental, control: roleStats.control };
+  });
+}
+
+function renderGroupPanel() {
+  const pane = $("tab-group");
+  if (!pane) return;
+  const filters = getGroupFilters();
+  const taskOptions = uniqueEventTasks(state.groupAnalysisLoaded ? state.allEvents : state.rawEvents);
+  const selectedTask = filters.taskId;
+  pane.innerHTML = `
+    <div class="group-toolbar">
+      <select id="group-filter-task">
+        <option value="">全課題</option>
+        ${taskOptions.map((taskId) => `<option value="${escapeHtml(taskId)}" ${taskId === selectedTask ? "selected" : ""}>${escapeHtml(taskId)}</option>`).join("")}
+      </select>
+      <input id="group-filter-participant" type="text" placeholder="participant/name" value="${escapeHtml(filters.participantText)}">
+      <label class="check"><input id="group-exclude-sandbox" type="checkbox" ${filters.excludeSandbox ? "checked" : ""}>sandbox除外</label>
+      <label class="check"><input id="group-exclude-incomplete" type="checkbox" ${filters.excludeIncomplete ? "checked" : ""}>未完了除外</label>
+      <button id="load-group-analysis">群間分析を更新</button>
+      <button class="secondary" id="download-group-csv" ${state.groupMetrics.length ? "" : "disabled"}>参加者別CSV</button>
+      <span class="status" id="group-status">${state.groupAnalysisLoaded ? `${state.allEvents.length}件の生ログ` : "未読み込み"}</span>
+    </div>
+    <div id="group-analysis-body"></div>
+  `;
+  bindGroupPanelEvents();
+  if (state.groupAnalysisLoaded) renderGroupAnalysisBody();
+  else $("group-analysis-body").innerHTML = '<div class="empty">参加者を読み込んだ後、「群間分析を更新」を押してください。</div>';
+}
+
+function bindGroupPanelEvents() {
+  const loadBtn = $("load-group-analysis");
+  if (loadBtn) loadBtn.addEventListener("click", loadGroupAnalysis);
+  const csvBtn = $("download-group-csv");
+  if (csvBtn) csvBtn.addEventListener("click", downloadGroupMetricsCSV);
+  ["group-filter-task", "group-filter-participant", "group-exclude-sandbox", "group-exclude-incomplete"].forEach((id) => {
+    const el = $(id);
+    if (!el) return;
+    const eventName = el.type === "checkbox" ? "change" : "input";
+    el.addEventListener(eventName, () => {
+      if (state.groupAnalysisLoaded) renderGroupAnalysisBody();
+    });
+  });
+}
+
+function renderGroupAnalysisBody() {
+  const body = $("group-analysis-body");
+  if (!body) return;
+  const { metrics, taskRows } = buildGroupAnalysis();
+  body.innerHTML = [
+    renderGroupSummaryTable(metrics),
+    renderMetricRankingTable(metrics),
+    renderTaskComparisonTable(taskRows),
+    renderAiImprovementTable(metrics),
+    renderParticipantMetricsTable(metrics),
+  ].join("");
+  bindGroupParticipantClicks();
+  const csvBtn = $("download-group-csv");
+  if (csvBtn) csvBtn.disabled = metrics.length === 0;
+}
+
+function renderGroupSummaryTable(metrics) {
+  const rows = GROUP_METRICS.map((metric) => {
+    const exp = statFor(metrics, metric.key, "experimental");
+    const ctrl = statFor(metrics, metric.key, "control");
+    const diff = Number.isFinite(exp.mean) && Number.isFinite(ctrl.mean) ? exp.mean - ctrl.mean : NaN;
+    const d = standardizedDiff(exp, ctrl);
+    return `
+      <tr>
+        <td>${escapeHtml(metric.label)}</td>
+        <td>${metric.fmt(exp.mean)}</td>
+        <td>${metric.fmt(ctrl.mean)}</td>
+        <td>${metric.fmt(diff)}</td>
+        <td>${metric.fmt(exp.median)}</td>
+        <td>${metric.fmt(ctrl.median)}</td>
+        <td>${escapeHtml(exp.n)} / ${escapeHtml(ctrl.n)}</td>
+        <td>${fmtNumber(d)}</td>
+      </tr>`;
+  }).join("");
+  return `
+    <div class="block group-block">
+      <h3>群別サマリー</h3>
+      <div class="scroll group-table-scroll">
+        <table class="group-table">
+          <thead><tr><th>指標</th><th>experimental平均</th><th>control平均</th><th>差</th><th>experimental中央値</th><th>control中央値</th><th>人数</th><th>標準化差</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="8">対象データなし</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderMetricRankingTable(metrics) {
+  const scoreRows = metrics.slice().sort((a, b) => (b.maxScore || -1) - (a.maxScore || -1)).slice(0, 12);
+  const stuckRows = metrics.slice().sort((a, b) => (b.executeErrorRate || -1) - (a.executeErrorRate || -1)).slice(0, 12);
+  const rowHtml = (metric, value) => `
+    <tr class="clickable group-participant-row" data-user-id="${escapeHtml(metric.user_id)}">
+      <td>${escapeHtml(metric.participant_id || "未完了")}</td>
+      <td>${escapeHtml(metric.role)}</td>
+      <td>${escapeHtml(metric.name)}</td>
+      <td>${value}</td>
+    </tr>`;
+  return `
+    <div class="block group-block">
+      <h3>指標別ランキング</h3>
+      <div class="group-columns">
+        <div>
+          <h3>最高スコア</h3>
+          <div class="scroll group-small-scroll"><table><thead><tr><th>ID</th><th>群</th><th>名前</th><th>値</th></tr></thead><tbody>${scoreRows.map((m) => rowHtml(m, fmtNumber(m.maxScore))).join("") || '<tr><td colspan="4">対象データなし</td></tr>'}</tbody></table></div>
+        </div>
+        <div>
+          <h3>実行エラー率</h3>
+          <div class="scroll group-small-scroll"><table><thead><tr><th>ID</th><th>群</th><th>名前</th><th>値</th></tr></thead><tbody>${stuckRows.map((m) => rowHtml(m, fmtPercent(m.executeErrorRate))).join("") || '<tr><td colspan="4">対象データなし</td></tr>'}</tbody></table></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderTaskComparisonTable(taskRows) {
+  const rows = taskRows.map((row) => `
+    <tr>
+      <td>${escapeHtml(row.taskId)}</td>
+      <td>${fmtPercent(row.experimental.clearRate)}</td>
+      <td>${fmtPercent(row.control.clearRate)}</td>
+      <td>${fmtNumber(row.experimental.avgScore)}</td>
+      <td>${fmtNumber(row.control.avgScore)}</td>
+      <td>${fmtNumber(row.experimental.avgExecute)}</td>
+      <td>${fmtNumber(row.control.avgExecute)}</td>
+      <td>${fmtNumber(row.experimental.avgChat)}</td>
+      <td>${fmtNumber(row.control.avgChat)}</td>
+      <td>${fmtMinutes(row.experimental.avgEditorMinutes)}</td>
+      <td>${fmtMinutes(row.control.avgEditorMinutes)}</td>
+      <td>${fmtPercent(row.experimental.errorRate)}</td>
+      <td>${fmtPercent(row.control.errorRate)}</td>
+    </tr>`).join("");
+  return `
+    <div class="block group-block">
+      <h3>課題別比較</h3>
+      <div class="scroll group-table-scroll">
+        <table class="group-table wide">
+          <thead><tr><th>task</th><th>Expクリア率</th><th>Ctrlクリア率</th><th>Expスコア</th><th>Ctrlスコア</th><th>Exp実行</th><th>Ctrl実行</th><th>Exp会話</th><th>Ctrl会話</th><th>Exp滞在</th><th>Ctrl滞在</th><th>Expエラー率</th><th>Ctrlエラー率</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="13">対象データなし</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderAiImprovementTable(metrics) {
+  const rows = metrics.slice().sort((a, b) => (b.avgAiScoreImprovement || -Infinity) - (a.avgAiScoreImprovement || -Infinity)).map((m) => `
+    <tr class="clickable group-participant-row" data-user-id="${escapeHtml(m.user_id)}">
+      <td>${escapeHtml(m.participant_id || "未完了")}</td>
+      <td>${escapeHtml(m.role)}</td>
+      <td>${fmtNumber(m.avgAiScoreImprovement)}</td>
+      <td>${escapeHtml(m.regularChatCount)}</td>
+      <td>${escapeHtml(m.aiTouchedTasks)}</td>
+      <td>${escapeHtml(m.systemFeedbackCount)}</td>
+    </tr>`).join("");
+  return `
+    <div class="block group-block">
+      <h3>AI利用前後の改善</h3>
+      <div class="scroll group-table-scroll">
+        <table>
+          <thead><tr><th>ID</th><th>群</th><th>平均改善</th><th>通常会話</th><th>AI利用課題</th><th>システムFB</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="6">対象データなし</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderParticipantMetricsTable(metrics) {
+  const rows = metrics.map((m) => `
+    <tr class="clickable group-participant-row" data-user-id="${escapeHtml(m.user_id)}">
+      <td>${escapeHtml(m.participant_id || "未完了")}</td>
+      <td>${escapeHtml(m.role)}</td>
+      <td>${escapeHtml(m.name)}</td>
+      <td>${fmtNumber(m.finalLove)}</td>
+      <td>${fmtNumber(m.loveGain)}</td>
+      <td>${escapeHtml(m.clearedTasks)} / ${escapeHtml(m.taskProgressClearedCount)}</td>
+      <td>${fmtNumber(m.avgScore)}</td>
+      <td>${fmtNumber(m.maxScore)}</td>
+      <td>${escapeHtml(m.executeCount)}</td>
+      <td>${fmtPercent(m.executeErrorRate)}</td>
+      <td>${escapeHtml(m.gradeCount)}</td>
+      <td>${escapeHtml(m.regularChatCount)}</td>
+      <td>${fmtMinutes(m.editorMinutes)}</td>
+      <td>${escapeHtml(m.estimatedEditorSessions)}</td>
+    </tr>`).join("");
+  return `
+    <div class="block group-block">
+      <h3>参加者別メトリクス</h3>
+      <div class="scroll group-table-scroll">
+        <table class="group-table wide">
+          <thead><tr><th>ID</th><th>群</th><th>名前</th><th>最終親密度</th><th>増加量</th><th>クリア/進捗</th><th>平均スコア</th><th>最高</th><th>実行</th><th>エラー率</th><th>採点</th><th>会話</th><th>滞在</th><th>推定滞在</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="14">対象データなし</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function bindGroupParticipantClicks() {
+  document.querySelectorAll(".group-participant-row").forEach((row) => {
+    row.addEventListener("click", () => {
+      const profile = state.profiles.find((p) => p.id === row.dataset.userId);
+      if (!profile) return;
+      state.selectedUserId = profile.id;
+      state.selectedProfile = profile;
+      state.selectedParticipantId = profile.participant_id || "";
+      state.selectedEventId = "";
+      renderProfiles();
+      renderManagePanel();
+      setActiveTab("event");
+      loadEvents();
+      loadTaskProgress();
+    });
+  });
+}
+
+function downloadGroupMetricsCSV() {
+  const metrics = state.groupMetrics.length ? state.groupMetrics : buildGroupAnalysis().metrics;
+  const headers = [
+    "participant_id", "name", "role", "event_count", "final_love", "initial_love", "love_gain", "love_change_count",
+    "cleared_tasks_by_score", "cleared_tasks_by_task_progress", "avg_score", "max_score", "pass_score_count",
+    "execute_count", "execute_error_count", "execute_error_rate", "grade_count", "grade_fail_count",
+    "regular_chat_count", "system_feedback_count", "avg_ai_score_improvement", "editor_minutes", "editor_exit_count",
+    "estimated_editor_sessions", "first_execute_minutes", "first_grade_minutes", "first_clear_minutes", "user_id",
+  ];
+  const rows = metrics.map((m) => [
+    m.participant_id, m.name, m.role, m.eventCount, m.finalLove, m.initialLove, m.loveGain, m.loveChangeCount,
+    m.clearedTasks, m.taskProgressClearedCount, m.avgScore, m.maxScore, m.passScoreCount,
+    m.executeCount, m.executeErrorCount, m.executeErrorRate, m.gradeCount, m.gradeFailCount,
+    m.regularChatCount, m.systemFeedbackCount, m.avgAiScoreImprovement, m.editorMinutes, m.editorExitCount,
+    m.estimatedEditorSessions, m.firstExecuteMinutes, m.firstGradeMinutes, m.firstClearMinutes, m.user_id,
+  ].map(csvEscape).join(","));
+  downloadCSV("group_participant_metrics.csv", [headers.join(","), ...rows].join("\r\n"));
+}
+
 function renderGlobalResetBlock() {
   return `
     <div class="block danger-zone">
@@ -884,6 +1483,7 @@ function downloadEventsCSV() {
 function setActiveTab(tab) {
   document.querySelectorAll(".tab").forEach((btn) => btn.classList.toggle("active", btn.dataset.tab === tab));
   document.querySelectorAll(".tab-pane").forEach((pane) => pane.classList.toggle("active", pane.id === `tab-${tab}`));
+  if (tab === "group") renderGroupPanel();
 }
 
 function clamp(value, min, max) {
@@ -960,4 +1560,5 @@ function bindEvents() {
 
 bindEvents();
 renderManagePanel();
+renderGroupPanel();
 setupResizableLayout();
