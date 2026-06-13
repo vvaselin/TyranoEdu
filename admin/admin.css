@@ -28,12 +28,12 @@ header {
   padding: 0 18px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 14px;
   background: #172131;
   color: white;
 }
 
-h1 { margin: 0; font-size: 20px; }
+h1 { margin: 0; font-size: 20px; white-space: nowrap; }
 h2 { margin: 0 0 10px; font-size: 16px; }
 h3 { margin: 0 0 8px; font-size: 14px; }
 
@@ -62,6 +62,34 @@ button:disabled { opacity: .55; cursor: default; }
 
 .auth { display: flex; gap: 8px; align-items: center; }
 .auth input { width: 220px; }
+
+.admin-nav {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-right: auto;
+}
+
+.admin-nav a,
+.admin-nav a:visited {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, .22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .08);
+  color: #f8fafc;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.admin-nav a:hover {
+  background: rgba(255, 255, 255, .16);
+  color: white;
+  text-decoration: none;
+}
 
 .shell {
   height: calc(100vh - 56px);
@@ -137,7 +165,6 @@ tr.selected { background: #dcf5f5; }
 .col-id { width: 96px; }
 .col-role { width: 84px; }
 .col-love { width: 70px; }
-.col-log { width: 54px; }
 .col-time { width: 150px; }
 .col-kind { width: 98px; }
 .col-task { width: 90px; }
@@ -301,47 +328,6 @@ tr.selected { background: #dcf5f5; }
 .tp-action-col { width: 70px; }
 .tp-score, .tp-cleared { width: 100%; }
 
-.group-toolbar {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
-}
-
-.group-toolbar input,
-.group-toolbar select {
-  width: 150px;
-}
-
-.group-block {
-  overflow: hidden;
-}
-
-.group-table-scroll {
-  max-height: 360px;
-  overflow: auto;
-}
-
-.group-small-scroll {
-  max-height: 240px;
-  overflow: auto;
-}
-
-.group-table {
-  min-width: 760px;
-}
-
-.group-table.wide {
-  min-width: 1180px;
-}
-
-.group-columns {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
 pre {
   margin: 0;
   padding: 10px;
@@ -404,5 +390,4 @@ pre {
   }
   .detail { min-height: 620px; }
   .resize-handle { display: none; }
-  .group-columns { grid-template-columns: 1fr; }
 }

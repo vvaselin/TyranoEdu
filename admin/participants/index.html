@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Participants Admin</title>
+  <link rel="stylesheet" href="/admin/admin.css?v=20260613-2">
+  <link rel="stylesheet" href="/admin/css/participants.css?v=20260613-2">
+  <script src="/admin/js/api.js?v=20260613-2" defer></script>
+  <script src="/admin/js/ui.js?v=20260613-2" defer></script>
+  <script src="/admin/participants/participants.js?v=20260613-2" defer></script>
+</head>
+<body>
+  <header>
+    <h1>Participants Admin</h1>
+    <nav class="admin-nav">
+      <a href="/admin/">ログ</a>
+      <a href="/admin/participants/">参加者管理</a>
+      <a href="/admin/analysis/">群間分析</a>
+    </nav>
+    <div class="auth">
+      <input id="admin-password" type="password" placeholder="管理パスワード" autocomplete="current-password">
+      <button id="load-profiles">読み込み</button>
+    </div>
+  </header>
+
+  <main class="participants-page">
+    <section class="panel participants-list">
+      <div class="bar">
+        <strong>参加者</strong>
+        <span id="profile-status" class="status">未読み込み</span>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th class="col-id">ID</th><th>名前</th><th class="col-role">群</th><th class="col-love">親密度</th></tr></thead>
+          <tbody id="profiles-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel participant-editor">
+      <div class="bar">
+        <strong id="editor-title">参加者管理</strong>
+        <span id="manage-status" class="status"></span>
+      </div>
+      <div id="editor-body" class="detail-body">
+        <div class="empty">参加者を選択してください。</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

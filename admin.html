@@ -5,103 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Experiment Admin</title>
   <link rel="stylesheet" href="/admin/admin.css">
-  <script src="/admin/admin.js" defer></script>
+  <meta http-equiv="refresh" content="0; url=/admin/">
+  <script>location.replace("/admin/");</script>
 </head>
 <body>
-  <header>
-    <h1>Experiment Admin</h1>
-    <div class="auth">
-      <input id="admin-password" type="password" placeholder="管理パスワード" autocomplete="current-password">
-      <button id="load-profiles">読み込み</button>
-    </div>
-  </header>
-
-  <main class="shell">
-    <section class="panel participants">
-      <div class="bar">
-        <strong>参加者</strong>
-        <button class="secondary" id="download-profiles" disabled>CSV</button>
-        <span class="status" id="profile-status">未読み込み</span>
-      </div>
-      <div class="scroll">
-        <table>
-          <thead>
-            <tr>
-              <th class="col-id">ID</th>
-              <th>名前</th>
-              <th class="col-role">群</th>
-              <th class="col-love">親密度</th>
-              <th class="col-log">ログ</th>
-            </tr>
-          </thead>
-          <tbody id="profiles-body"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="panel timeline">
-      <div class="bar filters">
-        <strong id="timeline-title">親密度タイムライン</strong>
-        <select id="filter-event-type"><option value="">イベント全て</option></select>
-        <input id="filter-session-id" type="text" placeholder="session_id">
-        <input id="filter-task-id" type="text" placeholder="task_id">
-        <input id="filter-limit" type="number" min="1" max="5000" value="5000">
-        <label class="check"><input id="show-code-snapshots" type="checkbox">コード保存</label>
-        <button id="load-events" disabled>更新</button>
-        <span class="status" id="event-status">参加者を選択</span>
-      </div>
-      <div class="chart-wrap">
-        <div class="chart-scroll">
-          <svg id="chart" viewBox="0 0 900 430" preserveAspectRatio="none"></svg>
-        </div>
-        <div id="chart-legend" class="chart-legend"></div>
-      </div>
-    </section>
-
-    <section class="panel detail">
-      <div class="bar">
-        <strong id="detail-title">詳細</strong>
-        <button class="secondary" id="download-events-csv" disabled>ログCSV</button>
-        <button class="secondary" id="download-events-json" disabled>ログJSON</button>
-      </div>
-      <div class="tabs">
-        <button class="tab active" data-tab="event">イベント詳細</button>
-        <button class="tab" data-tab="manage">参加者管理</button>
-        <button class="tab" data-tab="group">群間分析</button>
-      </div>
-      <div class="detail-body">
-        <div id="tab-event" class="tab-pane active">
-          <div class="empty">グラフ上のポイント、または下のイベント一覧を選択してください。</div>
-        </div>
-        <div id="tab-manage" class="tab-pane"></div>
-        <div id="tab-group" class="tab-pane"></div>
-      </div>
-    </section>
-
-    <section class="panel event-list">
-      <div class="bar">
-        <strong>分析イベント</strong>
-        <span class="status" id="analysis-status">0件</span>
-      </div>
-      <div class="scroll">
-        <table>
-          <thead>
-            <tr>
-              <th class="col-time">時刻</th>
-              <th class="col-kind">種類</th>
-              <th class="col-task">task</th>
-              <th>概要</th>
-              <th class="col-love">親密度</th>
-            </tr>
-          </thead>
-          <tbody id="analysis-body"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <div class="resize-handle resize-col resize-participants" data-resize="participants"></div>
-    <div class="resize-handle resize-col resize-detail" data-resize="detail"></div>
-    <div class="resize-handle resize-row" data-resize="timeline"></div>
-  </main>
+  <p><a href="/admin/">管理者ページへ移動</a></p>
 </body>
 </html>
