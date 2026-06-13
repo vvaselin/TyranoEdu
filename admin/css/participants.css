@@ -1,0 +1,23 @@
+.participants-page {
+  height: calc(100vh - 56px);
+  padding: 14px;
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+  gap: 14px;
+}
+
+.participants-list,
+.participant-editor {
+  min-height: 0;
+}
+
+.task-progress-scroll {
+  max-height: 360px;
+}
+
+@media (max-width: 900px) {
+  .participants-page {
+    height: auto;
+    grid-template-columns: 1fr;
+  }
+}

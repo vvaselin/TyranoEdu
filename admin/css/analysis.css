@@ -1,0 +1,155 @@
+.analysis-page {
+  min-height: calc(100vh - 56px);
+  padding: 14px;
+  display: grid;
+  gap: 14px;
+}
+
+.analysis-toolbar .bar {
+  min-height: 54px;
+}
+
+.analysis-toolbar select,
+.analysis-toolbar input {
+  width: 180px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.summary-card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.summary-card .label {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.summary-card .value {
+  margin-top: 5px;
+  font-size: 22px;
+  font-weight: 800;
+  word-break: break-word;
+}
+
+.section-jump {
+  padding: 10px 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.section-jump a,
+.section-jump a:visited {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #f8fafc;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.section-jump a:hover {
+  background: #eaf0f7;
+}
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.analysis-panel {
+  min-height: 0;
+}
+
+.chart-box {
+  position: relative;
+  height: 300px;
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.chart-box.short {
+  height: 260px;
+}
+
+.chart-fallback {
+  display: none;
+  padding: 16px;
+  color: var(--muted);
+}
+
+.table-scroll {
+  max-height: 360px;
+  overflow: auto;
+}
+
+.table-scroll.short {
+  max-height: 210px;
+}
+
+.table-scroll.large {
+  max-height: 520px;
+}
+
+.analysis-page table {
+  min-width: 980px;
+}
+
+.analysis-page th,
+.analysis-page td {
+  text-align: right;
+}
+
+.analysis-page th:first-child,
+.analysis-page td:first-child,
+.analysis-page .metric-name,
+.analysis-page .free-text {
+  text-align: left;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.analysis-page .metric-table {
+  min-width: 1120px;
+}
+
+.analysis-page .metric-name {
+  width: 240px;
+  min-width: 240px;
+  max-width: 320px;
+}
+
+.analysis-page th:not(.metric-name),
+.analysis-page td:not(.metric-name):not(.free-text) {
+  min-width: 82px;
+}
+
+.free-text {
+  white-space: normal;
+  line-height: 1.5;
+}
+
+.subbar {
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 1180px) {
+  .summary-grid,
+  .analysis-grid {
+    grid-template-columns: 1fr;
+  }
+}
