@@ -1,57 +1,106 @@
 (function(global) {
-  const charts = {};
+  const instances = {};
 
-  function canDraw(canvasId) {
+  function ready(canvasId) {
     const canvas = document.getElementById(canvasId);
     const fallback = document.getElementById(`${canvasId}-fallback`);
     if (!canvas) return false;
     if (!global.Chart) {
-      canvas.style.display = "none";
+      canvas.hidden = true;
       if (fallback) {
-        fallback.style.display = "block";
-        fallback.textContent = "Chart.jsを読み込めませんでした。表データは利用できます。";
+        fallback.hidden = false;
+        fallback.textContent = "Chart.jsを読み込めませんでした。表は利用できます。";
       }
       return false;
     }
-    if (fallback) fallback.style.display = "none";
-    canvas.style.display = "block";
+    canvas.hidden = false;
+    if (fallback) fallback.hidden = true;
     return true;
   }
 
   function draw(canvasId, config) {
-    if (!canDraw(canvasId)) return;
-    if (charts[canvasId]) charts[canvasId].destroy();
-    charts[canvasId] = new Chart(document.getElementById(canvasId), config);
+    if (!ready(canvasId)) return;
+    if (instances[canvasId]) instances[canvasId].destroy();
+    instances[canvasId] = new Chart(document.getElementById(canvasId), config);
   }
 
-  function bar(canvasId, labels, datasets, title) {
+  const common = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: "nearest", intersect: false },
+    plugins: {
+      legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 10 } },
+      tooltip: { callbacks: {} },
+    },
+  };
+
+  function groupedBar(canvasId, labels, datasets, options) {
+    const opts = options || {};
     draw(canvasId, {
       type: "bar",
       data: { labels, datasets },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: "bottom" }, title: { display: !!title, text: title } },
-        scales: { y: { beginAtZero: true } },
-      },
-    });
-  }
-
-  function scatter(canvasId, datasets, xTitle, yTitle) {
-    draw(canvasId, {
-      type: "scatter",
-      data: { datasets },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: "bottom" } },
+        ...common,
+        plugins: {
+          ...common.plugins,
+          title: { display: !!opts.title, text: opts.title },
+        },
         scales: {
-          x: { title: { display: true, text: xTitle || "" } },
-          y: { title: { display: true, text: yTitle || "" } },
+          x: { stacked: !!opts.stacked, grid: { display: false } },
+          y: {
+            stacked: !!opts.stacked,
+            beginAtZero: opts.beginAtZero !== false,
+            min: Number.isFinite(opts.min) ? opts.min : undefined,
+            max: Number.isFinite(opts.max) ? opts.max : undefined,
+            title: { display: !!opts.yTitle, text: opts.yTitle || "" },
+          },
         },
       },
     });
   }
 
-  global.AdminCharts = { bar, scatter };
+  function line(canvasId, labels, datasets, options) {
+    const opts = options || {};
+    draw(canvasId, {
+      type: "line",
+      data: { labels, datasets: datasets.map((ds) => ({ tension: 0.15, pointRadius: 4, pointHoverRadius: 6, ...ds })) },
+      options: {
+        ...common,
+        plugins: { ...common.plugins, title: { display: !!opts.title, text: opts.title } },
+        scales: {
+          x: { grid: { display: false } },
+          y: {
+            beginAtZero: opts.beginAtZero !== false,
+            min: Number.isFinite(opts.min) ? opts.min : undefined,
+            max: Number.isFinite(opts.max) ? opts.max : undefined,
+            title: { display: !!opts.yTitle, text: opts.yTitle || "" },
+          },
+        },
+      },
+    });
+  }
+
+  function horizontalBar(canvasId, labels, datasets, options) {
+    const opts = options || {};
+    draw(canvasId, {
+      type: "bar",
+      data: { labels, datasets },
+      options: {
+        ...common,
+        indexAxis: "y",
+        plugins: { ...common.plugins, title: { display: !!opts.title, text: opts.title } },
+        scales: {
+          x: {
+            beginAtZero: true,
+            stacked: !!opts.stacked,
+            max: Number.isFinite(opts.max) ? opts.max : undefined,
+            title: { display: !!opts.xTitle, text: opts.xTitle || "" },
+          },
+          y: { stacked: !!opts.stacked, grid: { display: false } },
+        },
+      },
+    });
+  }
+
+  global.AdminCharts = { groupedBar, line, horizontalBar };
 })(window);
