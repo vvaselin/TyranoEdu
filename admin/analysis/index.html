@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Experiment Analysis</title>
-  <link rel="stylesheet" href="/admin/admin.css?v=20260613-3">
-  <link rel="stylesheet" href="/admin/css/analysis.css?v=20260613-3">
+  <link rel="stylesheet" href="/admin/admin.css?v=20260617-2">
+  <link rel="stylesheet" href="/admin/css/analysis.css?v=20260617-2">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-  <script src="/admin/js/api.js?v=20260613-3" defer></script>
-  <script src="/admin/js/ui.js?v=20260613-3" defer></script>
-  <script src="/admin/js/stats.js?v=20260613-3" defer></script>
-  <script src="/admin/analysis/charts.js?v=20260613-3" defer></script>
-  <script src="/admin/analysis/analysis.js?v=20260613-3" defer></script>
+  <script src="/admin/js/api.js?v=20260617-2" defer></script>
+  <script src="/admin/js/ui.js?v=20260617-2" defer></script>
+  <script src="/admin/js/stats.js?v=20260617-2" defer></script>
+  <script src="/admin/analysis/charts.js?v=20260617-2" defer></script>
+  <script src="/admin/analysis/analysis.js?v=20260617-2" defer></script>
 </head>
 <body>
   <header>
@@ -19,7 +19,7 @@
     <nav class="admin-nav">
       <a href="/admin/">ログ</a>
       <a href="/admin/participants/">参加者管理</a>
-      <a href="/admin/analysis/">群間分析</a>
+      <a href="/admin/analysis/" aria-current="page">群間分析</a>
     </nav>
     <div class="auth">
       <input id="admin-password" type="password" placeholder="管理パスワード" autocomplete="current-password">
@@ -29,14 +29,18 @@
 
   <main class="analysis-page">
     <section class="analysis-toolbar panel">
-      <div class="bar">
-        <strong>分析</strong>
-        <select id="role-filter">
-          <option value="">全群</option>
-          <option value="experimental">experimental</option>
-          <option value="control">control</option>
-        </select>
-        <input id="participant-filter" type="text" placeholder="participant_id / 名前">
+      <div class="bar toolbar-row">
+        <strong>分析対象</strong>
+        <label>群
+          <select id="role-filter">
+            <option value="">全群</option>
+            <option value="experimental">実験群</option>
+            <option value="control">統制群</option>
+          </select>
+        </label>
+        <label>参加者
+          <input id="participant-filter" type="search" placeholder="学籍番号 / 名前">
+        </label>
         <button class="secondary" id="download-analysis-csv" disabled>参加者別CSV</button>
         <span id="analysis-status" class="status">未読み込み</span>
       </div>
@@ -44,70 +48,96 @@
 
     <section id="summary-cards" class="summary-grid"></section>
 
-    <section class="section-jump panel">
-      <a href="#learning-section">学習成果</a>
-      <a href="#experience-section">経験差</a>
-      <a href="#quota-section">ノルマ10問</a>
-      <a href="#category-section">カテゴリ別</a>
-      <a href="#survey-section">アンケート</a>
+    <nav class="section-jump panel" aria-label="分析項目">
+      <a href="#test-section">テスト得点</a>
+      <a href="#attitude-section">学習意識</a>
+      <a href="#ils-section">学習スタイル</a>
+      <a href="#attribute-section">属性別評価</a>
+      <a href="#item-section">事後評価項目</a>
+      <a href="#participant-section">参加者別</a>
+    </nav>
+
+    <section id="test-section" class="analysis-grid">
+      <article class="panel analysis-panel span-2">
+        <div class="bar section-heading">
+          <div><strong>事前・事後テストの変化</strong><p>同一参加者の対応が取れたデータだけで変化量を算出します。</p></div>
+        </div>
+        <div class="chart-box"><canvas id="test-chart"></canvas><div class="chart-fallback" id="test-chart-fallback" hidden></div></div>
+        <div class="scroll table-scroll"><table id="test-table" class="metric-table"></table></div>
+      </article>
     </section>
 
-    <section class="analysis-grid" id="learning-section">
-      <div class="panel analysis-panel">
-        <div class="bar"><strong>学習成果</strong></div>
-        <div class="chart-box"><canvas id="learning-chart"></canvas><div class="chart-fallback" id="learning-chart-fallback"></div></div>
-        <div class="scroll table-scroll"><table id="learning-table" class="metric-table"></table></div>
-      </div>
-      <div class="panel analysis-panel">
-        <div class="bar"><strong>ノルマ指標との探索的相関</strong><span class="note">因果ではなく傾向確認用</span></div>
-        <div class="chart-box"><canvas id="scatter-chart"></canvas><div class="chart-fallback" id="scatter-chart-fallback"></div></div>
-        <div class="scroll table-scroll"><table id="correlation-table" class="metric-table"></table></div>
-      </div>
+    <section id="attitude-section" class="analysis-grid">
+      <article class="panel analysis-panel">
+        <div class="bar section-heading"><div><strong>プログラミング学習への意識</strong><p>自己効力感3項目と学習意欲2項目を、それぞれ合成得点として比較します。</p></div></div>
+        <div class="chart-box"><canvas id="attitude-chart"></canvas><div class="chart-fallback" id="attitude-chart-fallback" hidden></div></div>
+      </article>
+      <article class="panel analysis-panel">
+        <div class="bar section-heading"><div><strong>意識変化の統計量</strong><p>5件法は1～5点です。変化量は事後－事前です。</p></div></div>
+        <div class="scroll table-scroll tall"><table id="attitude-table" class="metric-table"></table></div>
+      </article>
     </section>
 
-    <section class="analysis-grid" id="experience-section">
-      <div class="panel analysis-panel">
-        <div class="bar"><strong>プログラミング経験・初期能力差</strong></div>
-        <div class="scroll table-scroll"><table id="experience-table" class="metric-table"></table></div>
-      </div>
-      <div class="panel analysis-panel">
-        <div class="bar"><strong>事前テスト水準別</strong></div>
-        <div class="scroll table-scroll"><table id="pre-level-table"></table></div>
-        <div class="bar subbar"><strong>経験言語・期間</strong></div>
-        <div class="scroll table-scroll short"><table id="language-table"></table></div>
-      </div>
+    <section id="ils-section" class="analysis-grid">
+      <article class="panel analysis-panel">
+        <div class="bar section-heading"><div><strong>Felder–Silverman学習スタイル</strong><p>4軸のA/B回答差から方向と強さを算出します。</p></div></div>
+        <div class="chart-box tall"><canvas id="ils-chart"></canvas><div class="chart-fallback" id="ils-chart-fallback" hidden></div></div>
+      </article>
+      <article class="panel analysis-panel">
+        <div class="bar section-heading"><div><strong>群ごとの偏り</strong><p>人数が少ない区分は、割合の差を強く解釈しないでください。</p></div></div>
+        <div class="scroll table-scroll tall"><table id="ils-table"></table></div>
+      </article>
     </section>
 
-    <section class="panel analysis-panel" id="quota-section">
-      <div class="bar"><strong>ノルマ10問</strong><span class="note">各カテゴリ difficulty 1・2</span></div>
-      <div class="chart-box short"><canvas id="task-chart"></canvas><div class="chart-fallback" id="task-chart-fallback"></div></div>
-      <div class="scroll table-scroll"><table id="quota-task-table"></table></div>
+    <section id="attribute-section" class="panel analysis-panel">
+      <div class="bar section-heading attribute-controls">
+        <div><strong>属性ごとのシステム評価</strong><p>群を分けたまま、属性区分ごとの平均評価を確認します。</p></div>
+        <label>属性
+          <select id="attribute-select">
+            <option value="gender">性別</option>
+            <option value="ilsActiveReflective">ILS：活動型／内省型</option>
+            <option value="ilsSensingIntuitive">ILS：感覚型／直観型</option>
+            <option value="ilsVisualVerbal">ILS：視覚型／言語型</option>
+            <option value="ilsSequentialGlobal">ILS：順序型／全体型</option>
+            <option value="novelPreference">ノベルゲーム嗜好</option>
+            <option value="storyEmpathy">物語・キャラクターへの感情移入</option>
+          </select>
+        </label>
+        <label>評価指標
+          <select id="evaluation-select">
+            <option value="systemEvaluation">システム総合評価</option>
+            <option value="learningUsefulness">学習有用性</option>
+            <option value="continuedUse">継続利用意向</option>
+            <option value="enjoyment">楽しさ</option>
+            <option value="agentIntimacy">親しみを感じた</option>
+            <option value="agentTogetherness">一緒に学習している感覚</option>
+            <option value="agentRelationshipGrowth">関係が深まった感覚</option>
+            <option value="episodeMotivation">エピソードによる動機づけ</option>
+            <option value="intimacyMotivation">親密度：学習継続の動機</option>
+            <option value="intimacyCloseness">親密度：距離が近づいた感覚</option>
+            <option value="intimacyNaturalness">親密度：反応変化の自然さ</option>
+          </select>
+        </label>
+      </div>
+      <div class="chart-box tall"><canvas id="attribute-chart"></canvas><div class="chart-fallback" id="attribute-chart-fallback" hidden></div></div>
+      <div class="scroll table-scroll"><table id="attribute-table"></table></div>
     </section>
 
-    <section class="analysis-grid" id="category-section">
-      <div class="panel analysis-panel">
-        <div class="bar"><strong>カテゴリ別比較</strong></div>
-        <div class="scroll table-scroll"><table id="category-table"></table></div>
-      </div>
-      <div class="panel analysis-panel">
-        <div class="bar"><strong>発展課題 difficulty 3以上</strong></div>
-        <div class="scroll table-scroll"><table id="advanced-task-table"></table></div>
-      </div>
+    <section id="item-section" class="analysis-grid">
+      <article class="panel analysis-panel span-2">
+        <div class="bar section-heading"><div><strong>群全体のシステム評価</strong><p>属性で分けず、実験群・統制群それぞれの全回答者を比較します。関係性の3項目は合成せず、一つずつ表示します。</p></div></div>
+        <div class="chart-box tall"><canvas id="item-chart"></canvas><div class="chart-fallback" id="item-chart-fallback" hidden></div></div>
+        <div class="scroll table-scroll"><table id="item-table" class="metric-table"></table></div>
+      </article>
+      <article class="panel analysis-panel span-2">
+        <div class="bar section-heading"><div><strong>親密度システムの評価</strong><p>実験群だけに回答項目があるため、実験群内の全体評価を表示します。属性別の傾向は上の「属性ごとのシステム評価」で各親密度項目を選択してください。</p></div></div>
+        <div class="chart-box"><canvas id="intimacy-chart"></canvas><div class="chart-fallback" id="intimacy-chart-fallback" hidden></div></div>
+        <div class="scroll table-scroll"><table id="intimacy-table" class="metric-table"></table></div>
+      </article>
     </section>
 
-    <section class="analysis-grid" id="survey-section">
-      <div class="panel analysis-panel">
-        <div class="bar"><strong>アンケート集計</strong></div>
-        <div class="scroll table-scroll"><table id="survey-table" class="metric-table"></table></div>
-      </div>
-      <div class="panel analysis-panel">
-        <div class="bar"><strong>自由記述</strong></div>
-        <div class="scroll table-scroll"><table id="free-text-table"></table></div>
-      </div>
-    </section>
-
-    <section class="panel analysis-panel">
-      <div class="bar"><strong>参加者別データ</strong></div>
+    <section id="participant-section" class="panel analysis-panel">
+      <div class="bar section-heading"><div><strong>参加者別データ</strong><p>結合状況や外れ値の確認用です。</p></div></div>
       <div class="scroll table-scroll large"><table id="participant-table"></table></div>
     </section>
   </main>
