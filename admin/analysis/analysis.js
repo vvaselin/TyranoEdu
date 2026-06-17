@@ -28,6 +28,9 @@
     together: "エージェントと一緒に学習している感覚があった。",
     relationship: "エージェントとの関係が深まっているように感じた。",
     episodeMotivation: "エピソードを進めることが、課題に取り組む動機づけになった。",
+    intimacyMotivation: "親密度が上がる仕組みによって、学習を続けようという気持ちが高まった。",
+    intimacyCloseness: "親密度の変化に応じて、エージェントとの距離が近づいたように感じた。",
+    intimacyNaturalness: "親密度に応じたエージェントの言葉遣いや反応の変化は自然だった。",
   };
 
   const ILS_AXES = [
@@ -182,8 +185,14 @@
         anxiety: scale(valueOf(post, COLUMNS.anxiety)),
         learningUsefulness: scale(valueOf(post, COLUMNS.usefulness)),
         continuedUse: scale(valueOf(post, COLUMNS.continuedUse)),
+        agentIntimacy: scale(valueOf(post, COLUMNS.intimacy)),
+        agentTogetherness: scale(valueOf(post, COLUMNS.together)),
+        agentRelationshipGrowth: scale(valueOf(post, COLUMNS.relationship)),
         agentRelationship: average(post, [COLUMNS.intimacy, COLUMNS.together, COLUMNS.relationship]),
         episodeMotivation: scale(valueOf(post, COLUMNS.episodeMotivation)),
+        intimacyMotivation: scale(valueOf(post, COLUMNS.intimacyMotivation)),
+        intimacyCloseness: scale(valueOf(post, COLUMNS.intimacyCloseness)),
+        intimacyNaturalness: scale(valueOf(post, COLUMNS.intimacyNaturalness)),
         hasPreSurvey: !!rowFor(preSurvey, participantId),
         hasPostSurvey: !!postRowsFor(profile.role, participantId, postExp, postCtrl),
         hasIls: !!ilsRow,
@@ -308,15 +317,36 @@
   }
 
   function renderItems(rows) {
-    const metrics = [
-      ["enjoyment", "学習は楽しかった"], ["accomplishment", "課題を上手くこなせた"], ["anxiety", "不安・プレッシャー"],
-      ["learningUsefulness", "学習に役立つ"], ["continuedUse", "継続して使いたい"], ["agentRelationship", "エージェントとの関係性（3項目平均）"],
-      ["episodeMotivation", "エピソードによる動機づけ"],
+    const commonMetrics = [
+      ["systemEvaluation", "システム総合評価（4項目平均）"],
+      ["enjoyment", "このシステムでの学習は楽しかった"],
+      ["accomplishment", "課題を上手くこなせたと感じた"],
+      ["anxiety", "学習中、不安やプレッシャーを感じた"],
+      ["learningUsefulness", "プログラミング学習に役立つと思う"],
+      ["continuedUse", "今後もこのシステムを使って学習を続けたい"],
+      ["agentIntimacy", "エージェントに対して親しみを感じた"],
+      ["agentTogetherness", "エージェントと一緒に学習している感覚があった"],
+      ["agentRelationshipGrowth", "エージェントとの関係が深まっているように感じた"],
+      ["episodeMotivation", "エピソードを進めることが課題への動機づけになった"],
     ];
-    $("item-table").innerHTML = comparisonHeader() + `<tbody>${comparisonRows(rows, metrics.map(([key, label]) => ({ key, label })))}</tbody>`;
-    charts.horizontalBar("item-chart", metrics.map(([, label]) => label), [
-      { label: "実験群", backgroundColor: COLORS.experimental, data: metrics.map(([key]) => mean(byRole(rows, "experimental", key))) },
-      { label: "統制群", backgroundColor: COLORS.control, data: metrics.map(([key]) => mean(byRole(rows, "control", key))) },
+    const intimacyMetrics = [
+      ["intimacyMotivation", "親密度上昇により学習継続の気持ちが高まった"],
+      ["intimacyCloseness", "親密度変化に応じてエージェントとの距離が近づいた"],
+      ["intimacyNaturalness", "親密度に応じた言葉遣いや反応の変化は自然だった"],
+    ];
+    $("item-table").innerHTML = comparisonHeader() + `<tbody>${comparisonRows(rows, commonMetrics.map(([key, label]) => ({ key, label })))}</tbody>`;
+    charts.horizontalBar("item-chart", commonMetrics.map(([, label]) => label), [
+      { label: "実験群", backgroundColor: COLORS.experimental, data: commonMetrics.map(([key]) => mean(byRole(rows, "experimental", key))) },
+      { label: "統制群", backgroundColor: COLORS.control, data: commonMetrics.map(([key]) => mean(byRole(rows, "control", key))) },
+    ], { max: 5, xTitle: "5件法平均" });
+
+    const expRows = intimacyMetrics.map(([key, label]) => {
+      const values = byRole(rows, "experimental", key);
+      return `<tr><td class="metric-name">${escapeHtml(label)}</td><td>${n(values)}</td><td>${fmt(mean(values))}</td><td>${fmt(median(values))}</td><td>${fmt(sd(values))}</td></tr>`;
+    }).join("");
+    $("intimacy-table").innerHTML = `<thead><tr><th class="metric-name">親密度項目（実験群のみ）</th><th>n</th><th>平均</th><th>中央値</th><th>SD</th></tr></thead><tbody>${expRows}</tbody>`;
+    charts.horizontalBar("intimacy-chart", intimacyMetrics.map(([, label]) => label), [
+      { label: "実験群", backgroundColor: COLORS.experimental, data: intimacyMetrics.map(([key]) => mean(byRole(rows, "experimental", key))) },
     ], { max: 5, xTitle: "5件法平均" });
   }
 
@@ -351,8 +381,8 @@
 
   function downloadRows() {
     const rows = filteredRows();
-    const headers = ["participant_id", "name", "role", "gender", "pre_test", "post_test", "test_gain", "pre_self_efficacy", "post_self_efficacy", "self_efficacy_gain", "pre_motivation", "post_motivation", "motivation_gain", "novel_preference", "story_empathy", "ils_act_ref", "ils_sns_int", "ils_vis_vrb", "ils_seq_glo", "system_evaluation", "learning_usefulness", "continued_use", "enjoyment", "agent_relationship", "episode_motivation"];
-    downloadCSV("analysis_participant_metrics.csv", headers, rows.map((r) => [r.participantId, r.name, r.role, r.gender, r.preScore, r.postScore, r.testGain, r.preSelfEfficacy, r.postSelfEfficacy, r.selfEfficacyGain, r.preMotivation, r.postMotivation, r.motivationGain, r.novelPreferenceValue, r.storyEmpathyValue, r.ilsActiveReflective.label, r.ilsSensingIntuitive.label, r.ilsVisualVerbal.label, r.ilsSequentialGlobal.label, r.systemEvaluation, r.learningUsefulness, r.continuedUse, r.enjoyment, r.agentRelationship, r.episodeMotivation]));
+    const headers = ["participant_id", "name", "role", "gender", "pre_test", "post_test", "test_gain", "pre_self_efficacy", "post_self_efficacy", "self_efficacy_gain", "pre_motivation", "post_motivation", "motivation_gain", "novel_preference", "story_empathy", "ils_act_ref", "ils_sns_int", "ils_vis_vrb", "ils_seq_glo", "system_evaluation", "learning_usefulness", "continued_use", "enjoyment", "agent_relationship", "agent_intimacy", "agent_togetherness", "agent_relationship_growth", "episode_motivation", "intimacy_motivation", "intimacy_closeness", "intimacy_naturalness"];
+    downloadCSV("analysis_participant_metrics.csv", headers, rows.map((r) => [r.participantId, r.name, r.role, r.gender, r.preScore, r.postScore, r.testGain, r.preSelfEfficacy, r.postSelfEfficacy, r.selfEfficacyGain, r.preMotivation, r.postMotivation, r.motivationGain, r.novelPreferenceValue, r.storyEmpathyValue, r.ilsActiveReflective.label, r.ilsSensingIntuitive.label, r.ilsVisualVerbal.label, r.ilsSequentialGlobal.label, r.systemEvaluation, r.learningUsefulness, r.continuedUse, r.enjoyment, r.agentRelationship, r.agentIntimacy, r.agentTogetherness, r.agentRelationshipGrowth, r.episodeMotivation, r.intimacyMotivation, r.intimacyCloseness, r.intimacyNaturalness]));
   }
 
   $("load-analysis").addEventListener("click", loadAnalysis);

@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Experiment Analysis</title>
-  <link rel="stylesheet" href="/admin/admin.css?v=20260617-1">
-  <link rel="stylesheet" href="/admin/css/analysis.css?v=20260617-1">
+  <link rel="stylesheet" href="/admin/admin.css?v=20260617-2">
+  <link rel="stylesheet" href="/admin/css/analysis.css?v=20260617-2">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-  <script src="/admin/js/api.js?v=20260617-1" defer></script>
-  <script src="/admin/js/ui.js?v=20260617-1" defer></script>
-  <script src="/admin/js/stats.js?v=20260617-1" defer></script>
-  <script src="/admin/analysis/charts.js?v=20260617-1" defer></script>
-  <script src="/admin/analysis/analysis.js?v=20260617-1" defer></script>
+  <script src="/admin/js/api.js?v=20260617-2" defer></script>
+  <script src="/admin/js/ui.js?v=20260617-2" defer></script>
+  <script src="/admin/js/stats.js?v=20260617-2" defer></script>
+  <script src="/admin/analysis/charts.js?v=20260617-2" defer></script>
+  <script src="/admin/analysis/analysis.js?v=20260617-2" defer></script>
 </head>
 <body>
   <header>
@@ -109,8 +109,13 @@
             <option value="learningUsefulness">学習有用性</option>
             <option value="continuedUse">継続利用意向</option>
             <option value="enjoyment">楽しさ</option>
-            <option value="agentRelationship">エージェントとの関係性</option>
+            <option value="agentIntimacy">親しみを感じた</option>
+            <option value="agentTogetherness">一緒に学習している感覚</option>
+            <option value="agentRelationshipGrowth">関係が深まった感覚</option>
             <option value="episodeMotivation">エピソードによる動機づけ</option>
+            <option value="intimacyMotivation">親密度：学習継続の動機</option>
+            <option value="intimacyCloseness">親密度：距離が近づいた感覚</option>
+            <option value="intimacyNaturalness">親密度：反応変化の自然さ</option>
           </select>
         </label>
       </div>
@@ -120,9 +125,14 @@
 
     <section id="item-section" class="analysis-grid">
       <article class="panel analysis-panel span-2">
-        <div class="bar section-heading"><div><strong>事後アンケート項目別評価</strong><p>両群に共通する項目だけを並べます。否定的項目の「不安・プレッシャー」は反転していません。</p></div></div>
+        <div class="bar section-heading"><div><strong>群全体のシステム評価</strong><p>属性で分けず、実験群・統制群それぞれの全回答者を比較します。関係性の3項目は合成せず、一つずつ表示します。</p></div></div>
         <div class="chart-box tall"><canvas id="item-chart"></canvas><div class="chart-fallback" id="item-chart-fallback" hidden></div></div>
         <div class="scroll table-scroll"><table id="item-table" class="metric-table"></table></div>
+      </article>
+      <article class="panel analysis-panel span-2">
+        <div class="bar section-heading"><div><strong>親密度システムの評価</strong><p>実験群だけに回答項目があるため、実験群内の全体評価を表示します。属性別の傾向は上の「属性ごとのシステム評価」で各親密度項目を選択してください。</p></div></div>
+        <div class="chart-box"><canvas id="intimacy-chart"></canvas><div class="chart-fallback" id="intimacy-chart-fallback" hidden></div></div>
+        <div class="scroll table-scroll"><table id="intimacy-table" class="metric-table"></table></div>
       </article>
     </section>
 
