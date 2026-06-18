@@ -188,7 +188,6 @@
         agentIntimacy: scale(valueOf(post, COLUMNS.intimacy)),
         agentTogetherness: scale(valueOf(post, COLUMNS.together)),
         agentRelationshipGrowth: scale(valueOf(post, COLUMNS.relationship)),
-        agentRelationship: average(post, [COLUMNS.intimacy, COLUMNS.together, COLUMNS.relationship]),
         episodeMotivation: scale(valueOf(post, COLUMNS.episodeMotivation)),
         intimacyMotivation: scale(valueOf(post, COLUMNS.intimacyMotivation)),
         intimacyCloseness: scale(valueOf(post, COLUMNS.intimacyCloseness)),
@@ -199,7 +198,6 @@
       };
       row.selfEfficacyGain = Number.isFinite(row.preSelfEfficacy) && Number.isFinite(row.postSelfEfficacy) ? row.postSelfEfficacy - row.preSelfEfficacy : NaN;
       row.motivationGain = Number.isFinite(row.preMotivation) && Number.isFinite(row.postMotivation) ? row.postMotivation - row.preMotivation : NaN;
-      row.systemEvaluation = mean([row.enjoyment, row.accomplishment, row.learningUsefulness, row.continuedUse]);
       ILS_AXES.forEach((axis) => { row[axis.key] = ilsScore(ilsRow, axis); });
       return row;
     });
@@ -317,47 +315,142 @@
   }
 
   function renderItems(rows) {
-    const commonMetrics = [
-      ["systemEvaluation", "システム総合評価（4項目平均）"],
+    const metrics = [
       ["enjoyment", "このシステムでの学習は楽しかった"],
-      ["accomplishment", "課題を上手くこなせたと感じた"],
-      ["anxiety", "学習中、不安やプレッシャーを感じた"],
-      ["learningUsefulness", "プログラミング学習に役立つと思う"],
-      ["continuedUse", "今後もこのシステムを使って学習を続けたい"],
+      ["accomplishment", "課題を上手くこなせた"],
+      ["learningUsefulness", "このシステムは学習に役立つと思う"],
+      ["continuedUse", "今後もこのシステムを使いたい"],
+      ["anxiety", "不安・プレッシャーを感じた"],
+
       ["agentIntimacy", "エージェントに対して親しみを感じた"],
       ["agentTogetherness", "エージェントと一緒に学習している感覚があった"],
       ["agentRelationshipGrowth", "エージェントとの関係が深まっているように感じた"],
-      ["episodeMotivation", "エピソードを進めることが課題への動機づけになった"],
-    ];
-    const intimacyMetrics = [
-      ["intimacyMotivation", "親密度上昇により学習継続の気持ちが高まった"],
-      ["intimacyCloseness", "親密度変化に応じてエージェントとの距離が近づいた"],
-      ["intimacyNaturalness", "親密度に応じた言葉遣いや反応の変化は自然だった"],
-    ];
-    $("item-table").innerHTML = comparisonHeader() + `<tbody>${comparisonRows(rows, commonMetrics.map(([key, label]) => ({ key, label })))}</tbody>`;
-    charts.horizontalBar("item-chart", commonMetrics.map(([, label]) => label), [
-      { label: "実験群", backgroundColor: COLORS.experimental, data: commonMetrics.map(([key]) => mean(byRole(rows, "experimental", key))) },
-      { label: "統制群", backgroundColor: COLORS.control, data: commonMetrics.map(([key]) => mean(byRole(rows, "control", key))) },
-    ], { max: 5, xTitle: "5件法平均" });
 
-    const expRows = intimacyMetrics.map(([key, label]) => {
-      const values = byRole(rows, "experimental", key);
-      return `<tr><td class="metric-name">${escapeHtml(label)}</td><td>${n(values)}</td><td>${fmt(mean(values))}</td><td>${fmt(median(values))}</td><td>${fmt(sd(values))}</td></tr>`;
-    }).join("");
-    $("intimacy-table").innerHTML = `<thead><tr><th class="metric-name">親密度項目（実験群のみ）</th><th>n</th><th>平均</th><th>中央値</th><th>SD</th></tr></thead><tbody>${expRows}</tbody>`;
-    charts.horizontalBar("intimacy-chart", intimacyMetrics.map(([, label]) => label), [
-      { label: "実験群", backgroundColor: COLORS.experimental, data: intimacyMetrics.map(([key]) => mean(byRole(rows, "experimental", key))) },
-    ], { max: 5, xTitle: "5件法平均" });
+      ["episodeMotivation", "エピソードによる動機づけ"],
+    ];
+
+    $("item-table").innerHTML =
+      comparisonHeader() +
+      `<tbody>${comparisonRows(
+        rows,
+        metrics.map(([key, label]) => ({ key, label }))
+      )}</tbody>`;
+
+    charts.horizontalBar(
+      "item-chart",
+      metrics.map(([, label]) => label),
+      [
+        {
+          label: "実験群",
+          backgroundColor: COLORS.experimental,
+          data: metrics.map(([key]) =>
+            mean(byRole(rows, "experimental", key))
+          ),
+        },
+        {
+          label: "統制群",
+          backgroundColor: COLORS.control,
+          data: metrics.map(([key]) =>
+            mean(byRole(rows, "control", key))
+          ),
+        },
+      ],
+      { max: 5, xTitle: "5件法平均" }
+    );
+  }
+
+  function renderIntimacy(rows) {
+    const experimentalRows = rows.filter(
+      (row) => row.role === "experimental"
+    );
+
+    const metrics = [
+      [
+        "intimacyMotivation",
+        "親密度が上昇することで、学習を続けたいという気持ちが高まった"
+      ],
+      [
+        "intimacyCloseness",
+        "親密度の変化に応じて、エージェントとの距離が近づいたと感じた"
+      ],
+      [
+        "intimacyNaturalness",
+        "親密度に応じたエージェントの言葉遣いや反応の変化は自然だった"
+      ],
+    ];
+
+    const table = $("intimacy-table");
+
+    if (!table) {
+      return;
+    }
+
+    const tableRows = metrics
+      .map(([key, label]) => {
+        const values = experimentalRows
+          .map((row) => Number(row[key]))
+          .filter(Number.isFinite);
+
+        return `
+          <tr>
+            <td class="metric-name">${escapeHtml(label)}</td>
+            <td>${values.length}</td>
+            <td>${fmt(mean(values))}</td>
+            <td>${fmt(median(values))}</td>
+            <td>${fmt(sd(values))}</td>
+          </tr>
+        `;
+      })
+      .join("");
+
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th class="metric-name">評価項目</th>
+          <th>n</th>
+          <th>平均</th>
+          <th>中央値</th>
+          <th>SD</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tableRows}
+      </tbody>
+    `;
+
+    const chartValues = metrics.map(([key]) => {
+      const values = experimentalRows
+        .map((row) => Number(row[key]))
+        .filter(Number.isFinite);
+
+      return mean(values);
+    });
+
+    charts.horizontalBar(
+      "intimacy-chart",
+      metrics.map(([, label]) => label),
+      [
+        {
+          label: "実験群",
+          backgroundColor: COLORS.experimental,
+          data: chartValues,
+        },
+      ],
+      {
+        max: 5,
+        xTitle: "5件法平均",
+      }
+    );
   }
 
   function renderParticipants(rows) {
     const ilsCell = (row, key) => row[key] ? row[key].label : "-";
-    $("participant-table").innerHTML = `<thead><tr><th>ID</th><th>名前</th><th>群</th><th>性別</th><th>事前テスト</th><th>事後テスト</th><th>差</th><th>自己効力感 前</th><th>自己効力感 後</th><th>差</th><th>学習意欲 前</th><th>学習意欲 後</th><th>差</th><th>ノベル嗜好</th><th>感情移入</th><th>ACT/REF</th><th>SNS/INT</th><th>VIS/VRB</th><th>SEQ/GLO</th><th>システム評価</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${escapeHtml(r.participantId)}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(ROLE_LABEL[r.role] || r.role)}</td><td>${escapeHtml(r.gender)}</td><td>${fmt(r.preScore)}</td><td>${fmt(r.postScore)}</td><td>${fmt(r.testGain)}</td><td>${fmt(r.preSelfEfficacy)}</td><td>${fmt(r.postSelfEfficacy)}</td><td>${fmt(r.selfEfficacyGain)}</td><td>${fmt(r.preMotivation)}</td><td>${fmt(r.postMotivation)}</td><td>${fmt(r.motivationGain)}</td><td>${fmt(r.novelPreferenceValue)}</td><td>${fmt(r.storyEmpathyValue)}</td><td>${escapeHtml(ilsCell(r, "ilsActiveReflective"))}</td><td>${escapeHtml(ilsCell(r, "ilsSensingIntuitive"))}</td><td>${escapeHtml(ilsCell(r, "ilsVisualVerbal"))}</td><td>${escapeHtml(ilsCell(r, "ilsSequentialGlobal"))}</td><td>${fmt(r.systemEvaluation)}</td></tr>`).join("")}</tbody>`;
+    $("participant-table").innerHTML = `<thead><tr><th>ID</th><th>名前</th><th>群</th><th>性別</th><th>事前テスト</th><th>事後テスト</th><th>差</th><th>自己効力感 前</th><th>自己効力感 後</th><th>差</th><th>学習意欲 前</th><th>学習意欲 後</th><th>差</th><th>ノベル嗜好</th><th>感情移入</th><th>ACT/REF</th><th>SNS/INT</th><th>VIS/VRB</th><th>SEQ/GLO</th><th>楽しさ</th><th>達成感</th><th>学習への有用性</th><th>継続利用意向</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${escapeHtml(r.participantId)}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(ROLE_LABEL[r.role] || r.role)}</td><td>${escapeHtml(r.gender)}</td><td>${fmt(r.preScore)}</td><td>${fmt(r.postScore)}</td><td>${fmt(r.testGain)}</td><td>${fmt(r.preSelfEfficacy)}</td><td>${fmt(r.postSelfEfficacy)}</td><td>${fmt(r.selfEfficacyGain)}</td><td>${fmt(r.preMotivation)}</td><td>${fmt(r.postMotivation)}</td><td>${fmt(r.motivationGain)}</td><td>${fmt(r.novelPreferenceValue)}</td><td>${fmt(r.storyEmpathyValue)}</td><td>${escapeHtml(ilsCell(r, "ilsActiveReflective"))}</td><td>${escapeHtml(ilsCell(r, "ilsSensingIntuitive"))}</td><td>${escapeHtml(ilsCell(r, "ilsVisualVerbal"))}</td><td>${escapeHtml(ilsCell(r, "ilsSequentialGlobal"))}</td><td>${fmt(r.enjoyment)}</td><td>${fmt(r.accomplishment)}</td><td>${fmt(r.learningUsefulness)}</td></tr>`).join("")}</tbody>`;
   }
 
   function renderAll() {
     const rows = filteredRows();
-    renderSummary(rows); renderTests(rows); renderAttitude(rows); renderIls(rows); renderAttributes(rows); renderItems(rows); renderParticipants(rows);
+    renderSummary(rows); renderTests(rows); renderAttitude(rows); renderIls(rows); renderAttributes(rows); renderItems(rows); renderParticipants(rows); renderIntimacy(rows);
     $("download-analysis-csv").disabled = rows.length === 0;
   }
 
@@ -381,8 +474,76 @@
 
   function downloadRows() {
     const rows = filteredRows();
-    const headers = ["participant_id", "name", "role", "gender", "pre_test", "post_test", "test_gain", "pre_self_efficacy", "post_self_efficacy", "self_efficacy_gain", "pre_motivation", "post_motivation", "motivation_gain", "novel_preference", "story_empathy", "ils_act_ref", "ils_sns_int", "ils_vis_vrb", "ils_seq_glo", "system_evaluation", "learning_usefulness", "continued_use", "enjoyment", "agent_relationship", "agent_intimacy", "agent_togetherness", "agent_relationship_growth", "episode_motivation", "intimacy_motivation", "intimacy_closeness", "intimacy_naturalness"];
-    downloadCSV("analysis_participant_metrics.csv", headers, rows.map((r) => [r.participantId, r.name, r.role, r.gender, r.preScore, r.postScore, r.testGain, r.preSelfEfficacy, r.postSelfEfficacy, r.selfEfficacyGain, r.preMotivation, r.postMotivation, r.motivationGain, r.novelPreferenceValue, r.storyEmpathyValue, r.ilsActiveReflective.label, r.ilsSensingIntuitive.label, r.ilsVisualVerbal.label, r.ilsSequentialGlobal.label, r.systemEvaluation, r.learningUsefulness, r.continuedUse, r.enjoyment, r.agentRelationship, r.agentIntimacy, r.agentTogetherness, r.agentRelationshipGrowth, r.episodeMotivation, r.intimacyMotivation, r.intimacyCloseness, r.intimacyNaturalness]));
+
+    const headers = [
+      "participant_id",
+      "name",
+      "role",
+      "gender",
+      "pre_test",
+      "post_test",
+      "test_gain",
+      "pre_self_efficacy",
+      "post_self_efficacy",
+      "self_efficacy_gain",
+      "pre_motivation",
+      "post_motivation",
+      "motivation_gain",
+      "novel_preference",
+      "story_empathy",
+      "ils_act_ref",
+      "ils_sns_int",
+      "ils_vis_vrb",
+      "ils_seq_glo",
+      "enjoyment",
+      "accomplishment",
+      "learning_usefulness",
+      "continued_use",
+      "anxiety",
+      "agent_intimacy",
+      "agent_togetherness",
+      "agent_relationship_growth",
+      "episode_motivation",
+      "intimacy_motivation",
+      "intimacy_closeness",
+      "intimacy_naturalness",
+    ];
+
+    const data = rows.map((r) => [
+      r.participantId,
+      r.name,
+      r.role,
+      r.gender,
+      r.preScore,
+      r.postScore,
+      r.testGain,
+      r.preSelfEfficacy,
+      r.postSelfEfficacy,
+      r.selfEfficacyGain,
+      r.preMotivation,
+      r.postMotivation,
+      r.motivationGain,
+      r.novelPreferenceValue,
+      r.storyEmpathyValue,
+      r.ilsActiveReflective.label,
+      r.ilsSensingIntuitive.label,
+      r.ilsVisualVerbal.label,
+      r.ilsSequentialGlobal.label,
+      r.enjoyment,
+      r.accomplishment,
+      r.learningUsefulness,
+      r.continuedUse,
+      r.anxiety,
+      r.agentIntimacy,
+      r.agentTogetherness,
+      r.agentRelationshipGrowth,
+      r.episodeMotivation,
+      r.intimacyMotivation,
+      r.intimacyCloseness,
+      r.intimacyNaturalness,
+    ]);
+
+    downloadCSV("analysis_participant_metrics.csv", headers, data);
   }
 
   $("load-analysis").addEventListener("click", loadAnalysis);
