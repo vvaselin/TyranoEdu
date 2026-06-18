@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Experiment Analysis</title>
-  <link rel="stylesheet" href="/admin/admin.css?v=20260617-2">
-  <link rel="stylesheet" href="/admin/css/analysis.css?v=20260617-2">
+  <link rel="stylesheet" href="/admin/admin.css?v=20260618-1">
+  <link rel="stylesheet" href="/admin/css/analysis.css?v=20260618-6">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-  <script src="/admin/js/api.js?v=20260617-2" defer></script>
-  <script src="/admin/js/ui.js?v=20260617-2" defer></script>
-  <script src="/admin/js/stats.js?v=20260617-2" defer></script>
-  <script src="/admin/analysis/charts.js?v=20260617-2" defer></script>
-  <script src="/admin/analysis/analysis.js?v=20260617-2" defer></script>
+  <script src="/admin/js/api.js?v=20260618-1" defer></script>
+  <script src="/admin/js/ui.js?v=20260618-1" defer></script>
+  <script src="/admin/js/stats.js?v=20260618-1" defer></script>
+  <script src="/admin/analysis/charts.js?v=20260618-3" defer></script>
+  <script src="/admin/analysis/analysis.js?v=20260618-8" defer></script>
 </head>
 <body>
   <header>
@@ -41,6 +41,10 @@
         <label>参加者
           <input id="participant-filter" type="search" placeholder="学籍番号 / 名前">
         </label>
+        <label class="include-participant">
+          <input id="include-25nm467r" type="checkbox">
+          25NM467Rを含める
+        </label>
         <button class="secondary" id="download-analysis-csv" disabled>参加者別CSV</button>
         <span id="analysis-status" class="status">未読み込み</span>
       </div>
@@ -62,18 +66,34 @@
         <div class="bar section-heading">
           <div><strong>事前・事後テストの変化</strong><p>同一参加者の対応が取れたデータだけで変化量を算出します。</p></div>
         </div>
-        <div class="chart-box"><canvas id="test-chart"></canvas><div class="chart-fallback" id="test-chart-fallback" hidden></div></div>
-        <div class="scroll table-scroll"><table id="test-table" class="metric-table"></table></div>
+        <div class="test-content">
+          <div class="chart-box"><canvas id="test-chart"></canvas><div class="chart-fallback" id="test-chart-fallback" hidden></div></div>
+          <div class="scroll table-scroll"><table id="test-table" class="metric-table"></table></div>
+        </div>
       </article>
     </section>
 
     <section id="attitude-section" class="analysis-grid">
-      <article class="panel analysis-panel">
-        <div class="bar section-heading"><div><strong>プログラミング学習への意識</strong><p>自己効力感3項目と学習意欲2項目を、それぞれ合成得点として比較します。</p></div></div>
-        <div class="chart-box"><canvas id="attitude-chart"></canvas><div class="chart-fallback" id="attitude-chart-fallback" hidden></div></div>
+      <article class="panel analysis-panel span-2">
+        <div class="bar section-heading attribute-controls">
+          <div><strong>プログラミング学習への意識</strong><p>5つの質問を合成せず、質問ごとに事前・事後の平均を比較します。</p></div>
+          <label>属性
+            <select id="attitude-attribute-select">
+              <option value="all">全体</option>
+              <option value="gender">性別</option>
+              <option value="ilsActiveReflective">ILS：活動型／内省型</option>
+              <option value="ilsSensingIntuitive">ILS：感覚型／直観型</option>
+              <option value="ilsVisualVerbal">ILS：視覚型／言語型</option>
+              <option value="ilsSequentialGlobal">ILS：順序型／全体型</option>
+              <option value="novelPreference">ノベルゲーム嗜好</option>
+              <option value="storyEmpathy">物語・キャラクターへの感情移入</option>
+            </select>
+          </label>
+        </div>
+        <div class="chart-box attitude-chart-box"><canvas id="attitude-chart"></canvas><div class="chart-fallback" id="attitude-chart-fallback" hidden></div></div>
       </article>
-      <article class="panel analysis-panel">
-        <div class="bar section-heading"><div><strong>意識変化の統計量</strong><p>5件法は1～5点です。変化量は事後－事前です。</p></div></div>
+      <article class="panel analysis-panel span-2">
+        <div class="bar section-heading"><div><strong>意識変化の統計量</strong><p>質問ごとに事前・事後・変化量を表示します。5件法は1～5点、変化量は事後－事前です。</p></div></div>
         <div class="scroll table-scroll tall"><table id="attitude-table" class="metric-table"></table></div>
       </article>
     </section>
@@ -91,9 +111,10 @@
 
     <section id="attribute-section" class="panel analysis-panel">
       <div class="bar section-heading attribute-controls">
-        <div><strong>属性ごとのシステム評価</strong><p>群を分けたまま、属性区分ごとの平均評価を確認します。</p></div>
+        <div><strong>属性ごとのシステム評価</strong><p>群を分けたまま、属性区分ごとの平均評価を確認します。「全ての評価指標」には親密度システム専用の3項目を含みません。</p></div>
         <label>属性
           <select id="attribute-select">
+            <option value="all">全体</option>
             <option value="gender">性別</option>
             <option value="ilsActiveReflective">ILS：活動型／内省型</option>
             <option value="ilsSensingIntuitive">ILS：感覚型／直観型</option>
@@ -105,16 +126,16 @@
         </label>
         <label>評価指標
           <select id="evaluation-select">
+            <option value="all">全ての評価指標</option>
             <option value="learningUsefulness">学習有用性</option>
             <option value="continuedUse">継続利用意向</option>
             <option value="enjoyment">楽しさ</option>
+            <option value="accomplishment">達成感</option>
+            <option value="anxiety">不安・プレッシャー</option>
             <option value="agentIntimacy">親しみを感じた</option>
             <option value="agentTogetherness">一緒に学習している感覚</option>
             <option value="agentRelationshipGrowth">関係が深まった感覚</option>
             <option value="episodeMotivation">エピソードによる動機づけ</option>
-            <option value="intimacyMotivation">親密度：学習継続の動機</option>
-            <option value="intimacyCloseness">親密度：距離が近づいた感覚</option>
-            <option value="intimacyNaturalness">親密度：反応変化の自然さ</option>
           </select>
         </label>
       </div>
@@ -124,12 +145,21 @@
 
     <section id="item-section" class="analysis-grid">
       <article class="panel analysis-panel span-2">
-        <div class="bar section-heading"><div><strong>群全体のシステム評価</strong><p>属性で分けず、実験群・統制群それぞれの全回答者を比較します。関係性の3項目は合成せず、一つずつ表示します。</p></div></div>
-        <div class="chart-box tall"><canvas id="item-chart"></canvas><div class="chart-fallback" id="item-chart-fallback" hidden></div></div>
-        <div class="scroll table-scroll"><table id="item-table" class="metric-table"></table></div>
-      </article>
-      <article class="panel analysis-panel span-2">
-        <div class="bar section-heading"><div><strong>親密度システムの評価</strong><p>実験群だけに回答項目があるため、実験群内の全体評価を表示します。属性別の傾向は上の「属性ごとのシステム評価」で各親密度項目を選択してください。</p></div></div>
+        <div class="bar section-heading attribute-controls">
+          <div><strong>親密度システムの評価</strong><p>実験群だけに回答項目があるため、実験群内で全体または属性区分ごとの平均評価を表示します。</p></div>
+          <label>属性
+            <select id="intimacy-attribute-select">
+              <option value="all">全体</option>
+              <option value="gender">性別</option>
+              <option value="ilsActiveReflective">ILS：活動型／内省型</option>
+              <option value="ilsSensingIntuitive">ILS：感覚型／直観型</option>
+              <option value="ilsVisualVerbal">ILS：視覚型／言語型</option>
+              <option value="ilsSequentialGlobal">ILS：順序型／全体型</option>
+              <option value="novelPreference">ノベルゲーム嗜好</option>
+              <option value="storyEmpathy">物語・キャラクターへの感情移入</option>
+            </select>
+          </label>
+        </div>
         <div class="chart-box"><canvas id="intimacy-chart"></canvas><div class="chart-fallback" id="intimacy-chart-fallback" hidden></div></div>
         <div class="scroll table-scroll"><table id="intimacy-table" class="metric-table"></table></div>
       </article>
