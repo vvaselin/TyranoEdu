@@ -186,6 +186,7 @@
         participantId,
         name: profile.name || "",
         role: profile.role || "unassigned",
+        episodeCount: Number.isFinite(Number(profile.episode_count)) ? Number(profile.episode_count) : 0,
         gender: genderLabel(valueOf(pre, COLUMNS.gender)),
         novelPreferenceValue: scale(valueOf(pre, COLUMNS.novel)),
         storyEmpathyValue: scale(valueOf(pre, COLUMNS.empathy)),
@@ -226,8 +227,10 @@
     const role = $("role-filter").value;
     const text = clean($("participant-filter").value).toLowerCase();
     const include25nm467r = $("include-25nm467r").checked;
+    const requireThreeEpisodes = $("episode-filter").checked;
     return state.rows.filter((row) =>
       (include25nm467r || row.participantId !== "25NM467R")
+      && (!requireThreeEpisodes || row.episodeCount >= 3)
       && (!role || row.role === role)
       && (!text || `${row.participantId} ${row.name}`.toLowerCase().includes(text))
     );
@@ -460,7 +463,7 @@
       `${item.short} 前`, `${item.short} 後`, `${item.short} 差`,
     ]);
     const headers = [
-      "ID", "名前", "群", "性別", "事前テスト", "事後テスト", "差",
+      "ID", "名前", "群", "閲覧エピソード数", "性別", "事前テスト", "事後テスト", "差",
       ...attitudeHeaders,
       "ノベル嗜好", "感情移入", "ACT/REF", "SNS/INT", "VIS/VRB", "SEQ/GLO",
       "楽しさ", "達成感", "学習への有用性", "継続利用意向",
@@ -470,7 +473,7 @@
         fmt(row[item.preKey]), fmt(row[item.postKey]), fmt(row[item.gainKey]),
       ]);
       const cells = [
-        escapeHtml(row.participantId), escapeHtml(row.name), escapeHtml(ROLE_LABEL[row.role] || row.role), escapeHtml(row.gender),
+        escapeHtml(row.participantId), escapeHtml(row.name), escapeHtml(ROLE_LABEL[row.role] || row.role), escapeHtml(row.episodeCount), escapeHtml(row.gender),
         fmt(row.preScore), fmt(row.postScore), fmt(row.testGain),
         ...attitudeCells,
         fmt(row.novelPreferenceValue), fmt(row.storyEmpathyValue),
@@ -514,6 +517,7 @@
       "participant_id",
       "name",
       "role",
+      "episode_count",
       "gender",
       "pre_test",
       "post_test",
@@ -547,6 +551,7 @@
       r.participantId,
       r.name,
       r.role,
+      r.episodeCount,
       r.gender,
       r.preScore,
       r.postScore,
@@ -577,7 +582,7 @@
 
   $("load-analysis").addEventListener("click", loadAnalysis);
   $("download-analysis-csv").addEventListener("click", downloadRows);
-  ["role-filter", "include-25nm467r", "attitude-attribute-select", "attribute-select", "evaluation-select", "intimacy-attribute-select"].forEach((id) => $(id).addEventListener("change", renderAll));
+  ["role-filter", "include-25nm467r", "episode-filter", "attitude-attribute-select", "attribute-select", "evaluation-select", "intimacy-attribute-select"].forEach((id) => $(id).addEventListener("change", renderAll));
   $("participant-filter").addEventListener("input", renderAll);
   $("admin-password").addEventListener("keydown", (event) => { if (event.key === "Enter") loadAnalysis(); });
   $("admin-password").value = api.getPassword();

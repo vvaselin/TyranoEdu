@@ -140,10 +140,15 @@ function classifySystemFeedback(data) {
 
 function getEventLoveFromData(e) {
   const data = getData(e);
-  if (e.event_type === "love_change" && data.after != null) return parseInt(data.after, 10);
-  if (data.love_level != null) return parseInt(data.love_level, 10);
-  if (data.payload && data.payload.love_level != null) return parseInt(data.payload.love_level, 10);
+  if (e.event_type === "love_change" && data.after != null) return normalizeLoveValue(data.after);
+  if (data.love_level != null) return normalizeLoveValue(data.love_level);
+  if (data.payload && data.payload.love_level != null) return normalizeLoveValue(data.payload.love_level);
   return null;
+}
+
+function normalizeLoveValue(value) {
+  const parsed = parseInt(value, 10);
+  return Number.isFinite(parsed) ? clamp(parsed, 0, 100) : null;
 }
 
 function eventColor(type) {
@@ -383,10 +388,10 @@ function assignLoveValues(events) {
       const sessionLove = getEventLoveFromData(item.raw[0]);
       if (Number.isFinite(sessionLove)) current = sessionLove;
     } else if (item.kind === "love" && item.data.after != null) {
-      const next = parseInt(item.data.after, 10);
+      const next = normalizeLoveValue(item.data.after);
       if (Number.isFinite(next)) current = next;
     }
-    item.love = current;
+    item.love = clamp(current, 0, 100);
   });
 }
 
@@ -436,8 +441,8 @@ function renderChart() {
     return;
   }
 
-  const minLove = Math.min(0, ...events.map((e) => e.love || 0));
-  const maxLove = Math.max(100, ...events.map((e) => e.love || 0));
+  const minLove = 0;
+  const maxLove = 100;
   const plotW = width - pad.left - pad.right;
   const plotH = height - pad.top - pad.bottom;
   const x = (index) => pad.left + (events.length <= 1 ? plotW / 2 : (index / (events.length - 1)) * plotW);

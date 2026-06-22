@@ -488,17 +488,26 @@ window.initMascotChat = function() {
             return f.love_level || 0;
         }
 
-        function applyAIResponse(data, isSystemTrigger, requestId) {
+        function applyAIResponse(data, isSystemTrigger, requestId, responseOptions) {
+            responseOptions = responseOptions || {};
             var aiText = data.text || "";
             var emotion = data.emotion || "normal";
             var loveUpVal = parseInt(data.love_up) || 0;
             var f = TYRANO.kag.stat.f;
             var currentTaskId = f.current_task_id;
             var isClearedTask = !f.is_sandbox && currentTaskId && f.cleared_tasks && f.cleared_tasks[currentTaskId] === true;
-            if (isClearedTask && loveUpVal > 0) {
+            if (isClearedTask && loveUpVal !== 0) {
                 console.log("[MascotChat] Cleared task love_up suppressed:", currentTaskId, loveUpVal);
                 loveUpVal = 0;
+            } else if (responseOptions.suppressPositiveLove === true && loveUpVal > 0) {
+                console.log("[MascotChat] Positive love_up suppressed:", responseOptions.source || "system_trigger", loveUpVal);
+                loveUpVal = 0;
             }
+
+            var currentLove = Math.min(100, Math.max(0, parseInt(f.love_level) || 0));
+            var nextLove = Math.min(100, Math.max(0, currentLove + loveUpVal));
+            loveUpVal = nextLove - currentLove;
+            f.love_level = currentLove;
             
             // 感情パラメータを保存
             if (data.parameters) {
@@ -508,6 +517,7 @@ window.initMascotChat = function() {
                 window.logExperimentEvent("chat_ai_response", {
                     request_id: requestId || "",
                     is_system_trigger: !!isSystemTrigger,
+                    source: responseOptions.source || (isSystemTrigger ? "system_trigger" : "user_chat"),
                     text: aiText,
                     emotion: emotion,
                     love_up: loveUpVal,
@@ -516,25 +526,24 @@ window.initMascotChat = function() {
                 });
             }
             
-            // 好感度変動（サンドボックスモードでは無効）
+            // 親密度変動（サンドボックスモードでは無効）
             if (f.user_role=='experimental'&&!f.is_sandbox && loveUpVal !== 0) {
-                var current = parseInt(f.love_level) || 0;
-                f.love_level = Math.min(100, Math.max(0, current + loveUpVal));
+                f.love_level = nextLove;
                 if (window.logExperimentEvent) {
                     window.logExperimentEvent("love_change", {
                         request_id: requestId || "",
                         source: "ai_response",
                         delta: loveUpVal,
-                        before: current,
+                        before: currentLove,
                         after: f.love_level
                     });
                 }
 
-                console.log("[MascotChat] 好感度変動:", loveUpVal);
+                console.log("[MascotChat] 親密度変動:", loveUpVal);
                 if (loveUpVal > 0) {
-                    alertify.success("好感度UP!");
+                    alertify.success("親密度UP!");
                 } else {
-                    alertify.error("好感度DOWN...");
+                    alertify.error("親密度DOWN...");
                 }
                 if (window.saveLoveLevelToSupabase) {
                     window.saveLoveLevelToSupabase(f.love_level);
@@ -784,7 +793,8 @@ window.initMascotChat = function() {
         // mascot_chat_trigger: cpp_executorなど外部プラグインから呼び出される
         // WebSocket経由でAIに通知し、フィードバックを表示する
         // ================================================================
-        window.mascot_chat_trigger = function(systemMessage, is_new_record=false, callback) {
+        window.mascot_chat_trigger = function(systemMessage, is_new_record=false, callback, responseOptions) {
+            responseOptions = responseOptions || {};
             if (typeof TYRANO.kag.stat.f === "undefined") return;
             var f = TYRANO.kag.stat.f;  
             var tasks = f.all_tasks;
@@ -836,7 +846,7 @@ window.initMascotChat = function() {
                         addMessage("モカ", "ごめんね、うまく応答できなかったみたい…もう一度試してみてね。", false);
                         tyrano.plugin.kag.ftag.startTag("chara_mod", {name:"mocha", face:"sad", time:200});
                     } else {
-                        applyAIResponse(data, true, requestId);
+                        applyAIResponse(data, true, requestId, responseOptions);
                     }
                     
                     $input.prop("disabled", false).attr("placeholder", "メッセージを入力...");
@@ -896,7 +906,7 @@ window.initMascotChat = function() {
         console.error("ai-chat-container が見つかりません。");
     }
 
-    // --- 好感度保存関数 ---
+    // --- 親密度保存関数 ---
     window.saveLoveLevelToSupabase = async function(newLevel) {
         if (!TYRANO.kag.stat.f.user_id || !window.sb) return;
 
@@ -907,7 +917,7 @@ window.initMascotChat = function() {
                 .eq('id', TYRANO.kag.stat.f.user_id);
 
             if (error) {
-                console.error("好感度の保存に失敗:", error);
+                console.error("親密度の保存に失敗:", error);
             }
         } catch (e) {
             console.error("Supabase Error:", e);

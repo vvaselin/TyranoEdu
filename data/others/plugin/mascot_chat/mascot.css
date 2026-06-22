@@ -332,7 +332,7 @@
     background-color: #4a54c4;
 }
 
-/* --- 好感度ゲージコンテナ --- */
+/* --- 親密度ゲージコンテナ --- */
 .love-gauge-box {
     position: absolute;
     bottom: 85px; 

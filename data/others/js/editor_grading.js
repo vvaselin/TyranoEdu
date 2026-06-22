@@ -139,21 +139,28 @@ function handleGradeResult(data) {
     // ハイスコアボーナス
     if (data.is_new_record) {
         if (f.user_role == 'experimental' && data.bonus_love > 0) {
-            var current = parseInt(f.love_level) || 0;
-            f.love_level = current + data.bonus_love;
-            if (window.logExperimentEvent) {
-                window.logExperimentEvent("love_change", {
-                    source: "high_score_bonus",
-                    delta: data.bonus_love,
-                    before: current,
-                    after: f.love_level,
-                    score: data.score,
-                    is_new_record: data.is_new_record
-                });
-            }
-            alertify.success("ハイスコアボーナス! 好感度+" + data.bonus_love);
-            if (window.saveLoveLevelToSupabase) {
-                window.saveLoveLevelToSupabase(f.love_level);
+            var current = Math.min(100, Math.max(0, parseInt(f.love_level) || 0));
+            var requestedBonus = parseInt(data.bonus_love) || 0;
+            var nextLove = Math.min(100, current + requestedBonus);
+            var appliedBonus = nextLove - current;
+            f.love_level = current;
+
+            if (appliedBonus > 0) {
+                f.love_level = nextLove;
+                if (window.logExperimentEvent) {
+                    window.logExperimentEvent("love_change", {
+                        source: "high_score_bonus",
+                        delta: appliedBonus,
+                        before: current,
+                        after: f.love_level,
+                        score: data.score,
+                        is_new_record: data.is_new_record
+                    });
+                }
+                alertify.success("ハイスコアボーナス! 親密度+" + appliedBonus);
+                if (window.saveLoveLevelToSupabase) {
+                    window.saveLoveLevelToSupabase(f.love_level);
+                }
             }
         }
     }

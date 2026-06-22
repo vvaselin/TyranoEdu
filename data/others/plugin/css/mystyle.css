@@ -154,7 +154,7 @@
   display: inline-block !important;
 }
 
-/* --- 好感度ゲージコンテナ --- */
+/* --- 親密度ゲージコンテナ --- */
 .gauge-box {
     position: absolute;
     top: 62px; 
