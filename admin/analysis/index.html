@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Experiment Analysis</title>
   <link rel="stylesheet" href="/admin/admin.css?v=20260618-1">
-  <link rel="stylesheet" href="/admin/css/analysis.css?v=20260622-1">
+  <link rel="stylesheet" href="/admin/css/analysis.css?v=20260622-9">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
   <script src="/admin/js/api.js?v=20260618-1" defer></script>
   <script src="/admin/js/ui.js?v=20260618-1" defer></script>
-  <script src="/admin/js/stats.js?v=20260618-1" defer></script>
-  <script src="/admin/analysis/charts.js?v=20260618-3" defer></script>
-  <script src="/admin/analysis/analysis.js?v=20260622-1" defer></script>
+  <script src="/admin/js/stats.js?v=20260622-2" defer></script>
+  <script src="/admin/analysis/charts.js?v=20260622-7" defer></script>
+  <script src="/admin/analysis/analysis.js?v=20260622-15" defer></script>
 </head>
 <body>
   <header>
@@ -50,6 +50,17 @@
           エピソードを3話以上読んだ参加者のみ
         </label>
         <button class="secondary" id="download-analysis-csv" disabled>参加者別CSV</button>
+        <label>統計CSV
+          <select id="stats-export-select">
+            <option value="group">群間比較統計</option>
+            <option value="change">事前・事後変化</option>
+            <option value="post">事後評価群間比較</option>
+            <option value="balance">属性バランス</option>
+            <option value="intimacy">親密度システム</option>
+            <option value="participants">参加者レベル要約</option>
+          </select>
+        </label>
+        <button class="secondary" id="download-stats-csv" disabled>統計結果CSV出力</button>
         <span id="analysis-status" class="status">未読み込み</span>
       </div>
     </section>
@@ -59,7 +70,7 @@
     <nav class="section-jump panel" aria-label="分析項目">
       <a href="#test-section">テスト得点</a>
       <a href="#attitude-section">学習意識</a>
-      <a href="#ils-section">学習スタイル</a>
+      <a href="#ils-section">参加者属性・初期状態</a>
       <a href="#attribute-section">属性別評価</a>
       <a href="#item-section">事後評価項目</a>
       <a href="#participant-section">参加者別</a>
@@ -68,19 +79,23 @@
     <section id="test-section" class="analysis-grid">
       <article class="panel analysis-panel span-2">
         <div class="bar section-heading">
-          <div><strong>事前・事後テストの変化</strong><p>同一参加者の対応が取れたデータだけで変化量を算出します。</p></div>
+          <div><strong>事前・事後テストの変化</strong><p>対応が取れた参加者の変化量を、箱ひげ図と個別点で群間比較します。</p></div>
         </div>
         <div class="test-content">
           <div class="chart-box"><canvas id="test-chart"></canvas><div class="chart-fallback" id="test-chart-fallback" hidden></div></div>
-          <div class="scroll table-scroll"><table id="test-table" class="metric-table"></table></div>
+          <div class="table-pane">
+            <p class="scroll-hint">横にスクロールできます</p>
+            <div class="scroll table-scroll"><table id="test-table" class="metric-table"></table></div>
+          </div>
         </div>
+        <p class="analysis-note">本研究は少人数を対象とした予備的検討であるため、p値は補助的に示し、効果量、中央値、四分位範囲を中心に解釈します。事前・事後で測定した指標は、各参加者の変化量も群間で比較します。Cliff’s deltaが正の場合は実験群、負の場合は統制群の値が高い傾向を示します。</p>
       </article>
     </section>
 
     <section id="attitude-section" class="analysis-grid">
       <article class="panel analysis-panel span-2">
         <div class="bar section-heading attribute-controls">
-          <div><strong>プログラミング学習への意識</strong><p>5つの質問を合成せず、質問ごとに事前・事後の平均を比較します。</p></div>
+          <div><strong>学習意識：各質問項目の変化量</strong><p>各項目について、事後回答－事前回答の変化量を群別に表示します。破線は変化量0を示します。</p></div>
           <label>属性
             <select id="attitude-attribute-select">
               <option value="all">全体</option>
@@ -97,25 +112,45 @@
         <div class="chart-box attitude-chart-box"><canvas id="attitude-chart"></canvas><div class="chart-fallback" id="attitude-chart-fallback" hidden></div></div>
       </article>
       <article class="panel analysis-panel span-2">
-        <div class="bar section-heading"><div><strong>意識変化の統計量</strong><p>質問ごとに事前・事後・変化量を表示します。5件法は1～5点、変化量は事後－事前です。</p></div></div>
+        <div class="bar section-heading"><div><strong>各質問項目の群間比較</strong><p>グラフに表示した各参加者の項目別変化量と同じデータを集計します。</p></div></div>
+        <p class="scroll-hint">横にスクロールできます</p>
         <div class="scroll table-scroll tall"><table id="attitude-table" class="metric-table"></table></div>
+        <p class="analysis-note">本研究では、学習意識に関する各質問項目を合成せず、項目ごとに事前・事後の変化量を比較する。各項目は自己効力感、エラー修正への自信、困難課題への粘り強さ、興味、継続意欲など異なる側面を含むため、単純平均ではなく項目別の傾向を中心に解釈する。</p>
       </article>
     </section>
 
     <section id="ils-section" class="analysis-grid">
       <article class="panel analysis-panel">
-        <div class="bar section-heading"><div><strong>Felder–Silverman学習スタイル</strong><p>4軸のA/B回答差から方向と強さを算出します。</p></div></div>
+        <div class="bar section-heading attribute-controls">
+          <div><strong>参加者属性・初期状態の群間バランス</strong><p>実験開始前の属性・回答・得点について、実験群と統制群の偏りを確認します。</p></div>
+          <label>表示対象
+            <select id="balance-target-select">
+              <option value="ils">Felder–Silverman学習スタイル</option>
+              <option value="gender">性別</option>
+              <option value="programmingExperience">プログラミング経験</option>
+              <option value="cppExperience">C++経験</option>
+              <option value="novelExperience">ノベルゲーム経験</option>
+              <option value="storyEmpathy">物語・キャラクターへの感情移入傾向</option>
+              <option value="preAttitude">事前のプログラミング学習意識</option>
+              <option value="preTest">事前テスト得点</option>
+              <option value="preQuestionnaire">事前アンケート項目一覧</option>
+            </select>
+          </label>
+        </div>
         <div class="chart-box tall"><canvas id="ils-chart"></canvas><div class="chart-fallback" id="ils-chart-fallback" hidden></div></div>
       </article>
       <article class="panel analysis-panel">
-        <div class="bar section-heading"><div><strong>群ごとの偏り</strong><p>人数が少ない区分は、割合の差を強く解釈しないでください。</p></div></div>
-        <div class="scroll table-scroll tall"><table id="ils-table"></table></div>
+        <div class="bar section-heading"><div><strong>群ごとの偏り</strong><p>群分け時点の偏り確認であり、効果検証ではありません。</p></div></div>
+        <p class="scroll-hint">横にスクロールできます</p>
+        <div class="scroll table-scroll tall"><table id="ils-table" class="metric-table"></table></div>
+        <p id="balance-summary" class="balance-summary"></p>
+        <p class="analysis-note">群分け時点の偏り確認であり、効果検証ではない。人数が少ないため、属性比率の差は参考情報として扱う。</p>
       </article>
     </section>
 
     <section id="attribute-section" class="panel analysis-panel">
       <div class="bar section-heading attribute-controls">
-        <div><strong>属性ごとのシステム評価</strong><p>群を分けたまま、属性区分ごとの平均評価を確認します。「全ての評価指標」には親密度システム専用の3項目を含みません。</p></div>
+        <div><strong>事後評価項目の群間比較</strong><p>事後評価の分布を、群別の箱ひげ図と参加者ごとの個別点で表示します。親密度システム専用の3項目は含みません。</p></div>
         <label>属性
           <select id="attribute-select">
             <option value="all">全体</option>
@@ -144,13 +179,15 @@
         </label>
       </div>
       <div class="chart-box tall"><canvas id="attribute-chart"></canvas><div class="chart-fallback" id="attribute-chart-fallback" hidden></div></div>
-      <div class="scroll table-scroll"><table id="attribute-table"></table></div>
+      <p class="scroll-hint">横にスクロールできます</p>
+      <div class="scroll table-scroll"><table id="attribute-table" class="metric-table"></table></div>
+      <p class="analysis-note">本研究は少人数を対象とした予備的検討であるため、p値は補助的に示し、効果量、中央値、四分位範囲を中心に解釈します。Cliff’s deltaが正の場合は実験群、負の場合は統制群の値が高い傾向を示します。</p>
     </section>
 
     <section id="item-section" class="analysis-grid">
       <article class="panel analysis-panel span-2">
         <div class="bar section-heading attribute-controls">
-          <div><strong>親密度システムの評価</strong><p>実験群だけに回答項目があるため、実験群内で全体または属性区分ごとの平均評価を表示します。</p></div>
+          <div><strong>親密度システムの評価</strong><p>実験群のみの回答分布を、箱ひげ図と参加者ごとの個別点で表示します。群間比較は行いません。</p></div>
           <label>属性
             <select id="intimacy-attribute-select">
               <option value="all">全体</option>
@@ -165,7 +202,9 @@
           </label>
         </div>
         <div class="chart-box"><canvas id="intimacy-chart"></canvas><div class="chart-fallback" id="intimacy-chart-fallback" hidden></div></div>
+        <p class="scroll-hint">横にスクロールできます</p>
         <div class="scroll table-scroll"><table id="intimacy-table" class="metric-table"></table></div>
+        <p class="analysis-note">親密度システムの評価は実験群のみの項目であるため、群間比較は行いません。</p>
       </article>
     </section>
 

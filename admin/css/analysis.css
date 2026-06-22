@@ -100,6 +100,7 @@
 }
 .chart-box.tall { height: 390px; }
 .chart-box.attitude-chart-box { height: 620px; }
+.chart-box.attitude-chart-box { overflow-x: auto; }
 .chart-fallback { padding: 18px; color: var(--muted); }
 
 .test-content {
@@ -112,10 +113,11 @@
   border-right: 1px solid var(--line);
   border-bottom: 0;
 }
-.test-content .table-scroll { max-height: 300px; }
+.test-content .table-pane { min-width: 0; }
+.test-content .table-scroll { max-height: 274px; }
 .test-content #test-table {
-  width: 1000px;
-  min-width: 1000px;
+  width: 2300px;
+  min-width: 2300px;
   table-layout: fixed;
 }
 .test-content #test-table .test-metric-col { width: 150px; }
@@ -134,13 +136,34 @@
   overflow: visible;
   text-overflow: clip;
 }
+.analysis-page .table-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: #eef3f8;
+}
+.analysis-page .metric-table th:first-child,
+.analysis-page .metric-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--panel);
+  box-shadow: 2px 0 0 #c4ccd6;
+}
+.analysis-page .metric-table thead th:first-child {
+  z-index: 5;
+  background: #eef3f8;
+}
+.analysis-page .metric-table td.grouped-cell:first-child { background: #f8fafc; }
 .analysis-page th:first-child,
 .analysis-page td:first-child,
 .analysis-page .metric-name { text-align: left; white-space: normal; overflow: visible; text-overflow: clip; }
-.analysis-page .metric-table { min-width: 1180px; }
+.analysis-page .metric-table,
+.analysis-page #attribute-table { min-width: 2300px; }
 .analysis-page .metric-name { width: auto; min-width: 220px; max-width: 420px; }
 .analysis-page .attribute-name,
-.analysis-page .time-name {
+.analysis-page .time-name,
+.analysis-page .question-full {
   width: auto;
   min-width: 86px;
   max-width: 220px;
@@ -149,7 +172,79 @@
   overflow: visible;
   text-overflow: clip;
 }
+#intimacy-table .metric-name {
+  width: 200px;
+  min-width: 180px;
+  max-width: 220px;
+  overflow-wrap: anywhere;
+}
+#intimacy-table {
+  width: 1500px;
+  min-width: 1500px;
+  table-layout: fixed;
+}
+#intimacy-table .intimacy-metric-col { width: 220px; }
+#intimacy-table .intimacy-attribute-col { width: 80px; }
+#intimacy-table .intimacy-stat-col { width: 80px; }
+#intimacy-table .intimacy-comparison-col { width: 480px; }
+#intimacy-table .attribute-name {
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+}
+#ils-table.balance-compact {
+  width: 1100px;
+  min-width: 1100px;
+}
+#ils-table.ils-axis-table {
+  width: 1120px;
+  min-width: 1120px;
+  table-layout: fixed;
+}
+#ils-table.ils-axis-table .ils-axis-col { width: 170px; }
+#ils-table.ils-axis-table .ils-stat-col { width: 95px; }
+#ils-table.ils-axis-table .metric-name {
+  width: 170px;
+  min-width: 170px;
+  max-width: 170px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+#ils-table.balance-category-table {
+  width: 1100px;
+  min-width: 1100px;
+  table-layout: fixed;
+}
+#ils-table.balance-category-table .balance-item-col { width: 170px; }
+#ils-table.balance-category-table .balance-category-col { width: 130px; }
+#ils-table.balance-category-table .balance-category-stat-col { width: 133px; }
+#ils-table.balance-category-table .metric-name {
+  width: 170px;
+  min-width: 170px;
+  max-width: 170px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+#ils-table.balance-numeric-table {
+  width: 2130px;
+  min-width: 2130px;
+  table-layout: fixed;
+}
+#ils-table.balance-numeric-table .balance-metric-col { width: 240px; }
+#ils-table.balance-numeric-table .balance-stat-col { width: 90px; }
+#ils-table.balance-numeric-table .metric-name {
+  width: 240px;
+  min-width: 240px;
+  max-width: 240px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 .analysis-page .time-name { min-width: 72px; max-width: 100px; }
+.analysis-page .question-full {
+  min-width: 300px;
+  max-width: 440px;
+  line-height: 1.45;
+}
 .analysis-page .grouped-cell { vertical-align: middle; font-weight: 700; background: #f8fafc; }
 .analysis-page tbody tr.group-start > td { border-top: 2px solid #aeb8c5; }
 .analysis-page tbody tr.subgroup-start > td { border-top: 1px solid #c8d0da; }
@@ -158,6 +253,27 @@
 .analysis-page td small { display: block; color: var(--muted); font-size: 10px; }
 .na { color: var(--muted); }
 .warning-cell { background: #fff7ed; }
+.analysis-note {
+  margin: 10px 14px 14px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.scroll-hint {
+  margin: 7px 12px 5px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+.balance-summary {
+  margin: 12px 14px 4px;
+  padding: 10px 12px;
+  border-left: 3px solid #64748b;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 12px;
+  line-height: 1.6;
+}
 .pair-count { color: var(--muted); font-size: 11px; }
 
 @media (max-width: 1280px) {
