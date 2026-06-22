@@ -168,6 +168,9 @@ window.triggerMascotTaskIntro = function() {
             }
 
             window.logExperimentEvent("task_intro_knowledge", eventData);
+        }, {
+            source: "task_intro_knowledge",
+            suppressPositiveLove: true
         });
     }
 
