@@ -88,15 +88,17 @@
       options: {
         ...common,
         indexAxis: "y",
+        interaction: { mode: "nearest", intersect: true },
         plugins: { ...common.plugins, title: { display: !!opts.title, text: opts.title } },
         scales: {
           x: {
             beginAtZero: true,
             stacked: !!opts.stacked,
+            min: Number.isFinite(opts.min) ? opts.min : undefined,
             max: Number.isFinite(opts.max) ? opts.max : undefined,
             title: { display: !!opts.xTitle, text: opts.xTitle || "" },
           },
-          y: { stacked: !!opts.stacked, grid: { display: false } },
+          y: { stacked: !!opts.stacked, grid: { display: false }, ticks: { autoSkip: false } },
         },
       },
     });
