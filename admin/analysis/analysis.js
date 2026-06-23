@@ -5,8 +5,21 @@
   const api = window.AdminAPI;
   const charts = window.AdminCharts;
   const stats = window.AdminStats;
+  const logAnalysis = window.AdminLogAnalysis;
 
-  const state = { profiles: [], experimentData: null, rows: [] };
+  const state = {
+    profiles: [],
+    experimentData: null,
+    rows: [],
+    rawEvents: [],
+    analysisEvents: [],
+    tasks: {},
+    participantBehaviorSummary: [],
+    taskAttemptSummary: [],
+    loveTransitionBehaviorSummary: [],
+    surveyLogCorrelationStats: [],
+    groupAttributeLogSummary: [],
+  };
   const COLORS = {
     experimental: "#0f8b8d",
     experimentalPre: "#58a5a6",
@@ -731,11 +744,380 @@
     $("participant-table").innerHTML = `<thead><tr>${headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("")}</tr></thead><tbody>${body}</tbody>`;
   }
 
+  const LOG_METRICS = [
+    { key: "cleared_task_count", label: "クリア到達課題数" },
+    { key: "attempted_task_count", label: "着手課題数" },
+    { key: "execute_count", label: "実行回数" },
+    { key: "retry_after_error_count", label: "エラー後の再挑戦回数" },
+    { key: "retry_after_low_score_count", label: "低得点後の再挑戦回数" },
+    { key: "feedback_to_retry_count", label: "フィードバック後の再挑戦回数" },
+    { key: "chat_user_count", label: "ユーザーチャット数" },
+    { key: "love_total_gain", label: "親密度上昇量合計" },
+    { key: "love_gain_from_ai", label: "AI応答由来の親密度上昇量" },
+    { key: "optional_task_count", label: "任意課題数" },
+  ];
+
+  const CORRELATION_DEFINITIONS = [
+    { log_key: "chat_user_count", survey_key: "agentIntimacy", label: "ユーザーチャット数 × エージェントへの親しみ" },
+    { log_key: "chat_user_count", survey_key: "agentTogetherness", label: "ユーザーチャット数 × 一緒に学習している感覚" },
+    { log_key: "love_total_gain", survey_key: "agentRelationshipGrowth", label: "親密度上昇量合計 × 関係が深まった感覚" },
+    { log_key: "love_gain_from_ai", survey_key: "intimacyCloseness", label: "AI応答由来の親密度上昇量 × 距離が近づいた感覚" },
+    { log_key: "feedback_to_retry_count", survey_key: "persistenceGain", label: "フィードバック後の再挑戦回数 × 諦めずに取り組める意識の変化" },
+    { log_key: "retry_after_error_count", survey_key: "debugGain", label: "エラー後の再挑戦回数 × エラー修正意識の変化" },
+    { log_key: "cleared_task_count", survey_key: "postScore", label: "クリア到達課題数 × 事後テスト得点" },
+    { log_key: "optional_task_count", survey_key: "postContinue", label: "任意課題数 × 学習継続意識" },
+    { log_key: "story_or_episode_view_count", survey_key: "episodeMotivation", label: "ストーリー・エピソード閲覧数 × エピソード進行の動機づけ評価" },
+  ];
+
+  const COLUMN_LABELS = {
+    participant_id: "参加者ID",
+    group: "群",
+    event_time: "イベント時刻",
+    love_before: "変動前の親密度",
+    love_after: "変動後の親密度",
+    love_delta: "親密度変化量",
+    love_source: "変動要因",
+    related_task_id: "関連課題",
+    previous_action_type: "直前の行動",
+    next_action_type: "直後の行動",
+    next_action_within_3min: "3分以内の次行動",
+    next_action_within_5min: "5分以内の次行動",
+    next_task_continued: "課題継続",
+    next_chat_sent: "チャット送信",
+    next_execute_done: "再実行",
+    next_grade_done: "再採点",
+    next_story_or_episode_viewed: "ストーリー・エピソード閲覧",
+    session_count: "セッション数",
+    total_duration_min: "総利用時間（分）",
+    attempted_task_count: "着手課題数",
+    cleared_task_count: "クリア到達課題数",
+    optional_task_count: "任意課題数",
+    execute_count: "実行回数",
+    grade_count: "採点回数",
+    chat_user_count: "ユーザーチャット数",
+    chat_ai_count: "AI応答数",
+    code_snapshot_count: "コード保存数",
+    error_count: "エラー回数",
+    error_rate: "エラー率",
+    retry_after_error_count: "エラー後の再挑戦回数",
+    retry_after_low_score_count: "低得点後の再挑戦回数",
+    feedback_to_retry_count: "フィードバック後の再挑戦回数",
+    feedback_to_chat_count: "フィードバック後のチャット数",
+    feedback_to_leave_count: "フィードバック後の離脱数",
+    love_change_count: "親密度変動回数",
+    love_total_gain: "親密度上昇量合計",
+    love_gain_from_ai: "AI応答由来の親密度上昇量",
+    love_gain_from_score_bonus: "高得点ボーナス由来の親密度上昇量",
+    final_love: "最終親密度",
+    max_score_reference: "最高点（参考）",
+    story_or_episode_view_count: "ストーリー・エピソード閲覧数",
+    agentIntimacy: "エージェントへの親しみ",
+    agentTogetherness: "一緒に学習している感覚",
+    agentRelationshipGrowth: "関係が深まった感覚",
+    intimacyCloseness: "親密度変化に応じて距離が近づいた感覚",
+    persistenceGain: "諦めずに取り組める意識の変化",
+    debugGain: "エラーを修正できると思う意識の変化",
+    postScore: "事後テスト得点",
+    postContinue: "今後も学び続けたい意識",
+    episodeMotivation: "エピソード進行の動機づけ評価",
+    task_id: "課題ID",
+    task_category: "課題カテゴリ",
+    is_optional_task: "任意課題",
+    task_started_at: "課題開始時刻",
+    first_execute_at: "初回実行時刻",
+    first_grade_at: "初回採点時刻",
+    cleared_at: "クリア時刻",
+    left_task_at: "課題離脱時刻",
+    first_grade_score: "初回採点得点",
+    clear_score: "クリア時得点",
+    cleared: "クリア",
+    attempts_until_clear: "クリアまでの実行回数",
+    grades_until_clear: "クリアまでの採点回数",
+    time_until_first_execute_sec: "初回実行までの時間（秒）",
+    time_until_first_grade_sec: "初回採点までの時間（秒）",
+    time_until_clear_sec: "クリアまでの時間（秒）",
+    retried_after_error: "エラー後に再挑戦",
+    retried_after_low_score: "低得点後に再挑戦",
+    used_chat_before_clear: "クリア前にチャット利用",
+    used_chat_after_error: "エラー後にチャット利用",
+    used_chat_after_low_score: "低得点後にチャット利用",
+    label: "分析項目",
+    log_metric: "ログ指標",
+    survey_metric: "アンケート指標",
+    n: "人数",
+    pearson_r: "Pearsonの相関係数",
+    pearson_p_value_approx: "Pearsonのp値（参考）",
+    spearman_rho: "Spearmanの順位相関係数",
+    spearman_p_value_approx: "Spearmanのp値（参考）",
+    attribute: "属性",
+    attribute_value: "属性区分",
+    programming_experience: "プログラミング経験",
+    cpp_experience: "C++経験",
+    pre_test: "事前テスト",
+    pre_attitude: "事前学習意識",
+    novel_experience: "ノベルゲーム経験",
+    story_empathy: "キャラクター・物語への感情移入",
+    ilsActiveReflective: "学習スタイル（能動型・内省型）",
+    ilsSensingIntuitive: "学習スタイル（感覚型・直観型）",
+    ilsVisualVerbal: "学習スタイル（視覚型・言語型）",
+    ilsSequentialGlobal: "学習スタイル（逐次型・全体型）",
+    metric: "指標",
+    metric_label: "指標名",
+    mean: "平均",
+    median: "中央値",
+    sd: "標準偏差",
+    q1: "第1四分位",
+    q3: "第3四分位",
+    min: "最小",
+    max: "最大",
+  };
+
+  const VALUE_LABELS = {
+    experimental: "実験群",
+    control: "統制群",
+    all: "全体",
+    ai_response: "AI応答",
+    high_score_bonus: "高得点ボーナス",
+    chat_user_payload: "ユーザー発話",
+    chat_ai_response: "AI応答",
+    execute_result: "実行結果",
+    grade_result: "採点結果",
+    love_change: "親密度変動",
+    lecture_view: "講義閲覧",
+    screen_transition: "画面遷移",
+    task_intro_knowledge: "課題前の基本構文表示",
+    chat_user: "ユーザー発話",
+    chat_ai: "AI応答",
+    execute: "実行",
+    execute_error: "実行エラー",
+    grade: "採点",
+    grade_clear: "クリア採点",
+    leave_task: "課題離脱",
+    story_or_episode: "ストーリー・エピソード閲覧",
+    screen_enter: "画面入場",
+    screen_exit: "画面離脱",
+    yes_or_high: "あり・高群",
+    no_or_low: "なし・低群",
+    high: "高群",
+    low: "低群",
+    pre_test_high: "事前テスト高群",
+    pre_test_low: "事前テスト低群",
+    pre_attitude_high: "事前学習意識高群",
+    pre_attitude_low: "事前学習意識低群",
+  };
+
+  function logMetadata(rows) {
+    const included = new Set(rows.map((row) => row.participantId));
+    const excluded = state.rows.map((row) => row.participantId).filter((id) => id && !included.has(id));
+    return {
+      excluded_participants: excluded.join(";"),
+      included_episode_min: $("episode-filter").checked ? 3 : "",
+      group: $("role-filter").value || "all",
+      n: rows.length,
+      generated_at: new Date().toISOString(),
+    };
+  }
+
+  function rowsWithLogMetrics(rows, behaviorRows) {
+    const behaviorById = new Map((behaviorRows || []).map((row) => [row.participant_id, row]));
+    return rows.map((row) => {
+      const behavior = behaviorById.get(row.participantId) || {};
+      return {
+        ...row,
+        ...behavior,
+        participant_id: row.participantId,
+        group: row.role,
+        story_or_episode_view_count: row.episodeCount,
+      };
+    });
+  }
+
+  function currentLogInputs(rows) {
+    const ids = new Set(rows.map((row) => row.participantId));
+    const profiles = state.profiles.filter((profile) => ids.has(profile.participant_id));
+    const events = state.analysisEvents.filter((event) => ids.has(event.participant_id || (event.raw && event.raw[0] && event.raw[0].participant_id)));
+    const rawEvents = state.rawEvents.filter((event) => ids.has(event.participant_id));
+    return { profiles, events, rawEvents };
+  }
+
+  function refreshLogSummaries(rows) {
+    if (!logAnalysis) return rows;
+    const metadata = logMetadata(rows);
+    const { profiles, events, rawEvents } = currentLogInputs(rows);
+    state.participantBehaviorSummary = logAnalysis.buildParticipantBehaviorSummary(profiles, events, rawEvents, state.tasks, metadata);
+    state.taskAttemptSummary = logAnalysis.buildTaskAttemptSummary(profiles, events, state.tasks, metadata);
+    state.loveTransitionBehaviorSummary = logAnalysis.buildLoveTransitionBehaviorSummary(profiles, events, metadata);
+    const mergedRows = rowsWithLogMetrics(rows, state.participantBehaviorSummary);
+    state.surveyLogCorrelationStats = logAnalysis.buildCorrelationStats(mergedRows, CORRELATION_DEFINITIONS, metadata);
+    state.groupAttributeLogSummary = logAnalysis.buildGroupAttributeLogSummary(mergedRows, LOG_METRICS, logAttributeDefinitions(), metadata);
+    return mergedRows;
+  }
+
+  function logAttributeDefinitions() {
+    const highLow = (key, label) => ({
+      key,
+      value(row) {
+        const value = Number(row[key]);
+        if (!Number.isFinite(value)) return "";
+        const valid = state.rows.map((item) => Number(item[key])).filter(Number.isFinite);
+        const med = median(valid);
+        if (!Number.isFinite(med)) return "";
+        return value >= med ? `${label}_high` : `${label}_low`;
+      },
+    });
+    return [
+      { key: "programming_experience", value: (row) => Number(row.programmingExperience) >= 3 ? "yes_or_high" : Number.isFinite(Number(row.programmingExperience)) ? "no_or_low" : "" },
+      { key: "cpp_experience", value: (row) => Number(row.cppExperience) >= 3 ? "yes_or_high" : Number.isFinite(Number(row.cppExperience)) ? "no_or_low" : "" },
+      highLow("preScore", "pre_test"),
+      highLow("preAttitudeAverage", "pre_attitude"),
+      { key: "novel_experience", value: (row) => Number(row.novelPreferenceValue) >= 3 ? "yes_or_high" : Number.isFinite(Number(row.novelPreferenceValue)) ? "no_or_low" : "" },
+      { key: "story_empathy", value: (row) => Number(row.storyEmpathyValue) >= 4 ? "high" : Number.isFinite(Number(row.storyEmpathyValue)) ? "low" : "" },
+      ...ILS_AXES.map((axis) => ({ key: axis.key, value: (row) => row[axis.key] && row[axis.key].label })),
+    ];
+  }
+
+  function formatColumnLabel(key) {
+    return COLUMN_LABELS[key] || LOG_METRICS.find((metric) => metric.key === key)?.label || key;
+  }
+
+  function formatGroupName(group) {
+    return VALUE_LABELS[group] || group || "";
+  }
+
+  function formatEventType(type) {
+    return VALUE_LABELS[type] || type || "";
+  }
+
+  function formatDisplayValue(key, value) {
+    if (value == null || value === "") return "";
+    if (typeof value === "boolean") return value ? "はい" : "いいえ";
+    if (key === "group") return formatGroupName(value);
+    if (key === "love_source" || key === "previous_action_type" || key === "next_action_type") return formatEventType(value);
+    if (key === "attribute" || key === "attribute_value" || key === "metric" || key === "log_metric" || key === "survey_metric") return formatColumnLabel(VALUE_LABELS[value] || value);
+    if (typeof value === "string" && VALUE_LABELS[value]) return VALUE_LABELS[value];
+    if (typeof value === "number") return Number.isInteger(value) ? String(value) : fmt(value, 2);
+    return String(value);
+  }
+
+  function renderPlainTable(tableId, headers, rows, limit) {
+    const visibleRows = rows.slice(0, limit || rows.length);
+    const body = visibleRows.map((row) => `<tr>${headers.map((header) => `<td>${escapeHtml(formatDisplayValue(header, row[header]))}</td>`).join("")}</tr>`).join("");
+    $(tableId).innerHTML = `<thead><tr>${headers.map((header) => `<th>${escapeHtml(formatColumnLabel(header))}</th>`).join("")}</tr></thead><tbody>${body || `<tr><td colspan="${headers.length}" class="na">表示できるデータがありません</td></tr>`}</tbody>`;
+  }
+
+  function renderLogSummaryChart(rows) {
+    const select = $("log-metric-select");
+    if (!select) return;
+    if (!select.options.length) {
+      select.innerHTML = LOG_METRICS.map((metric) => `<option value="${escapeHtml(metric.key)}">${escapeHtml(metric.label)}</option>`).join("");
+    }
+    const metric = LOG_METRICS.find((item) => item.key === select.value) || LOG_METRICS[0];
+    select.value = metric.key;
+    const group = (role, color) => {
+      const points = rows.filter((row) => row.group === role && Number.isFinite(Number(row[metric.key]))).map((row) => ({
+        participantId: row.participant_id,
+        roleLabel: formatGroupName(role),
+        value: Number(row[metric.key]),
+        episodeCount: row.episodeCount,
+        metricLabel: metric.label,
+        valueKind: "postOnly",
+      }));
+      return { label: formatGroupName(role), tickLabel: formatGroupName(role), color, points, summary: summarize(points.map((point) => point.value)) };
+    };
+    charts.boxplotWithPoints("log-summary-chart", [
+      group("experimental", COLORS.experimental),
+      group("control", COLORS.control),
+    ], {
+      yTitle: metric.label,
+      tooltipFormatter(point) {
+        const lines = [
+          `参加者ID: ${point.participantId || "-"}`,
+          `群: ${point.roleLabel || "-"}`,
+          `${metric.label}: ${Number.isFinite(point.value) ? point.value.toFixed(2) : "-"}`,
+        ];
+        if (Number.isFinite(point.episodeCount)) lines.push(`エピソード閲覧数: ${point.episodeCount}`);
+        return lines;
+      },
+      legendItems: [
+        { label: formatGroupName("experimental"), color: COLORS.experimental },
+        { label: formatGroupName("control"), color: COLORS.control },
+      ],
+    });
+  }
+
+  function renderCorrelationScatter(rows) {
+    const select = $("correlation-select");
+    if (!select || !charts.scatter) return;
+    if (!select.options.length) {
+      select.innerHTML = CORRELATION_DEFINITIONS.map((definition, index) => `<option value="${index}">${escapeHtml(definition.label)}</option>`).join("");
+    }
+    const definition = CORRELATION_DEFINITIONS[Number(select.value) || 0] || CORRELATION_DEFINITIONS[0];
+    const points = rows.map((row) => ({
+      x: Number(row[definition.log_key]),
+      y: Number(row[definition.survey_key]),
+      participantId: row.participantId,
+      group: row.role,
+    })).filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y));
+    charts.scatter("correlation-chart", points, {
+      xTitle: formatColumnLabel(definition.log_key),
+      yTitle: formatColumnLabel(definition.survey_key),
+      colors: COLORS,
+      groupLabels: { experimental: formatGroupName("experimental"), control: formatGroupName("control") },
+    });
+  }
+
+  function renderLoveTransitionTimeline(rows) {
+    const tableRows = state.loveTransitionBehaviorSummary.slice(0, 80);
+    renderPlainTable("love-transition-table", [
+      "participant_id", "group", "event_time", "love_before", "love_after", "love_delta", "love_source",
+      "related_task_id", "previous_action_type", "next_action_type", "next_action_within_3min",
+      "next_task_continued", "next_chat_sent", "next_execute_done", "next_grade_done", "next_story_or_episode_viewed",
+    ], tableRows);
+    if (!charts.line) return;
+    const labels = tableRows.map((row) => `${row.participant_id} ${row.event_time || ""}`.trim());
+    charts.line("love-transition-chart", labels, [
+      { label: "親密度変化量", borderColor: COLORS.experimental, backgroundColor: COLORS.experimental, data: tableRows.map((row) => row.love_delta || 0) },
+      { label: "課題継続", borderColor: COLORS.control, backgroundColor: COLORS.control, data: tableRows.map((row) => row.next_task_continued ? 1 : 0) },
+    ], { yTitle: "親密度変化量 / 課題継続" });
+  }
+
+  function renderLogAnalysis(rows) {
+    const mergedRows = refreshLogSummaries(rows);
+    renderLogSummaryChart(mergedRows);
+    renderPlainTable("behavior-summary-table", [
+      "participant_id", "group", "session_count", "total_duration_min", "attempted_task_count", "cleared_task_count",
+      "optional_task_count", "execute_count", "grade_count", "chat_user_count", "chat_ai_count", "error_count",
+      "error_rate", "retry_after_error_count", "retry_after_low_score_count", "feedback_to_retry_count",
+      "feedback_to_chat_count", "feedback_to_leave_count", "love_change_count", "love_total_gain",
+      "love_gain_from_ai", "love_gain_from_score_bonus", "final_love", "max_score_reference",
+    ], state.participantBehaviorSummary);
+    renderPlainTable("task-attempt-table", [
+      "participant_id", "group", "task_id", "task_category", "is_optional_task", "task_started_at",
+      "first_execute_at", "first_grade_at", "cleared_at", "left_task_at", "execute_count", "grade_count",
+      "error_count", "first_grade_score", "clear_score", "max_score_reference", "cleared",
+      "attempts_until_clear", "grades_until_clear", "time_until_first_execute_sec",
+      "time_until_first_grade_sec", "time_until_clear_sec", "retried_after_error",
+      "retried_after_low_score", "used_chat_before_clear", "used_chat_after_error", "used_chat_after_low_score",
+    ], state.taskAttemptSummary, 300);
+    renderLoveTransitionTimeline(mergedRows);
+    renderPlainTable("correlation-table", [
+      "label", "log_metric", "survey_metric", "group", "n", "pearson_r", "pearson_p_value_approx", "spearman_rho", "spearman_p_value_approx",
+    ], state.surveyLogCorrelationStats);
+    renderCorrelationScatter(mergedRows);
+    renderPlainTable("group-attribute-log-table", [
+      "attribute", "attribute_value", "metric", "group", "n", "mean", "median", "sd", "q1", "q3", "min", "max",
+    ], state.groupAttributeLogSummary, 500);
+  }
+
   function renderAll() {
     const rows = filteredRows();
-    renderSummary(rows); renderTests(rows); renderAttitude(rows); renderBalance(rows); renderAttributes(rows); renderParticipants(rows); renderIntimacy(rows);
+    renderSummary(rows); renderTests(rows); renderAttitude(rows); renderBalance(rows); renderAttributes(rows); renderParticipants(rows); renderIntimacy(rows); renderLogAnalysis(rows);
     $("download-analysis-csv").disabled = rows.length === 0;
     $("download-stats-csv").disabled = rows.length === 0;
+    ["download-participant-behavior-csv", "download-task-attempt-csv", "download-love-transition-csv", "download-survey-log-correlation-csv", "download-group-attribute-log-csv"].forEach((id) => {
+      const button = $(id);
+      if (button) button.disabled = rows.length === 0;
+    });
   }
 
   async function loadAnalysis() {
@@ -743,17 +1125,31 @@
     if (!api.getPassword()) return setStatus("analysis-status", "管理パスワードを入力してください", true);
     setStatus("analysis-status", "読み込み中...");
     try {
-      const [profiles, experimentData] = await Promise.all([
+      const [profiles, experimentData, events, tasks] = await Promise.all([
         api.fetchJSON("/api/admin/profiles"),
         api.fetchJSON("/api/admin/experiment-data"),
+        api.fetchJSON("/api/admin/events?limit=200000"),
+        fetch("/data/others/tasks.json").then((response) => response.ok ? response.json() : {}),
       ]);
       state.profiles = profiles.profiles || [];
       state.experimentData = experimentData;
+      state.rawEvents = events.events || [];
+      state.analysisEvents = logAnalysis ? logAnalysis.buildAnalysisEvents(state.rawEvents) : [];
+      state.tasks = tasks || {};
       buildRows(); renderAll();
       setStatus("analysis-status", `${state.rows.length}名を読み込みました`);
     } catch (error) {
       setStatus("analysis-status", error.message || String(error), true);
     }
+  }
+
+  function downloadLogCsv(filename, rows) {
+    const list = rows || [];
+    const headers = Array.from(list.reduce((set, row) => {
+      Object.keys(row || {}).forEach((key) => set.add(key));
+      return set;
+    }, new Set()));
+    downloadCSV(filename, headers, list.map((row) => headers.map((header) => row[header])));
   }
 
   function downloadRows() {
@@ -952,7 +1348,20 @@
   $("load-analysis").addEventListener("click", loadAnalysis);
   $("download-analysis-csv").addEventListener("click", downloadRows);
   $("download-stats-csv").addEventListener("click", downloadStatsCsv);
-  ["role-filter", "include-25nm467r", "episode-filter", "attitude-attribute-select", "balance-target-select", "attribute-select", "evaluation-select", "intimacy-attribute-select"].forEach((id) => $(id).addEventListener("change", renderAll));
+  [
+    ["download-participant-behavior-csv", "participant_behavior_summary.csv", () => state.participantBehaviorSummary],
+    ["download-task-attempt-csv", "task_attempt_summary.csv", () => state.taskAttemptSummary],
+    ["download-love-transition-csv", "love_transition_behavior_summary.csv", () => state.loveTransitionBehaviorSummary],
+    ["download-survey-log-correlation-csv", "survey_log_correlation_stats.csv", () => state.surveyLogCorrelationStats],
+    ["download-group-attribute-log-csv", "group_attribute_log_summary.csv", () => state.groupAttributeLogSummary],
+  ].forEach(([id, filename, rows]) => {
+    const button = $(id);
+    if (button) button.addEventListener("click", () => downloadLogCsv(filename, rows()));
+  });
+  ["role-filter", "include-25nm467r", "episode-filter", "attitude-attribute-select", "balance-target-select", "attribute-select", "evaluation-select", "intimacy-attribute-select", "log-metric-select", "correlation-select"].forEach((id) => {
+    const element = $(id);
+    if (element) element.addEventListener("change", renderAll);
+  });
   $("participant-filter").addEventListener("input", renderAll);
   $("admin-password").addEventListener("keydown", (event) => { if (event.key === "Enter") loadAnalysis(); });
   $("admin-password").value = api.getPassword();

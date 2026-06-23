@@ -104,6 +104,55 @@
     });
   }
 
+  function scatter(canvasId, points, options) {
+    const opts = options || {};
+    const colors = opts.colors || {};
+    const groupLabels = opts.groupLabels || { experimental: "実験群", control: "統制群" };
+    draw(canvasId, {
+      type: "scatter",
+      data: {
+        datasets: [
+          {
+            label: groupLabels.experimental || "実験群",
+            borderColor: colors.experimental || "#0f8b8d",
+            backgroundColor: colors.experimental || "#0f8b8d",
+            data: (points || []).filter((point) => point.group === "experimental"),
+          },
+          {
+            label: groupLabels.control || "統制群",
+            borderColor: colors.control || "#ea7a12",
+            backgroundColor: colors.control || "#ea7a12",
+            data: (points || []).filter((point) => point.group === "control"),
+          },
+        ],
+      },
+      options: {
+        ...common,
+        plugins: {
+          ...common.plugins,
+          title: { display: !!opts.title, text: opts.title || "" },
+          tooltip: {
+            callbacks: {
+              label(context) {
+                const point = context.raw || {};
+                return [
+                  `参加者ID: ${point.participantId || "-"}`,
+                  `群: ${groupLabels[point.group] || point.group || "-"}`,
+                  `${opts.xTitle || "x"}: ${Number.isFinite(point.x) ? point.x.toFixed(2) : "-"}`,
+                  `${opts.yTitle || "y"}: ${Number.isFinite(point.y) ? point.y.toFixed(2) : "-"}`,
+                ];
+              },
+            },
+          },
+        },
+        scales: {
+          x: { title: { display: !!opts.xTitle, text: opts.xTitle || "" } },
+          y: { title: { display: !!opts.yTitle, text: opts.yTitle || "" } },
+        },
+      },
+    });
+  }
+
   function jitter(key) {
     const text = String(key || "");
     let hash = 0;
@@ -310,6 +359,7 @@
               },
               label(context) {
                 const point = context.raw || {};
+                if (typeof opts.tooltipFormatter === "function") return opts.tooltipFormatter(point);
                 if (point.valueKind === "postOnly") {
                   const lines = [
                     `参加者ID: ${point.participantId || "-"}`,
@@ -389,5 +439,5 @@
     });
   }
 
-  global.AdminCharts = { groupedBar, line, horizontalBar, boxplotWithPoints };
+  global.AdminCharts = { groupedBar, line, horizontalBar, scatter, boxplotWithPoints };
 })(window);

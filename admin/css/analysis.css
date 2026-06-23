@@ -160,6 +160,22 @@
 .analysis-page .metric-name { text-align: left; white-space: normal; overflow: visible; text-overflow: clip; }
 .analysis-page .metric-table,
 .analysis-page #attribute-table { min-width: 2300px; }
+.analysis-page .log-table {
+  min-width: 1800px;
+  table-layout: auto;
+}
+.analysis-page .log-table th:first-child,
+.analysis-page .log-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--panel);
+  box-shadow: 2px 0 0 #c4ccd6;
+}
+.analysis-page .log-table thead th:first-child {
+  z-index: 5;
+  background: #eef3f8;
+}
 .analysis-page .metric-name { width: auto; min-width: 220px; max-width: 420px; }
 .analysis-page .attribute-name,
 .analysis-page .time-name,

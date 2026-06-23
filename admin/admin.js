@@ -243,6 +243,9 @@ async function loadEvents() {
 }
 
 function buildAnalysisEvents(rawEvents) {
+  if (window.AdminLogAnalysis && typeof window.AdminLogAnalysis.buildAnalysisEvents === "function") {
+    return window.AdminLogAnalysis.buildAnalysisEvents(rawEvents);
+  }
   const raw = rawEvents.slice().sort((a, b) => asTime(a.created_at) - asTime(b.created_at));
   const out = [];
   const chatByRequest = new Map();
@@ -617,8 +620,8 @@ function renderDetail(item) {
     <div class="kv">
       <div class="key">時刻</div><div>${escapeHtml(fmtTime(item.created_at))}</div>
       <div class="key">種類</div><div>${escapeHtml(eventLabel(item.kind))}</div>
-      <div class="key">task_id</div><div>${escapeHtml(item.task_id || "-")}</div>
-      <div class="key">session_id</div><div>${escapeHtml(item.session_id || "-")}</div>
+      <div class="key">課題ID</div><div>${escapeHtml(item.task_id || "-")}</div>
+      <div class="key">セッションID</div><div>${escapeHtml(item.session_id || "-")}</div>
       <div class="key">親密度</div><div>${escapeHtml(item.love)}</div>
     </div>`;
 
@@ -645,7 +648,7 @@ function renderDetail(item) {
     html += feedbackBlock(d.feedback);
   } else if (item.kind === "grade") {
     const r = d.result || {};
-    html += `<div class="kv"><div class="key">score</div><div>${escapeHtml(r.score ?? "-")}</div><div class="key">新記録</div><div>${escapeHtml(r.is_new_record == null ? "-" : (r.is_new_record ? "はい" : "いいえ"))}</div><div class="key">bonus_love</div><div>${escapeHtml(r.bonus_love ?? "-")}</div></div>`;
+    html += `<div class="kv"><div class="key">得点</div><div>${escapeHtml(r.score ?? "-")}</div><div class="key">新記録</div><div>${escapeHtml(r.is_new_record == null ? "-" : (r.is_new_record ? "はい" : "いいえ"))}</div><div class="key">親密度ボーナス</div><div>${escapeHtml(r.bonus_love ?? "-")}</div></div>`;
     html += block("理由", r.reason || "");
     html += block("改善点", r.improvement || "");
     html += feedbackBlock(d.feedback);
@@ -653,7 +656,7 @@ function renderDetail(item) {
   } else if (item.kind === "code") {
     html += block("コード", d.code || "");
   } else {
-    html += block("event_data", JSON.stringify(d, null, 2));
+    html += block("イベントデータ", JSON.stringify(d, null, 2));
   }
   html += block("生ログ", JSON.stringify(item.raw, null, 2));
   $("tab-event").innerHTML = html;

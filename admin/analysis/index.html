@@ -9,9 +9,10 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
   <script src="/admin/js/api.js?v=20260618-1" defer></script>
   <script src="/admin/js/ui.js?v=20260618-1" defer></script>
-  <script src="/admin/js/stats.js?v=20260622-2" defer></script>
-  <script src="/admin/analysis/charts.js?v=20260622-7" defer></script>
-  <script src="/admin/analysis/analysis.js?v=20260622-15" defer></script>
+  <script src="/admin/js/stats.js?v=20260623-1" defer></script>
+  <script src="/admin/js/log_analysis.js?v=20260623-1" defer></script>
+  <script src="/admin/analysis/charts.js?v=20260623-1" defer></script>
+  <script src="/admin/analysis/analysis.js?v=20260623-1" defer></script>
 </head>
 <body>
   <header>
@@ -61,6 +62,11 @@
           </select>
         </label>
         <button class="secondary" id="download-stats-csv" disabled>統計結果CSV出力</button>
+        <button class="secondary" id="download-participant-behavior-csv" disabled>参加者行動CSV</button>
+        <button class="secondary" id="download-task-attempt-csv" disabled>課題試行CSV</button>
+        <button class="secondary" id="download-love-transition-csv" disabled>親密度前後CSV</button>
+        <button class="secondary" id="download-survey-log-correlation-csv" disabled>アンケート相関CSV</button>
+        <button class="secondary" id="download-group-attribute-log-csv" disabled>属性別ログCSV</button>
         <span id="analysis-status" class="status">未読み込み</span>
       </div>
     </section>
@@ -73,6 +79,11 @@
       <a href="#ils-section">参加者属性・初期状態</a>
       <a href="#attribute-section">属性別評価</a>
       <a href="#item-section">事後評価項目</a>
+      <a href="#log-section">ログ行動</a>
+      <a href="#task-log-section">課題試行</a>
+      <a href="#love-log-section">親密度前後</a>
+      <a href="#correlation-log-section">相関</a>
+      <a href="#attribute-log-section">属性別ログ</a>
       <a href="#participant-section">参加者別</a>
     </nav>
 
@@ -206,6 +217,53 @@
         <div class="scroll table-scroll"><table id="intimacy-table" class="metric-table"></table></div>
         <p class="analysis-note">親密度システムの評価は実験群のみの項目であるため、群間比較は行いません。</p>
       </article>
+    </section>
+
+    <section id="log-section" class="analysis-grid">
+      <article class="panel analysis-panel span-2">
+        <div class="bar section-heading attribute-controls">
+          <div><strong>参加者ごとの行動サマリー</strong><p>最高点は参考値に留め、クリア到達、試行錯誤、エラー後の再挑戦、フィードバック後の行動を中心に表示します。</p></div>
+          <label>指標
+            <select id="log-metric-select"></select>
+          </label>
+        </div>
+        <div class="chart-box"><canvas id="log-summary-chart"></canvas><div class="chart-fallback" id="log-summary-chart-fallback" hidden></div></div>
+        <div class="scroll table-scroll large"><table id="behavior-summary-table" class="log-table"></table></div>
+      </article>
+    </section>
+
+    <section id="task-log-section" class="panel analysis-panel">
+      <div class="bar section-heading"><div><strong>課題ごとの試行錯誤サマリー</strong><p>参加者×課題単位で、クリアまでの試行回数、低得点後・エラー後の再挑戦、チャット利用を確認します。</p></div></div>
+      <div class="scroll table-scroll large"><table id="task-attempt-table" class="log-table"></table></div>
+    </section>
+
+    <section id="love-log-section" class="analysis-grid">
+      <article class="panel analysis-panel span-2">
+        <div class="bar section-heading"><div><strong>親密度変動前後の行動</strong><p>既存タイムラインと同じ集約イベントを使い、親密度変化後の次行動を確認します。</p></div></div>
+        <div class="chart-box"><canvas id="love-transition-chart"></canvas><div class="chart-fallback" id="love-transition-chart-fallback" hidden></div></div>
+        <div class="scroll table-scroll large"><table id="love-transition-table" class="log-table"></table></div>
+      </article>
+    </section>
+
+    <section id="correlation-log-section" class="analysis-grid">
+      <article class="panel analysis-panel">
+        <div class="bar section-heading attribute-controls">
+          <div><strong>アンケートとログ指標の散布図</strong><p>PearsonとSpearmanを併記し、p値は参考値として扱います。</p></div>
+          <label>組み合わせ
+            <select id="correlation-select"></select>
+          </label>
+        </div>
+        <div class="chart-box tall"><canvas id="correlation-chart"></canvas><div class="chart-fallback" id="correlation-chart-fallback" hidden></div></div>
+      </article>
+      <article class="panel analysis-panel">
+        <div class="bar section-heading"><div><strong>相関係数</strong><p>人数が少ないため、効果量と個人差確認を優先します。</p></div></div>
+        <div class="scroll table-scroll tall"><table id="correlation-table" class="log-table"></table></div>
+      </article>
+    </section>
+
+    <section id="attribute-log-section" class="panel analysis-panel">
+      <div class="bar section-heading"><div><strong>群別・属性別ログ指標</strong><p>探索的分析として表示します。各セルの n を必ず確認してください。</p></div></div>
+      <div class="scroll table-scroll large"><table id="group-attribute-log-table" class="log-table"></table></div>
     </section>
 
     <section id="participant-section" class="panel analysis-panel">

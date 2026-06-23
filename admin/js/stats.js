@@ -54,6 +54,33 @@
     return denominatorX && denominatorY ? numerator / (denominatorX * denominatorY) : null;
   }
 
+  function ranks(values) {
+    const xs = finite(values);
+    const indexed = xs.map((value, index) => ({ value, index })).sort((a, b) => a.value - b.value);
+    const out = Array(xs.length).fill(null);
+    for (let start = 0; start < indexed.length;) {
+      let end = start + 1;
+      while (end < indexed.length && indexed[end].value === indexed[start].value) end += 1;
+      const rank = (start + 1 + end) / 2;
+      for (let index = start; index < end; index += 1) out[indexed[index].index] = rank;
+      start = end;
+    }
+    return out;
+  }
+
+  function pairedFinite(xs, ys) {
+    if (!Array.isArray(xs) || !Array.isArray(ys)) return [];
+    return xs.map((x, index) => [x, ys[index]])
+      .filter(([x, y]) => finite([x]).length && finite([y]).length)
+      .map(([x, y]) => [Number(x), Number(y)]);
+  }
+
+  function spearman(xs, ys) {
+    const pairs = pairedFinite(xs, ys);
+    if (pairs.length < 2) return null;
+    return pearson(ranks(pairs.map(([x]) => x)), ranks(pairs.map(([, y]) => y)));
+  }
+
   function quartiles(values) {
     const xs = finite(values).sort((a, b) => a - b);
     if (!xs.length) return { q1: null, median: null, q3: null, iqr: null };
@@ -95,6 +122,13 @@
     const t = 1 / (1 + 0.3275911 * x);
     const erf = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
     return 0.5 * (1 + sign * erf);
+  }
+
+  function correlationPValueApprox(r, n) {
+    if (!Number.isFinite(r) || n < 4) return null;
+    if (Math.abs(r) >= 1) return 0;
+    const z = 0.5 * Math.log((1 + r) / (1 - r)) * Math.sqrt(n - 3);
+    return Math.max(0, Math.min(1, 2 * (1 - normalCdf(Math.abs(z)))));
   }
 
   function mannWhitneyU(groupA, groupB) {
@@ -208,6 +242,8 @@
     standardDeviation,
     stddev: standardDeviation,
     pearson,
+    spearman,
+    correlationPValueApprox,
     quartiles,
     min,
     max,

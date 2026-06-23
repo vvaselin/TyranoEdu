@@ -21,6 +21,13 @@ assert.equal(summary.min, 1);
 assert.equal(summary.max, 4);
 close(stats.pearson([1, 2, 3], [2, 4, 6]), 1);
 assert.equal(stats.pearson([1], [2]), null);
+close(stats.spearman([10, 20, 30], [1, 2, 3]), 1);
+close(stats.spearman([10, 20, 30], [3, 2, 1]), -1);
+close(stats.spearman([10, "", 30, null], [1, 2, 3, 4]), 1);
+assert.equal(stats.spearman([1], [2]), null);
+assert.equal(stats.correlationPValueApprox(0.5, 3), null);
+assert.ok(stats.correlationPValueApprox(0.8, 10) >= 0);
+assert.ok(stats.correlationPValueApprox(0.8, 10) <= 1);
 
 const separated = stats.mannWhitneyU([1, 2, 3], [4, 5, 6]);
 assert.equal(separated.u, 0);
