@@ -318,14 +318,16 @@
     return counts;
   }
 
-  function buildParticipantBehaviorSummary(profiles, analysisEvents, rawEvents, tasks, metadata) {
+  function buildParticipantBehaviorSummary(profiles, analysisEvents, rawEvents, tasks, metadata, taskProgressRows) {
     const eventsByParticipant = groupEventsByParticipant(analysisEvents);
     const rawByParticipant = groupRawEventsByParticipant(rawEvents);
+    const progressByParticipant = normalizeTaskProgress(profiles, taskProgressRows);
     const meta = metadata || {};
     return (profiles || []).map((profile) => {
       const participantId = profile.participant_id || "";
       const events = eventsByParticipant.get(participantId) || [];
       const raw = rawByParticipant.get(participantId) || [];
+      const progressRows = progressByParticipant.get(participantId) || new Map();
       const sessionIds = new Set(raw.map((event) => event.session_id).filter(Boolean));
       const sessions = new Map();
       raw.forEach((event) => {
@@ -338,8 +340,12 @@
         sessions.set(key, current);
       });
       const totalDurationMin = Array.from(sessions.values()).reduce((sum, session) => sum + Math.max(0, session.max - session.min) / 60000, 0);
-      const attemptedTasks = new Set(events.filter((event) => event.task_id && (event.kind === "execute" || event.kind === "grade")).map((event) => event.task_id));
-      const clearedTasks = new Set(events.filter((event) => event.task_id && isClearedGrade(event)).map((event) => event.task_id));
+      const logAttemptedTasks = new Set(events.filter((event) => event.task_id && (event.kind === "execute" || event.kind === "grade" || event.kind === "code" || event.kind === "intro")).map((event) => event.task_id));
+      const logClearedTasks = new Set(events.filter((event) => event.task_id && isClearedGrade(event)).map((event) => event.task_id));
+      const progressAttemptedTasks = new Set(Array.from(progressRows.keys()));
+      const progressClearedTasks = new Set(Array.from(progressRows.values()).filter(progressCleared).map((row) => row.task_id));
+      const attemptedTasks = new Set([...logAttemptedTasks, ...progressAttemptedTasks]);
+      const clearedTasks = new Set([...logClearedTasks, ...progressClearedTasks]);
       const optionalTasks = new Set(Array.from(attemptedTasks).filter((taskId) => isOptionalTask(tasks, taskId)));
       const executeCount = events.filter((event) => event.kind === "execute").length;
       const gradeCount = events.filter((event) => event.kind === "grade").length;
@@ -353,14 +359,26 @@
         .reduce((sum, event) => sum + Math.max(0, number(event.data.delta) || 0), 0);
       const feedbackCounts = feedbackNextActionCounts(events);
       const finalLove = loveEvents.length ? number(loveEvents[loveEvents.length - 1].data.after) : number(profile.love_level);
+      const progressScores = Array.from(progressRows.values()).map((row) => row.high_score).filter(Number.isFinite);
+      const latestProgressUpdatedAt = Array.from(progressRows.values()).map((row) => row.updated_at).filter(Boolean).sort().pop() || null;
+      const progressMaxScore = progressScores.length ? Math.max(...progressScores) : null;
+      const logMaxScore = maxScoreReference(events);
+      const highScoreReference = Number.isFinite(progressMaxScore) ? progressMaxScore : logMaxScore;
 
       return {
         participant_id: participantId,
         group: profile.role || "",
         session_count: sessionIds.size || sessions.size,
         total_duration_min: totalDurationMin || null,
+        progress_attempted_task_count: progressAttemptedTasks.size,
+        progress_cleared_task_count: progressClearedTasks.size,
+        log_attempted_task_count: logAttemptedTasks.size,
+        log_cleared_task_count: logClearedTasks.size,
+        attempted_task_count_final: attemptedTasks.size,
+        cleared_task_count_final: clearedTasks.size,
         attempted_task_count: attemptedTasks.size,
         cleared_task_count: clearedTasks.size,
+        clear_rate: attemptedTasks.size ? clearedTasks.size / attemptedTasks.size : null,
         optional_task_count: optionalTasks.size,
         execute_count: executeCount,
         grade_count: gradeCount,
@@ -379,7 +397,9 @@
         love_gain_from_ai: loveGain("ai_response"),
         love_gain_from_score_bonus: loveGain("high_score_bonus"),
         final_love: finalLove,
-        max_score_reference: maxScoreReference(events),
+        high_score_reference: highScoreReference,
+        task_progress_updated_at: latestProgressUpdatedAt,
+        max_score_reference: highScoreReference,
         excluded_participants: meta.excluded_participants || "",
         included_episode_min: meta.included_episode_min == null ? "" : meta.included_episode_min,
         n: meta.n == null ? "" : meta.n,
@@ -391,6 +411,65 @@
   function maxScoreReference(events) {
     const scores = events.map(gradeScore).filter(Number.isFinite);
     return scores.length ? Math.max(...scores) : null;
+  }
+
+  function progressNumber(value) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  function progressTime(value) {
+    const t = asTime(value);
+    return Number.isFinite(t) && t > 0 ? t : 0;
+  }
+
+  function normalizeTaskProgress(profiles, taskProgressRows) {
+    const userToParticipant = new Map((profiles || []).map((profile) => [profile.id, profile.participant_id]));
+    const mergedByKey = new Map();
+    (taskProgressRows || []).forEach((row) => {
+      const participantId = userToParticipant.get(row.user_id) || row.participant_id || "";
+      const taskId = row.task_id || "";
+      if (!participantId || !taskId) return;
+      const key = `${participantId}|${taskId}`;
+      const highScore = progressNumber(row.high_score);
+      const current = mergedByKey.get(key) || {
+        participant_id: participantId,
+        user_id: row.user_id || "",
+        task_id: taskId,
+        high_score: null,
+        is_cleared: null,
+        updated_at: "",
+      };
+
+      if (Number.isFinite(highScore) && (!Number.isFinite(current.high_score) || highScore > current.high_score)) {
+        current.high_score = highScore;
+      }
+      if (row.is_cleared === true) current.is_cleared = true;
+      else if (current.is_cleared !== true && row.is_cleared === false) current.is_cleared = false;
+      if (!current.updated_at || progressTime(row.updated_at) >= progressTime(current.updated_at)) {
+        current.updated_at = row.updated_at || "";
+        current.latest_id = row.id;
+      }
+      mergedByKey.set(key, current);
+    });
+
+    const byParticipant = new Map();
+    mergedByKey.forEach((row) => {
+      if (!byParticipant.has(row.participant_id)) byParticipant.set(row.participant_id, new Map());
+      byParticipant.get(row.participant_id).set(row.task_id, row);
+    });
+    return byParticipant;
+  }
+
+  function progressCleared(row) {
+    return !!(row && (row.is_cleared === true || (Number.isFinite(row.high_score) && row.high_score >= CLEAR_SCORE)));
+  }
+
+  function progressClearSource(row, clearedByLog) {
+    if (row && row.is_cleared === true) return "task_progress";
+    if (row && Number.isFinite(row.high_score) && row.high_score >= CLEAR_SCORE) return "high_score_80";
+    if (clearedByLog) return "log";
+    return "not_cleared";
   }
 
   function eventsForTask(events, taskId) {
@@ -411,15 +490,26 @@
     return false;
   }
 
-  function buildTaskAttemptSummary(profiles, analysisEvents, tasks, metadata) {
+  function buildTaskAttemptSummary(profiles, analysisEvents, tasks, metadata, taskProgressRows) {
     const eventsByParticipant = groupEventsByParticipant(analysisEvents);
     const profileById = new Map((profiles || []).map((profile) => [profile.participant_id, profile]));
+    const progressByParticipant = normalizeTaskProgress(profiles, taskProgressRows);
     const meta = metadata || {};
     const rows = [];
-    eventsByParticipant.forEach((events, participantId) => {
-      const taskIds = Array.from(new Set(events.filter((event) => event.task_id && event.task_id !== "sandbox").map((event) => event.task_id))).sort();
+    const participantIds = Array.from(new Set([
+      ...Array.from(eventsByParticipant.keys()),
+      ...Array.from(progressByParticipant.keys()),
+    ]));
+    participantIds.forEach((participantId) => {
+      const events = eventsByParticipant.get(participantId) || [];
+      const progressRows = progressByParticipant.get(participantId) || new Map();
+      const taskIds = Array.from(new Set([
+        ...events.filter((event) => event.task_id && event.task_id !== "sandbox").map((event) => event.task_id),
+        ...Array.from(progressRows.keys()),
+      ])).sort();
       taskIds.forEach((taskId) => {
         const taskEvents = eventsForTask(events, taskId);
+        const progressRow = progressRows.get(taskId) || null;
         const clearEvent = taskEvents.find(isClearedGrade);
         const clearTime = clearEvent ? clearEvent.time : null;
         const leaveTime = firstTime(taskEvents, isLeaveEvent);
@@ -432,6 +522,10 @@
         const errorIndexes = taskEvents.map((event, index) => isExecuteError(event) ? index : -1).filter((index) => index >= 0);
         const lowScoreIndexes = taskEvents.map((event, index) => isLowScore(event) ? index : -1).filter((index) => index >= 0);
         const usedChatBeforeClear = taskEvents.some((event) => isUserChat(event) && (!Number.isFinite(clearTime) || event.time < clearTime));
+        const clearedByLog = !!clearEvent;
+        const clearedByProgress = !!(progressRow && progressRow.is_cleared === true);
+        const clearedFinal = clearedByProgress || clearedByLog || !!(progressRow && Number.isFinite(progressRow.high_score) && progressRow.high_score >= CLEAR_SCORE);
+        const highScoreReference = Number.isFinite(progressRow && progressRow.high_score) ? progressRow.high_score : maxScoreReference(taskEvents);
 
         rows.push({
           participant_id: participantId,
@@ -449,8 +543,16 @@
           error_count: executeEvents.filter(isExecuteError).length,
           first_grade_score: firstGrade ? gradeScore(firstGrade) : null,
           clear_score: clearEvent ? gradeScore(clearEvent) : null,
-          max_score_reference: maxScoreReference(taskEvents),
-          cleared: !!clearEvent,
+          task_progress_high_score: progressRow ? progressRow.high_score : null,
+          task_progress_is_cleared: progressRow ? progressRow.is_cleared : null,
+          task_progress_updated_at: progressRow ? progressRow.updated_at : null,
+          cleared_by_progress: clearedByProgress,
+          cleared_by_log: clearedByLog,
+          cleared_final: clearedFinal,
+          clear_status_source: progressClearSource(progressRow, clearedByLog),
+          high_score_reference: highScoreReference,
+          max_score_reference: highScoreReference,
+          cleared: clearedFinal,
           attempts_until_clear: clearEvent ? taskEvents.filter((event) => event.kind === "execute" && event.time <= clearTime).length : null,
           grades_until_clear: clearEvent ? taskEvents.filter((event) => event.kind === "grade" && event.time <= clearTime).length : null,
           time_until_first_execute_sec: secondsBetween(taskStarted, firstTime(taskEvents, (event) => event.kind === "execute")),

@@ -42,7 +42,7 @@ const rawEvents = [
   event("18", "2026-01-01T00:02:00.000Z", "P1", "lecture_view", { lecture_num: 1 }, "", "s1"),
 ];
 
-const profiles = [{ participant_id: "P1", role: "experimental", love_level: 17 }];
+const profiles = [{ id: "u1", participant_id: "P1", role: "experimental", love_level: 17 }];
 const tasks = { task3: { difficulty: 3, category: "basic" } };
 const metadata = { excluded_participants: "", included_episode_min: 3, n: 1, generated_at: "2026-01-01T00:03:00.000Z" };
 const analysisEvents = logAnalysis.buildAnalysisEvents(rawEvents);
@@ -87,5 +87,54 @@ const correlations = logAnalysis.buildCorrelationStats([{ chat_user_count: 2, ag
 assert.equal(correlations[0].n, 2);
 close(correlations[0].pearson_r, 1);
 close(correlations[0].spearman_rho, 1);
+
+const progressOnlyProfiles = [
+  { id: "u2", participant_id: "P2", role: "control", love_level: 0 },
+];
+const progressOnlyRows = [
+  { id: 1, user_id: "u2", task_id: "task1", high_score: 70, is_cleared: true, updated_at: "2026-01-01T00:00:00.000Z" },
+  { id: 2, user_id: "u2", task_id: "task2", high_score: 85, is_cleared: false, updated_at: "2026-01-01T00:01:00.000Z" },
+  { id: 3, user_id: "u2", task_id: "task3", high_score: 79, is_cleared: false, updated_at: "2026-01-01T00:02:00.000Z" },
+  { id: 4, user_id: "u2", task_id: "task3", high_score: 60, is_cleared: false, updated_at: "2026-01-01T00:03:00.000Z" },
+];
+const progressOnlyBehavior = logAnalysis.buildParticipantBehaviorSummary(progressOnlyProfiles, [], [], tasks, metadata, progressOnlyRows)[0];
+assert.equal(progressOnlyBehavior.progress_attempted_task_count, 3);
+assert.equal(progressOnlyBehavior.progress_cleared_task_count, 2);
+assert.equal(progressOnlyBehavior.log_attempted_task_count, 0);
+assert.equal(progressOnlyBehavior.log_cleared_task_count, 0);
+assert.equal(progressOnlyBehavior.attempted_task_count_final, 3);
+assert.equal(progressOnlyBehavior.cleared_task_count_final, 2);
+assert.equal(progressOnlyBehavior.attempted_task_count, 3);
+assert.equal(progressOnlyBehavior.cleared_task_count, 2);
+assert.equal(progressOnlyBehavior.high_score_reference, 85);
+
+const duplicateProgressRows = [
+  { id: 10, user_id: "u2", task_id: "task4", high_score: 75, is_cleared: false, updated_at: "2026-01-01T00:01:00.000Z" },
+  { id: 11, user_id: "u2", task_id: "task4", high_score: 90, is_cleared: false, updated_at: "2026-01-01T00:00:00.000Z" },
+];
+const duplicateBehavior = logAnalysis.buildParticipantBehaviorSummary(progressOnlyProfiles, [], [], tasks, metadata, duplicateProgressRows)[0];
+assert.equal(duplicateBehavior.progress_attempted_task_count, 1);
+assert.equal(duplicateBehavior.progress_cleared_task_count, 1);
+assert.equal(duplicateBehavior.high_score_reference, 90);
+
+const mixedEvents = logAnalysis.buildAnalysisEvents([
+  event("m1", "2026-01-01T00:00:00.000Z", "P2", "execute_start", {}, "task1", "s2", "control"),
+  event("m2", "2026-01-01T00:00:01.000Z", "P2", "execute_result", { result: "ok" }, "task1", "s2", "control"),
+]);
+const mixedBehavior = logAnalysis.buildParticipantBehaviorSummary(progressOnlyProfiles, mixedEvents, [], tasks, metadata, [
+  { id: 20, user_id: "u2", task_id: "task1", high_score: 90, is_cleared: true, updated_at: "2026-01-01T00:00:00.000Z" },
+])[0];
+assert.equal(mixedBehavior.log_attempted_task_count, 1);
+assert.equal(mixedBehavior.progress_attempted_task_count, 1);
+assert.equal(mixedBehavior.attempted_task_count_final, 1);
+
+const taskProgressSummary = logAnalysis.buildTaskAttemptSummary(progressOnlyProfiles, [], tasks, metadata, progressOnlyRows);
+const progressClear = taskProgressSummary.find((row) => row.task_id === "task2");
+assert.equal(progressClear.task_progress_high_score, 85);
+assert.equal(progressClear.task_progress_is_cleared, false);
+assert.equal(progressClear.cleared_by_progress, false);
+assert.equal(progressClear.cleared_by_log, false);
+assert.equal(progressClear.cleared_final, true);
+assert.equal(progressClear.clear_status_source, "high_score_80");
 
 console.log("log analysis tests passed");

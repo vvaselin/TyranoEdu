@@ -13,6 +13,7 @@
     rows: [],
     rawEvents: [],
     analysisEvents: [],
+    taskProgress: [],
     tasks: {},
     participantBehaviorSummary: [],
     taskAttemptSummary: [],
@@ -52,6 +53,9 @@
     intimacyMotivation: "親密度が上がる仕組みによって、学習を続けようという気持ちが高まった。",
     intimacyCloseness: "親密度の変化に応じて、エージェントとの距離が近づいたように感じた。",
     intimacyNaturalness: "親密度に応じたエージェントの言葉遣いや反応の変化は自然だった。",
+    agentDirectAnswer: "エージェントが課題の直接的な答えを提示することがあった。",
+    agentHintAppropriate: "エージェントの出すヒントは適切だった。",
+    tutorialUseful: "チュートリアルは参考になった。",
   };
 
   const ATTITUDE_ITEMS = [
@@ -72,6 +76,9 @@
     { key: "agentTogetherness", short: "一緒に学習している感覚", label: COLUMNS.together },
     { key: "agentRelationshipGrowth", short: "関係が深まった感覚", label: COLUMNS.relationship },
     { key: "episodeMotivation", short: "エピソードによる動機づけ", label: COLUMNS.episodeMotivation },
+    { key: "agentDirectAnswer", short: "直接的な答えの提示", label: COLUMNS.agentDirectAnswer },
+    { key: "agentHintAppropriate", short: "ヒントの適切さ", label: COLUMNS.agentHintAppropriate },
+    { key: "tutorialUseful", short: "チュートリアルの参考度", label: COLUMNS.tutorialUseful },
   ];
 
   const INTIMACY_METRICS = [
@@ -239,6 +246,9 @@
         agentTogetherness: scale(valueOf(post, COLUMNS.together)),
         agentRelationshipGrowth: scale(valueOf(post, COLUMNS.relationship)),
         episodeMotivation: scale(valueOf(post, COLUMNS.episodeMotivation)),
+        agentDirectAnswer: scale(valueOf(post, COLUMNS.agentDirectAnswer)),
+        agentHintAppropriate: scale(valueOf(post, COLUMNS.agentHintAppropriate)),
+        tutorialUseful: scale(valueOf(post, COLUMNS.tutorialUseful)),
         intimacyMotivation: scale(valueOf(post, COLUMNS.intimacyMotivation)),
         intimacyCloseness: scale(valueOf(post, COLUMNS.intimacyCloseness)),
         intimacyNaturalness: scale(valueOf(post, COLUMNS.intimacyNaturalness)),
@@ -725,6 +735,7 @@
       ...attitudeHeaders,
       "ノベル嗜好", "感情移入", "ACT/REF", "SNS/INT", "VIS/VRB", "SEQ/GLO",
       "楽しさ", "達成感", "学習への有用性", "継続利用意向",
+      "直接的な答えの提示", "ヒントの適切さ", "チュートリアルの参考度",
     ];
     const body = rows.map((row) => {
       const attitudeCells = ATTITUDE_ITEMS.flatMap((item) => [
@@ -738,6 +749,7 @@
         escapeHtml(ilsCell(row, "ilsActiveReflective")), escapeHtml(ilsCell(row, "ilsSensingIntuitive")),
         escapeHtml(ilsCell(row, "ilsVisualVerbal")), escapeHtml(ilsCell(row, "ilsSequentialGlobal")),
         fmt(row.enjoyment), fmt(row.accomplishment), fmt(row.learningUsefulness), fmt(row.continuedUse),
+        fmt(row.agentDirectAnswer), fmt(row.agentHintAppropriate), fmt(row.tutorialUseful),
       ];
       return `<tr>${cells.map((cell) => `<td>${cell}</td>`).join("")}</tr>`;
     }).join("");
@@ -745,8 +757,8 @@
   }
 
   const LOG_METRICS = [
-    { key: "cleared_task_count", label: "クリア到達課題数" },
-    { key: "attempted_task_count", label: "着手課題数" },
+    { key: "cleared_task_count_final", label: "クリア到達課題数" },
+    { key: "attempted_task_count_final", label: "着手課題数" },
     { key: "execute_count", label: "実行回数" },
     { key: "retry_after_error_count", label: "エラー後の再挑戦回数" },
     { key: "retry_after_low_score_count", label: "低得点後の再挑戦回数" },
@@ -764,7 +776,7 @@
     { log_key: "love_gain_from_ai", survey_key: "intimacyCloseness", label: "AI応答由来の親密度上昇量 × 距離が近づいた感覚" },
     { log_key: "feedback_to_retry_count", survey_key: "persistenceGain", label: "フィードバック後の再挑戦回数 × 諦めずに取り組める意識の変化" },
     { log_key: "retry_after_error_count", survey_key: "debugGain", label: "エラー後の再挑戦回数 × エラー修正意識の変化" },
-    { log_key: "cleared_task_count", survey_key: "postScore", label: "クリア到達課題数 × 事後テスト得点" },
+    { log_key: "cleared_task_count_final", survey_key: "postScore", label: "クリア到達課題数 × 事後テスト得点" },
     { log_key: "optional_task_count", survey_key: "postContinue", label: "任意課題数 × 学習継続意識" },
     { log_key: "story_or_episode_view_count", survey_key: "episodeMotivation", label: "ストーリー・エピソード閲覧数 × エピソード進行の動機づけ評価" },
   ];
@@ -791,6 +803,13 @@
     total_duration_min: "総利用時間（分）",
     attempted_task_count: "着手課題数",
     cleared_task_count: "クリア到達課題数",
+    progress_attempted_task_count: "進捗テーブル上の着手課題数",
+    progress_cleared_task_count: "進捗テーブル上のクリア課題数",
+    log_attempted_task_count: "ログ上の着手課題数",
+    log_cleared_task_count: "ログ上のクリア課題数",
+    attempted_task_count_final: "着手課題数",
+    cleared_task_count_final: "クリア到達課題数",
+    clear_rate: "クリア率",
     optional_task_count: "任意課題数",
     execute_count: "実行回数",
     grade_count: "採点回数",
@@ -810,10 +829,15 @@
     love_gain_from_score_bonus: "高得点ボーナス由来の親密度上昇量",
     final_love: "最終親密度",
     max_score_reference: "最高点（参考）",
+    high_score_reference: "最高点（参考）",
+    task_progress_updated_at: "進捗テーブル更新時刻",
     story_or_episode_view_count: "ストーリー・エピソード閲覧数",
     agentIntimacy: "エージェントへの親しみ",
     agentTogetherness: "一緒に学習している感覚",
     agentRelationshipGrowth: "関係が深まった感覚",
+    agentDirectAnswer: "直接的な答えの提示",
+    agentHintAppropriate: "ヒントの適切さ",
+    tutorialUseful: "チュートリアルの参考度",
     intimacyCloseness: "親密度変化に応じて距離が近づいた感覚",
     persistenceGain: "諦めずに取り組める意識の変化",
     debugGain: "エラーを修正できると思う意識の変化",
@@ -830,6 +854,12 @@
     left_task_at: "課題離脱時刻",
     first_grade_score: "初回採点得点",
     clear_score: "クリア時得点",
+    task_progress_high_score: "進捗テーブル上の最高点",
+    task_progress_is_cleared: "進捗テーブル上のクリア状態",
+    cleared_by_progress: "進捗テーブルでクリア",
+    cleared_by_log: "ログでクリア",
+    cleared_final: "最終クリア判定",
+    clear_status_source: "クリア判定",
     cleared: "クリア",
     attempts_until_clear: "クリアまでの実行回数",
     grades_until_clear: "クリアまでの採点回数",
@@ -878,6 +908,10 @@
     all: "全体",
     ai_response: "AI応答",
     high_score_bonus: "高得点ボーナス",
+    task_progress: "進捗テーブル",
+    high_score_80: "最高点80点以上",
+    log: "ログ",
+    not_cleared: "未クリア",
     chat_user_payload: "ユーザー発話",
     chat_ai_response: "AI応答",
     execute_result: "実行結果",
@@ -944,8 +978,8 @@
     if (!logAnalysis) return rows;
     const metadata = logMetadata(rows);
     const { profiles, events, rawEvents } = currentLogInputs(rows);
-    state.participantBehaviorSummary = logAnalysis.buildParticipantBehaviorSummary(profiles, events, rawEvents, state.tasks, metadata);
-    state.taskAttemptSummary = logAnalysis.buildTaskAttemptSummary(profiles, events, state.tasks, metadata);
+    state.participantBehaviorSummary = logAnalysis.buildParticipantBehaviorSummary(profiles, events, rawEvents, state.tasks, metadata, state.taskProgress);
+    state.taskAttemptSummary = logAnalysis.buildTaskAttemptSummary(profiles, events, state.tasks, metadata, state.taskProgress);
     state.loveTransitionBehaviorSummary = logAnalysis.buildLoveTransitionBehaviorSummary(profiles, events, metadata);
     const mergedRows = rowsWithLogMetrics(rows, state.participantBehaviorSummary);
     state.surveyLogCorrelationStats = logAnalysis.buildCorrelationStats(mergedRows, CORRELATION_DEFINITIONS, metadata);
@@ -992,6 +1026,7 @@
     if (value == null || value === "") return "";
     if (typeof value === "boolean") return value ? "はい" : "いいえ";
     if (key === "group") return formatGroupName(value);
+    if (key === "clear_status_source") return `クリア判定: ${formatEventType(value)}`;
     if (key === "love_source" || key === "previous_action_type" || key === "next_action_type") return formatEventType(value);
     if (key === "attribute" || key === "attribute_value" || key === "metric" || key === "log_metric" || key === "survey_metric") return formatColumnLabel(VALUE_LABELS[value] || value);
     if (typeof value === "string" && VALUE_LABELS[value]) return VALUE_LABELS[value];
@@ -1085,16 +1120,20 @@
     const mergedRows = refreshLogSummaries(rows);
     renderLogSummaryChart(mergedRows);
     renderPlainTable("behavior-summary-table", [
-      "participant_id", "group", "session_count", "total_duration_min", "attempted_task_count", "cleared_task_count",
+      "participant_id", "group", "session_count", "total_duration_min", "attempted_task_count_final", "cleared_task_count_final",
+      "progress_attempted_task_count", "progress_cleared_task_count", "log_attempted_task_count", "log_cleared_task_count",
+      "clear_rate", "high_score_reference", "task_progress_updated_at",
       "optional_task_count", "execute_count", "grade_count", "chat_user_count", "chat_ai_count", "error_count",
       "error_rate", "retry_after_error_count", "retry_after_low_score_count", "feedback_to_retry_count",
       "feedback_to_chat_count", "feedback_to_leave_count", "love_change_count", "love_total_gain",
-      "love_gain_from_ai", "love_gain_from_score_bonus", "final_love", "max_score_reference",
+      "love_gain_from_ai", "love_gain_from_score_bonus", "final_love",
     ], state.participantBehaviorSummary);
     renderPlainTable("task-attempt-table", [
       "participant_id", "group", "task_id", "task_category", "is_optional_task", "task_started_at",
       "first_execute_at", "first_grade_at", "cleared_at", "left_task_at", "execute_count", "grade_count",
-      "error_count", "first_grade_score", "clear_score", "max_score_reference", "cleared",
+      "error_count", "first_grade_score", "clear_score", "task_progress_high_score", "task_progress_is_cleared",
+      "task_progress_updated_at", "cleared_by_progress", "cleared_by_log", "cleared_final", "clear_status_source",
+      "high_score_reference", "max_score_reference", "cleared",
       "attempts_until_clear", "grades_until_clear", "time_until_first_execute_sec",
       "time_until_first_grade_sec", "time_until_clear_sec", "retried_after_error",
       "retried_after_low_score", "used_chat_before_clear", "used_chat_after_error", "used_chat_after_low_score",
@@ -1125,16 +1164,18 @@
     if (!api.getPassword()) return setStatus("analysis-status", "管理パスワードを入力してください", true);
     setStatus("analysis-status", "読み込み中...");
     try {
-      const [profiles, experimentData, events, tasks] = await Promise.all([
+      const [profiles, experimentData, events, taskProgress, tasks] = await Promise.all([
         api.fetchJSON("/api/admin/profiles"),
         api.fetchJSON("/api/admin/experiment-data"),
         api.fetchJSON("/api/admin/events?limit=200000"),
+        api.fetchJSON("/api/admin/task-progress"),
         fetch("/data/others/tasks.json").then((response) => response.ok ? response.json() : {}),
       ]);
       state.profiles = profiles.profiles || [];
       state.experimentData = experimentData;
       state.rawEvents = events.events || [];
       state.analysisEvents = logAnalysis ? logAnalysis.buildAnalysisEvents(state.rawEvents) : [];
+      state.taskProgress = taskProgress.task_progress || [];
       state.tasks = tasks || {};
       buildRows(); renderAll();
       setStatus("analysis-status", `${state.rows.length}名を読み込みました`);
@@ -1186,6 +1227,9 @@
       "agent_intimacy",
       "agent_togetherness",
       "agent_relationship_growth",
+      "agent_direct_answer",
+      "agent_hint_appropriate",
+      "tutorial_useful",
       "episode_motivation",
       "intimacy_motivation",
       "intimacy_closeness",
@@ -1219,6 +1263,9 @@
       r.agentIntimacy,
       r.agentTogetherness,
       r.agentRelationshipGrowth,
+      r.agentDirectAnswer,
+      r.agentHintAppropriate,
+      r.tutorialUseful,
       r.episodeMotivation,
       r.intimacyMotivation,
       r.intimacyCloseness,
