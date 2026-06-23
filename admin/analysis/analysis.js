@@ -763,15 +763,15 @@
     { key: "retry_after_error_count", label: "エラー後の再挑戦回数" },
     { key: "retry_after_low_score_count", label: "低得点後の再挑戦回数" },
     { key: "feedback_to_retry_count", label: "フィードバック後の再挑戦回数" },
-    { key: "chat_user_count", label: "ユーザーチャット数" },
+    { key: "user_chat_count", label: "ユーザーチャット数" },
     { key: "love_total_gain", label: "親密度上昇量合計" },
     { key: "love_gain_from_ai", label: "AI応答由来の親密度上昇量" },
     { key: "optional_task_count", label: "任意課題数" },
   ];
 
   const CORRELATION_DEFINITIONS = [
-    { log_key: "chat_user_count", survey_key: "agentIntimacy", label: "ユーザーチャット数 × エージェントへの親しみ" },
-    { log_key: "chat_user_count", survey_key: "agentTogetherness", label: "ユーザーチャット数 × 一緒に学習している感覚" },
+    { log_key: "user_chat_count", survey_key: "agentIntimacy", label: "ユーザーチャット数 × エージェントへの親しみ" },
+    { log_key: "user_chat_count", survey_key: "agentTogetherness", label: "ユーザーチャット数 × 一緒に学習している感覚" },
     { log_key: "love_total_gain", survey_key: "agentRelationshipGrowth", label: "親密度上昇量合計 × 関係が深まった感覚" },
     { log_key: "love_gain_from_ai", survey_key: "intimacyCloseness", label: "AI応答由来の親密度上昇量 × 距離が近づいた感覚" },
     { log_key: "feedback_to_retry_count", survey_key: "persistenceGain", label: "フィードバック後の再挑戦回数 × 諦めずに取り組める意識の変化" },
@@ -815,6 +815,15 @@
     grade_count: "採点回数",
     chat_user_count: "ユーザーチャット数",
     chat_ai_count: "AI応答数",
+    raw_chat_user_payload_count: "生ログ上の会話送信数",
+    raw_chat_ai_response_count: "生ログ上のAI応答数",
+    timeline_chat_event_count: "タイムライン上の会話数",
+    user_chat_count: "ユーザーチャット数",
+    ai_chat_response_count: "AI応答数",
+    conversation_count: "会話数",
+    system_feedback_trigger_count: "内部フィードバック生成数",
+    execute_feedback_count: "実行フィードバック数",
+    grade_feedback_count: "採点フィードバック数",
     code_snapshot_count: "コード保存数",
     error_count: "エラー回数",
     error_rate: "エラー率",
@@ -953,9 +962,9 @@
   }
 
   function rowsWithLogMetrics(rows, behaviorRows) {
-    const behaviorById = new Map((behaviorRows || []).map((row) => [row.participant_id, row]));
+    const behaviorById = new Map((behaviorRows || []).map((row) => [normalizeId(row.participant_id), row]));
     return rows.map((row) => {
-      const behavior = behaviorById.get(row.participantId) || {};
+      const behavior = behaviorById.get(normalizeId(row.participantId)) || {};
       return {
         ...row,
         ...behavior,
@@ -968,9 +977,9 @@
 
   function currentLogInputs(rows) {
     const ids = new Set(rows.map((row) => row.participantId));
-    const profiles = state.profiles.filter((profile) => ids.has(profile.participant_id));
-    const events = state.analysisEvents.filter((event) => ids.has(event.participant_id || (event.raw && event.raw[0] && event.raw[0].participant_id)));
-    const rawEvents = state.rawEvents.filter((event) => ids.has(event.participant_id));
+    const profiles = state.profiles.filter((profile) => ids.has(normalizeId(profile.participant_id)));
+    const events = state.analysisEvents.filter((event) => ids.has(normalizeId(event.participant_id || (event.raw && event.raw[0] && event.raw[0].participant_id))));
+    const rawEvents = state.rawEvents.filter((event) => ids.has(normalizeId(event.participant_id)));
     return { profiles, events, rawEvents };
   }
 
@@ -1123,7 +1132,9 @@
       "participant_id", "group", "session_count", "total_duration_min", "attempted_task_count_final", "cleared_task_count_final",
       "progress_attempted_task_count", "progress_cleared_task_count", "log_attempted_task_count", "log_cleared_task_count",
       "clear_rate", "high_score_reference", "task_progress_updated_at",
-      "optional_task_count", "execute_count", "grade_count", "chat_user_count", "chat_ai_count", "error_count",
+      "optional_task_count", "execute_count", "grade_count", "user_chat_count", "ai_chat_response_count", "conversation_count",
+      "timeline_chat_event_count", "raw_chat_user_payload_count", "raw_chat_ai_response_count", "system_feedback_trigger_count",
+      "execute_feedback_count", "grade_feedback_count", "chat_user_count", "chat_ai_count", "error_count",
       "error_rate", "retry_after_error_count", "retry_after_low_score_count", "feedback_to_retry_count",
       "feedback_to_chat_count", "feedback_to_leave_count", "love_change_count", "love_total_gain",
       "love_gain_from_ai", "love_gain_from_score_bonus", "final_love",
@@ -1164,16 +1175,19 @@
     if (!api.getPassword()) return setStatus("analysis-status", "管理パスワードを入力してください", true);
     setStatus("analysis-status", "読み込み中...");
     try {
-      const [profiles, experimentData, events, taskProgress, tasks] = await Promise.all([
-        api.fetchJSON("/api/admin/profiles"),
+      const profiles = await api.fetchJSON("/api/admin/profiles");
+      const profileRows = profiles.profiles || [];
+      setStatus("analysis-status", `イベントログ読み込み中... 参加者 ${profileRows.length}名`);
+      const [experimentData, events, taskProgress, tasks, participantEvents] = await Promise.all([
         api.fetchJSON("/api/admin/experiment-data"),
         api.fetchJSON("/api/admin/events?limit=200000"),
         api.fetchJSON("/api/admin/task-progress"),
         fetch("/data/others/tasks.json").then((response) => response.ok ? response.json() : {}),
+        fetchEventsByParticipant(profileRows),
       ]);
-      state.profiles = profiles.profiles || [];
+      state.profiles = profileRows;
       state.experimentData = experimentData;
-      state.rawEvents = events.events || [];
+      state.rawEvents = mergeEventsById([...(events.events || []), ...participantEvents]);
       state.analysisEvents = logAnalysis ? logAnalysis.buildAnalysisEvents(state.rawEvents) : [];
       state.taskProgress = taskProgress.task_progress || [];
       state.tasks = tasks || {};
@@ -1182,6 +1196,32 @@
     } catch (error) {
       setStatus("analysis-status", error.message || String(error), true);
     }
+  }
+
+  async function fetchEventsByParticipant(profiles) {
+    const participantIds = Array.from(new Set((profiles || [])
+      .map((profile) => clean(profile.participant_id))
+      .filter(Boolean)));
+    const events = [];
+    for (let index = 0; index < participantIds.length; index += 4) {
+      const batch = participantIds.slice(index, index + 4);
+      const results = await Promise.all(batch.map((participantId) =>
+        api.fetchJSON(`/api/admin/events?participant_id=${encodeURIComponent(participantId)}&limit=50000`)
+          .then((payload) => payload.events || [])
+      ));
+      results.forEach((items) => events.push(...items));
+    }
+    return events;
+  }
+
+  function mergeEventsById(events) {
+    const map = new Map();
+    (events || []).forEach((event, index) => {
+      if (!event) return;
+      const key = event.id || `${event.participant_id || ""}|${event.session_id || ""}|${event.task_id || ""}|${event.event_type || ""}|${event.created_at || ""}|${index}`;
+      map.set(key, event);
+    });
+    return Array.from(map.values());
   }
 
   function downloadLogCsv(filename, rows) {

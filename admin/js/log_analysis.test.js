@@ -64,6 +64,27 @@ assert.equal(behavior.love_gain_from_ai, 2);
 assert.equal(behavior.love_gain_from_score_bonus, 5);
 assert.equal(behavior.max_score_reference, 85);
 assert.ok(!Object.prototype.hasOwnProperty.call(behavior, "max_score"));
+assert.equal(behavior.raw_chat_user_payload_count, 2);
+assert.equal(behavior.raw_chat_ai_response_count, 2);
+assert.equal(behavior.timeline_chat_event_count, 1);
+assert.equal(behavior.user_chat_count, 1);
+assert.equal(behavior.ai_chat_response_count, 1);
+assert.equal(behavior.conversation_count, 1);
+assert.equal(behavior.system_feedback_trigger_count, 1);
+assert.equal(behavior.execute_feedback_count, 1);
+assert.equal(behavior.grade_feedback_count, 0);
+assert.equal(behavior.chat_user_count, behavior.user_chat_count);
+assert.equal(behavior.chat_ai_count, behavior.ai_chat_response_count);
+
+const lowerCaseProfileBehavior = logAnalysis.buildParticipantBehaviorSummary([
+  { id: "u1", participant_id: " p1 ", role: "experimental", love_level: 17 },
+], analysisEvents, rawEvents, tasks, metadata)[0];
+assert.equal(lowerCaseProfileBehavior.participant_id, "P1");
+assert.equal(lowerCaseProfileBehavior.user_chat_count, 1);
+assert.equal(lowerCaseProfileBehavior.love_change_count, 2);
+assert.equal(logAnalysis.buildLoveTransitionBehaviorSummary([
+  { participant_id: " p1 ", role: "experimental" },
+], analysisEvents, metadata).length, 2);
 
 const task = logAnalysis.buildTaskAttemptSummary(profiles, analysisEvents, tasks, metadata)[0];
 assert.equal(task.task_id, "task3");
@@ -136,5 +157,37 @@ assert.equal(progressClear.cleared_by_progress, false);
 assert.equal(progressClear.cleared_by_log, false);
 assert.equal(progressClear.cleared_final, true);
 assert.equal(progressClear.clear_status_source, "high_score_80");
+
+const chatProfiles = [{ id: "u3", participant_id: "P3", role: "experimental", love_level: 0 }];
+const chatRows = [
+  event("c1", "2026-01-01T00:00:00.000Z", "P3", "chat_user_payload", { request_id: "same-1", source: "user_chat", message: "hello" }, "task1", "s3"),
+  event("c2", "2026-01-01T00:00:01.000Z", "P3", "chat_ai_response", { request_id: "same-1", source: "user_chat", text: "hi" }, "task1", "s3"),
+  event("c3", "2026-01-01T00:00:02.000Z", "P3", "chat_ai_response", { request_id: "same-1", source: "user_chat", text: "duplicate" }, "task1", "s3"),
+  event("c4", "2026-01-01T00:01:00.000Z", "P3", "chat_user_payload", { request_id: "missing-ai", source: "user_chat", message: "no ai" }, "task1", "s3"),
+  event("c5", "2026-01-01T00:02:00.000Z", "P3", "execute_start", {}, "task1", "s3"),
+  event("c6", "2026-01-01T00:02:01.000Z", "P3", "execute_result", { is_error: true }, "task1", "s3"),
+  event("c7", "2026-01-01T00:02:02.000Z", "P3", "chat_user_payload", { request_id: "exec-fb", source: "execute_feedback", system_message: "実行フィードバック" }, "task1", "s3"),
+  event("c8", "2026-01-01T00:02:03.000Z", "P3", "chat_ai_response", { request_id: "exec-fb", text: "execute feedback" }, "task1", "s3"),
+  event("c9", "2026-01-01T00:03:00.000Z", "P3", "grade_start", {}, "task1", "s3"),
+  event("c10", "2026-01-01T00:03:01.000Z", "P3", "grade_result", { score: 50 }, "task1", "s3"),
+  event("c11", "2026-01-01T00:03:02.000Z", "P3", "chat_user_payload", { request_id: "grade-fb", source: "grade_feedback", system_message: "採点フィードバック" }, "task1", "s3"),
+  event("c12", "2026-01-01T00:03:03.000Z", "P3", "chat_ai_response", { request_id: "grade-fb", text: "grade feedback" }, "task1", "s3"),
+  event("c13", "2026-01-01T00:04:00.000Z", "P3", "chat_user_payload", { source: "user_chat", message: "fallback" }, "task1", "s3"),
+  event("c14", "2026-01-01T00:04:04.000Z", "P3", "chat_ai_response", { source: "user_chat", text: "fallback ai" }, "task1", "s3"),
+];
+const chatAnalysis = logAnalysis.buildAnalysisEvents(chatRows);
+const chatSummary = logAnalysis.buildParticipantBehaviorSummary(chatProfiles, chatAnalysis, chatRows, tasks, metadata)[0];
+assert.equal(chatAnalysis.filter(logAnalysis.isConversationEvent).length, 3);
+assert.equal(chatSummary.timeline_chat_event_count, 3);
+assert.equal(chatSummary.user_chat_count, 3);
+assert.equal(chatSummary.ai_chat_response_count, 2);
+assert.equal(chatSummary.conversation_count, 3);
+assert.equal(chatSummary.system_feedback_trigger_count, 2);
+assert.equal(chatSummary.execute_feedback_count, 1);
+assert.equal(chatSummary.grade_feedback_count, 1);
+assert.equal(chatSummary.raw_chat_user_payload_count, 5);
+assert.equal(chatSummary.raw_chat_ai_response_count, 5);
+assert.equal(logAnalysis.classifyChatEvent(chatRows[6]), "execute");
+assert.equal(logAnalysis.classifyChatEvent(chatRows[10]), "grade");
 
 console.log("log analysis tests passed");

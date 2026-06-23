@@ -6,6 +6,7 @@
   "use strict";
 
   const CLEAR_SCORE = 80;
+  const FALLBACK_CHAT_WINDOW_MS = 120000;
 
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
@@ -27,6 +28,10 @@
     return Number.isFinite(parsed) ? parsed : null;
   }
 
+  function normalizeParticipantId(value) {
+    return String(value == null ? "" : value).trim().toUpperCase().replace(/[^0-9A-Z]/g, "");
+  }
+
   function getData(event) {
     return event && event.event_data ? event.event_data : {};
   }
@@ -43,9 +48,65 @@
 
   function classifySystemFeedback(data) {
     const text = String((data && (data.system_message || data.message)) || (data && data.payload && data.payload.message) || "");
+    const source = String((data && data.source) || (data && data.payload && data.payload.source) || "");
+    const type = String((data && (data.feedback_type || data.target_type || data.kind)) || "");
+    if (/grade|score|採点/.test(source) || /grade|score|採点/.test(type)) return "grade";
+    if (/execute|run|実行|compile|コンパイル/.test(source) || /execute|run|実行|compile|コンパイル/.test(type)) return "execute";
     if (/採点|score|grade/i.test(text)) return "grade";
     if (/実行|execute|コード実行|コンパイル/i.test(text)) return "execute";
     return "";
+  }
+
+  function classifyExplicitFeedback(data) {
+    const source = String((data && data.source) || (data && data.payload && data.payload.source) || "");
+    const type = String((data && (data.feedback_type || data.target_type || data.kind)) || "");
+    if (/grade|score|採点/.test(source) || /grade|score|採点/.test(type)) return "grade";
+    if (/execute|run|実行|compile|コンパイル/.test(source) || /execute|run|実行|compile|コンパイル/.test(type)) return "execute";
+    return "";
+  }
+
+  function rawEventType(event) {
+    return event && (event.event_type || event.rawType || event.kind) || "";
+  }
+
+  function rawEventData(event) {
+    return event && event.data ? event.data : getData(event);
+  }
+
+  function isSystemFeedbackEvent(event) {
+    const type = rawEventType(event);
+    const data = rawEventData(event);
+    if (type !== "chat_user_payload" && type !== "chat_ai_response") return false;
+    if (type === "chat_ai_response") return isSystemTriggerLog(event) || !!classifyExplicitFeedback(data);
+    return !!classifySystemFeedback(data);
+  }
+
+  function isInternalChatTrigger(event) {
+    const type = rawEventType(event);
+    if (type !== "chat_user_payload" && type !== "chat_ai_response") return false;
+    return isSystemTriggerLog(event) || isSystemFeedbackEvent(event);
+  }
+
+  function isConversationEvent(event) {
+    return !!(event && event.kind === "chat" && !isSystemFeedbackEvent(event));
+  }
+
+  function isUserChatEvent(event) {
+    if (!event) return false;
+    if (event.kind === "chat") return isConversationEvent(event) && !!(event.data && event.data.user);
+    return rawEventType(event) === "chat_user_payload" && !isInternalChatTrigger(event);
+  }
+
+  function classifyChatEvent(event) {
+    if (!event) return "other";
+    if (event.kind === "chat") return "conversation";
+    const type = rawEventType(event);
+    if (type !== "chat_user_payload" && type !== "chat_ai_response") return "other";
+    if (isSystemFeedbackEvent(event)) {
+      return classifySystemFeedback(rawEventData(event)) || "system_feedback";
+    }
+    if (isInternalChatTrigger(event)) return "system_trigger";
+    return type === "chat_user_payload" ? "user_chat" : "ai_chat_response";
   }
 
   function normalizeLoveValue(value) {
@@ -72,6 +133,20 @@
     const latestExecute = new Map();
     const latestGrade = new Map();
     const keyFor = (event) => `${event.session_id || ""}|${event.task_id || ""}`;
+    const fallbackChatKeyFor = (event) => `${event.participant_id || ""}|${event.session_id || ""}|${event.task_id || ""}`;
+    const findFallbackChat = (event) => {
+      const eventTime = asTime(event.created_at);
+      let best = null;
+      chatByRequest.forEach((item) => {
+        if (item.data.request_id) return;
+        if (item.data.fallback_key !== fallbackChatKeyFor(event)) return;
+        if (event.event_type === "chat_ai_response" && item.data.ai) return;
+        if (event.event_type === "chat_user_payload" && item.data.user) return;
+        if (Math.abs(eventTime - item.time) > FALLBACK_CHAT_WINDOW_MS) return;
+        if (!best || Math.abs(eventTime - item.time) < Math.abs(eventTime - best.time)) best = item;
+      });
+      return best;
+    };
     const add = (item) => {
       out.push(item);
       return item;
@@ -84,7 +159,7 @@
       time: asTime(event.created_at),
       task_id: event.task_id || "",
       session_id: event.session_id || "",
-      participant_id: event.participant_id || "",
+      participant_id: normalizeParticipantId(event.participant_id),
       role: event.role || "",
       data: data || {},
       raw: [event],
@@ -134,15 +209,19 @@
     raw.forEach((event) => {
       const data = getData(event);
       if (event.event_type === "chat_user_payload" || event.event_type === "chat_ai_response") {
-        if (isSystemTriggerLog(event) || systemFeedbackByRequest.has(getRequestId(event))) {
+        if (isInternalChatTrigger(event) || systemFeedbackByRequest.has(getRequestId(event))) {
           attachSystemFeedback(event, data);
           return;
         }
-        const requestId = getRequestId(event) || `${event.session_id || ""}-${event.created_at}`;
-        let item = chatByRequest.get(requestId);
+        const explicitRequestId = getRequestId(event);
+        const requestId = explicitRequestId || "";
+        let item = explicitRequestId ? chatByRequest.get(explicitRequestId) : findFallbackChat(event);
         if (!item) {
-          item = add(base(event, "chat", { request_id: requestId }));
-          chatByRequest.set(requestId, item);
+          item = add(base(event, "chat", {
+            request_id: requestId,
+            fallback_key: explicitRequestId ? "" : fallbackChatKeyFor(event),
+          }));
+          chatByRequest.set(explicitRequestId || `fallback-${event.id || event.created_at}-${out.length}`, item);
         }
         if (event.event_type === "chat_user_payload") item.data.user = data;
         else item.data.ai = data;
@@ -271,7 +350,7 @@
   function groupEventsByParticipant(events) {
     const map = new Map();
     (events || []).forEach((event) => {
-      const participantId = event.participant_id || (event.raw && event.raw[0] && event.raw[0].participant_id) || "";
+      const participantId = normalizeParticipantId(event.participant_id || (event.raw && event.raw[0] && event.raw[0].participant_id));
       if (!participantId) return;
       if (!map.has(participantId)) map.set(participantId, []);
       map.get(participantId).push(event);
@@ -283,7 +362,7 @@
   function groupRawEventsByParticipant(rawEvents) {
     const map = new Map();
     (rawEvents || []).forEach((event) => {
-      const participantId = event.participant_id || "";
+      const participantId = normalizeParticipantId(event.participant_id);
       if (!participantId) return;
       if (!map.has(participantId)) map.set(participantId, []);
       map.get(participantId).push(event);
@@ -318,13 +397,35 @@
     return counts;
   }
 
+  function chatMetricCounts(events, raw) {
+    const conversationEvents = (events || []).filter(isConversationEvent);
+    const rawChatUserPayloadCount = (raw || []).filter((event) => event.event_type === "chat_user_payload").length;
+    const rawChatAiResponseCount = (raw || []).filter((event) => event.event_type === "chat_ai_response").length;
+    const userChatCount = conversationEvents.filter(isUserChatEvent).length;
+    const aiChatResponseCount = conversationEvents.filter((event) => event.data && event.data.ai).length;
+    const executeFeedbackCount = (events || []).filter((event) => event.kind === "execute" && event.data && event.data.feedback && event.data.feedback.ai).length;
+    const gradeFeedbackCount = (events || []).filter((event) => event.kind === "grade" && event.data && event.data.feedback && event.data.feedback.ai).length;
+    const systemFeedbackTriggerCount = (raw || []).filter((event) => event.event_type === "chat_user_payload" && isSystemFeedbackEvent(event)).length;
+    return {
+      raw_chat_user_payload_count: rawChatUserPayloadCount,
+      raw_chat_ai_response_count: rawChatAiResponseCount,
+      timeline_chat_event_count: conversationEvents.length,
+      user_chat_count: userChatCount,
+      ai_chat_response_count: aiChatResponseCount,
+      conversation_count: conversationEvents.length,
+      system_feedback_trigger_count: systemFeedbackTriggerCount,
+      execute_feedback_count: executeFeedbackCount,
+      grade_feedback_count: gradeFeedbackCount,
+    };
+  }
+
   function buildParticipantBehaviorSummary(profiles, analysisEvents, rawEvents, tasks, metadata, taskProgressRows) {
     const eventsByParticipant = groupEventsByParticipant(analysisEvents);
     const rawByParticipant = groupRawEventsByParticipant(rawEvents);
     const progressByParticipant = normalizeTaskProgress(profiles, taskProgressRows);
     const meta = metadata || {};
     return (profiles || []).map((profile) => {
-      const participantId = profile.participant_id || "";
+      const participantId = normalizeParticipantId(profile.participant_id);
       const events = eventsByParticipant.get(participantId) || [];
       const raw = rawByParticipant.get(participantId) || [];
       const progressRows = progressByParticipant.get(participantId) || new Map();
@@ -349,8 +450,7 @@
       const optionalTasks = new Set(Array.from(attemptedTasks).filter((taskId) => isOptionalTask(tasks, taskId)));
       const executeCount = events.filter((event) => event.kind === "execute").length;
       const gradeCount = events.filter((event) => event.kind === "grade").length;
-      const chatUserCount = events.filter(isUserChat).length;
-      const chatAiCount = events.filter((event) => event.kind === "chat" && event.data && event.data.ai && (!event.data.user || event.data.user.source !== "system_trigger")).length;
+      const chatCounts = chatMetricCounts(events, raw);
       const codeSnapshotCount = events.filter((event) => event.kind === "code").length;
       const errorCount = events.filter(isExecuteError).length;
       const loveEvents = events.filter((event) => event.kind === "love");
@@ -382,8 +482,17 @@
         optional_task_count: optionalTasks.size,
         execute_count: executeCount,
         grade_count: gradeCount,
-        chat_user_count: chatUserCount,
-        chat_ai_count: chatAiCount,
+        raw_chat_user_payload_count: chatCounts.raw_chat_user_payload_count,
+        raw_chat_ai_response_count: chatCounts.raw_chat_ai_response_count,
+        timeline_chat_event_count: chatCounts.timeline_chat_event_count,
+        user_chat_count: chatCounts.user_chat_count,
+        ai_chat_response_count: chatCounts.ai_chat_response_count,
+        conversation_count: chatCounts.conversation_count,
+        system_feedback_trigger_count: chatCounts.system_feedback_trigger_count,
+        execute_feedback_count: chatCounts.execute_feedback_count,
+        grade_feedback_count: chatCounts.grade_feedback_count,
+        chat_user_count: chatCounts.user_chat_count,
+        chat_ai_count: chatCounts.ai_chat_response_count,
         code_snapshot_count: codeSnapshotCount,
         error_count: errorCount,
         error_rate: executeCount ? errorCount / executeCount : null,
@@ -424,10 +533,10 @@
   }
 
   function normalizeTaskProgress(profiles, taskProgressRows) {
-    const userToParticipant = new Map((profiles || []).map((profile) => [profile.id, profile.participant_id]));
+    const userToParticipant = new Map((profiles || []).map((profile) => [profile.id, normalizeParticipantId(profile.participant_id)]));
     const mergedByKey = new Map();
     (taskProgressRows || []).forEach((row) => {
-      const participantId = userToParticipant.get(row.user_id) || row.participant_id || "";
+      const participantId = userToParticipant.get(row.user_id) || normalizeParticipantId(row.participant_id);
       const taskId = row.task_id || "";
       if (!participantId || !taskId) return;
       const key = `${participantId}|${taskId}`;
@@ -492,7 +601,7 @@
 
   function buildTaskAttemptSummary(profiles, analysisEvents, tasks, metadata, taskProgressRows) {
     const eventsByParticipant = groupEventsByParticipant(analysisEvents);
-    const profileById = new Map((profiles || []).map((profile) => [profile.participant_id, profile]));
+    const profileById = new Map((profiles || []).map((profile) => [normalizeParticipantId(profile.participant_id), profile]));
     const progressByParticipant = normalizeTaskProgress(profiles, taskProgressRows);
     const meta = metadata || {};
     const rows = [];
@@ -606,7 +715,7 @@
 
   function buildLoveTransitionBehaviorSummary(profiles, analysisEvents, metadata) {
     const eventsByParticipant = groupEventsByParticipant(analysisEvents);
-    const profileById = new Map((profiles || []).map((profile) => [profile.participant_id, profile]));
+    const profileById = new Map((profiles || []).map((profile) => [normalizeParticipantId(profile.participant_id), profile]));
     const meta = metadata || {};
     const rows = [];
     eventsByParticipant.forEach((events, participantId) => {
@@ -774,6 +883,10 @@
     buildLoveTransitionBehaviorSummary,
     buildCorrelationStats,
     buildGroupAttributeLogSummary,
+    isConversationEvent,
+    isUserChatEvent,
+    isSystemFeedbackEvent,
+    classifyChatEvent,
     isOptionalTask,
     spearman,
     correlationPValueApprox,
