@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Experiment Analysis</title>
   <link rel="stylesheet" href="/admin/admin.css?v=20260618-1">
-  <link rel="stylesheet" href="/admin/css/analysis.css?v=20260622-9">
+  <link rel="stylesheet" href="/admin/css/analysis.css?v=20260630-1">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
   <script src="/admin/js/api.js?v=20260618-1" defer></script>
   <script src="/admin/js/ui.js?v=20260618-1" defer></script>
   <script src="/admin/js/stats.js?v=20260623-1" defer></script>
   <script src="/admin/js/log_analysis.js?v=20260623-1" defer></script>
-  <script src="/admin/analysis/charts.js?v=20260623-1" defer></script>
-  <script src="/admin/analysis/analysis.js?v=20260623-1" defer></script>
+  <script src="/admin/analysis/charts.js?v=20260630-10" defer></script>
+  <script src="/admin/analysis/analysis.js?v=20260630-10" defer></script>
 </head>
 <body>
   <header>
@@ -64,7 +64,6 @@
         <button class="secondary" id="download-stats-csv" disabled>統計結果CSV出力</button>
         <button class="secondary" id="download-participant-behavior-csv" disabled>参加者行動CSV</button>
         <button class="secondary" id="download-task-attempt-csv" disabled>課題試行CSV</button>
-        <button class="secondary" id="download-love-transition-csv" disabled>親密度前後CSV</button>
         <button class="secondary" id="download-survey-log-correlation-csv" disabled>アンケート相関CSV</button>
         <button class="secondary" id="download-group-attribute-log-csv" disabled>属性別ログCSV</button>
         <span id="analysis-status" class="status">未読み込み</span>
@@ -81,7 +80,6 @@
       <a href="#item-section">事後評価項目</a>
       <a href="#log-section">ログ行動</a>
       <a href="#task-log-section">課題試行</a>
-      <a href="#love-log-section">親密度前後</a>
       <a href="#correlation-log-section">相関</a>
       <a href="#attribute-log-section">属性別ログ</a>
       <a href="#participant-section">参加者別</a>
@@ -89,8 +87,14 @@
 
     <section id="test-section" class="analysis-grid">
       <article class="panel analysis-panel span-2">
-        <div class="bar section-heading">
+        <div class="bar section-heading attribute-controls">
           <div><strong>事前・事後テストの変化</strong><p>対応が取れた参加者の変化量を、箱ひげ図と個別点で群間比較します。</p></div>
+          <label>表示
+            <select id="test-chart-mode">
+              <option value="distribution">箱ひげ図・個別点</option>
+              <option value="mean-line">平均点の折れ線</option>
+            </select>
+          </label>
         </div>
         <div class="test-content">
           <div class="chart-box"><canvas id="test-chart"></canvas><div class="chart-fallback" id="test-chart-fallback" hidden></div></div>
@@ -237,21 +241,18 @@
       <div class="scroll table-scroll large"><table id="task-attempt-table" class="log-table"></table></div>
     </section>
 
-    <section id="love-log-section" class="analysis-grid">
-      <article class="panel analysis-panel span-2">
-        <div class="bar section-heading"><div><strong>親密度変動前後の行動</strong><p>既存タイムラインと同じ集約イベントを使い、親密度変化後の次行動を確認します。</p></div></div>
-        <div class="chart-box"><canvas id="love-transition-chart"></canvas><div class="chart-fallback" id="love-transition-chart-fallback" hidden></div></div>
-        <div class="scroll table-scroll large"><table id="love-transition-table" class="log-table"></table></div>
-      </article>
-    </section>
-
     <section id="correlation-log-section" class="analysis-grid">
       <article class="panel analysis-panel">
-        <div class="bar section-heading attribute-controls">
+        <div class="bar section-heading attribute-controls correlation-heading">
           <div><strong>アンケートとログ指標の散布図</strong><p>PearsonとSpearmanを併記し、p値は参考値として扱います。</p></div>
-          <label>組み合わせ
-            <select id="correlation-select"></select>
-          </label>
+          <div class="correlation-controls">
+            <label>アンケート・テスト指標
+              <select id="correlation-survey-select"></select>
+            </label>
+            <label>ログ指標
+              <select id="correlation-log-select"></select>
+            </label>
+          </div>
         </div>
         <div class="chart-box tall"><canvas id="correlation-chart"></canvas><div class="chart-fallback" id="correlation-chart-fallback" hidden></div></div>
       </article>

@@ -103,4 +103,63 @@ assert.ok(postOnlyTooltip.includes("群: 実験群"));
 assert.ok(postOnlyTooltip.includes("回答: 4.00"));
 assert.ok(!postOnlyTooltip.some((line) => line.startsWith("事前回答:")));
 
+AdminCharts.line("line-chart", ["事前", "事後"], [
+  { label: "実験群", borderColor: "#008080", backgroundColor: "#008080", data: [40, 70] },
+  { label: "統制群", borderColor: "#ef7d00", backgroundColor: "#ef7d00", data: [45, 55] },
+], { yTitle: "テスト平均点", beginAtZero: false });
+assert.equal(lastChart.config.type, "line");
+assert.deepEqual(lastChart.config.data.labels, ["事前", "事後"]);
+assert.equal(lastChart.config.data.datasets.length, 2);
+assert.deepEqual(lastChart.config.data.datasets[0].data, [40, 70]);
+assert.equal(lastChart.config.options.scales.y.beginAtZero, false);
+assert.equal(lastChart.config.options.scales.y.title.text, "テスト平均点");
+
+AdminCharts.stackedHorizontalPercentBar("stacked-chart", ["楽しさ / 実験群", "楽しさ / 統制群"], [
+  { label: "1", backgroundColor: ["#d8f4f4", "#ffe2bf"], data: [20, 0], meta: [{ count: 1, total: 5 }, { count: 0, total: 4 }] },
+  { label: "2", backgroundColor: ["#9cdadb", "#ffc46d"], data: [30, 25], meta: [{ count: 2, total: 5 }, { count: 1, total: 4 }] },
+], {
+  xTitle: "回答割合（%）",
+  legendPosition: "bottom",
+  separatorIndexes: [2],
+  legendItems: [
+    { label: "実験群 1", color: "#d8f4f4" },
+    { label: "2", color: "#9cdadb" },
+    { label: "統制群 1", color: "#ffe2bf" },
+    { label: "2", color: "#ffc46d" },
+  ],
+});
+assert.equal(lastChart.config.type, "bar");
+assert.equal(lastChart.config.options.indexAxis, "y");
+assert.equal(lastChart.config.options.scales.x.stacked, true);
+assert.equal(lastChart.config.options.scales.y.stacked, true);
+assert.equal(lastChart.config.options.scales.x.max, 100);
+assert.equal(lastChart.config.options.scales.x.title.text, "回答割合（%）");
+assert.deepEqual(lastChart.config.data.datasets[0].backgroundColor, ["#d8f4f4", "#ffe2bf"]);
+assert.equal(lastChart.config.options.plugins.legend.position, "bottom");
+assert.equal(lastChart.config.plugins[0].id, "separatorLines");
+const stackedLegend = lastChart.config.options.plugins.legend.labels.generateLabels();
+assert.deepEqual(stackedLegend.map((item) => item.text), ["実験群 1", "2", "統制群 1", "2"]);
+const stackedTooltip = lastChart.config.options.plugins.tooltip.callbacks.label({
+  dataset: lastChart.config.data.datasets[0],
+  dataIndex: 0,
+  parsed: { x: 20 },
+});
+assert.ok(stackedTooltip.includes("20.0%"));
+assert.ok(stackedTooltip.includes("1/5"));
+
+AdminCharts.scatter("scatter-chart", [
+  { x: 3, y: 4, participantId: "A01", group: "experimental" },
+  { x: 2, y: 1, participantId: "B01", group: "control" },
+], {
+  xTitle: "ユーザーチャット数",
+  yTitle: "親しみ",
+  colors: { experimental: "#008080", control: "#ef7d00" },
+  groupLabels: { experimental: "実験群", control: "統制群" },
+});
+assert.equal(lastChart.config.type, "scatter");
+assert.equal(lastChart.config.options.scales.x.title.text, "ユーザーチャット数");
+assert.equal(lastChart.config.options.scales.y.title.text, "親しみ");
+assert.equal(lastChart.config.data.datasets[0].data.length, 1);
+assert.equal(lastChart.config.data.datasets[1].data.length, 1);
+
 console.log("chart tests passed");

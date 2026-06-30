@@ -91,6 +91,25 @@
 .section-heading p { margin: 4px 0 0; color: var(--muted); font-size: 12px; font-weight: 400; line-height: 1.45; }
 .attribute-controls { align-items: center; }
 .attribute-controls select { min-width: 210px; }
+.correlation-heading {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+.correlation-heading > div:first-child {
+  flex: 1 1 100%;
+}
+.correlation-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+}
+.correlation-controls label {
+  width: auto;
+}
+.correlation-controls select {
+  min-width: 260px;
+}
 
 .chart-box {
   position: relative;

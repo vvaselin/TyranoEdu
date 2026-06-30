@@ -61,14 +61,48 @@
 
   function line(canvasId, labels, datasets, options) {
     const opts = options || {};
+    const pairLabelPlugin = {
+      id: "pairAxisLabels",
+      afterDraw(chart) {
+        const pairLabels = opts.pairLabels || [];
+        if (!pairLabels.length || !chart.scales.x) return;
+        const { ctx, chartArea, scales } = chart;
+        ctx.save();
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillStyle = opts.pairLabelColor || "#334155";
+        ctx.font = opts.pairLabelFont || "600 11px sans-serif";
+        pairLabels.forEach((label, index) => {
+          const left = scales.x.getPixelForValue(index * 2);
+          const right = scales.x.getPixelForValue(index * 2 + 1);
+          const x = (left + right) / 2;
+          const y = chartArea.bottom + (opts.pairLabelOffset || 34);
+          ctx.fillText(label, x, y, opts.pairLabelMaxWidth || 120);
+        });
+        ctx.restore();
+      },
+    };
     draw(canvasId, {
       type: "line",
       data: { labels, datasets: datasets.map((ds) => ({ tension: 0.15, pointRadius: 4, pointHoverRadius: 6, ...ds })) },
+      plugins: [pairLabelPlugin],
       options: {
         ...common,
-        plugins: { ...common.plugins, title: { display: !!opts.title, text: opts.title } },
+        layout: opts.layout || undefined,
+        plugins: {
+          ...common.plugins,
+          legend: { ...common.plugins.legend, display: opts.showLegend !== false },
+          title: { display: !!opts.title, text: opts.title },
+        },
         scales: {
-          x: { grid: { display: false } },
+          x: {
+            grid: { display: false },
+            ticks: {
+              autoSkip: opts.autoSkipX !== false,
+              maxRotation: Number.isFinite(opts.maxRotation) ? opts.maxRotation : 0,
+              minRotation: Number.isFinite(opts.minRotation) ? opts.minRotation : 0,
+            },
+          },
           y: {
             beginAtZero: opts.beginAtZero !== false,
             min: Number.isFinite(opts.min) ? opts.min : undefined,
@@ -99,6 +133,121 @@
             title: { display: !!opts.xTitle, text: opts.xTitle || "" },
           },
           y: { stacked: !!opts.stacked, grid: { display: false }, ticks: { autoSkip: false } },
+        },
+      },
+    });
+  }
+
+  function stackedHorizontalPercentBar(canvasId, labels, datasets, options) {
+    const opts = options || {};
+    const separatorLinesPlugin = {
+      id: "separatorLines",
+      afterDatasetsDraw(chart) {
+        const indexes = opts.separatorIndexes || [];
+        if (!indexes.length || !chart.scales.y) return;
+        const { ctx, chartArea, scales } = chart;
+        ctx.save();
+        ctx.strokeStyle = opts.separatorColor || "#cbd5e1";
+        ctx.lineWidth = 1;
+        indexes.forEach((index) => {
+          const y = scales.y.getPixelForValue(index);
+          ctx.beginPath();
+          ctx.moveTo(chartArea.left, y);
+          ctx.lineTo(chartArea.right, y);
+          ctx.stroke();
+        });
+        ctx.restore();
+      },
+    };
+    const groupedYLabelsPlugin = {
+      id: "groupedYLabels",
+      afterDraw(chart) {
+        const labels = opts.groupedYLabels || [];
+        if (!labels.length || !chart.scales.y) return;
+        const { ctx, chartArea, scales } = chart;
+        ctx.save();
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = opts.groupedYLabelColor || "#334155";
+        ctx.font = opts.groupedYLabelFont || "600 11px sans-serif";
+        labels.forEach((label, groupIndex) => {
+          const firstIndex = groupIndex * 3;
+          const secondIndex = firstIndex + 1;
+          const y = (scales.y.getPixelForValue(firstIndex) + scales.y.getPixelForValue(secondIndex)) / 2 + (opts.groupedYLabelOffsetY || 0);
+          ctx.fillText(label, chartArea.left - (opts.groupedYLabelLeft || 150), y, opts.groupedYLabelMaxWidth || 140);
+        });
+        ctx.restore();
+      },
+    };
+    draw(canvasId, {
+      type: "bar",
+      data: { labels, datasets },
+      plugins: [separatorLinesPlugin, groupedYLabelsPlugin],
+      options: {
+        ...common,
+        layout: opts.layout || undefined,
+        indexAxis: "y",
+        interaction: { mode: "nearest", intersect: true },
+        plugins: {
+          ...common.plugins,
+          legend: {
+            position: opts.legendPosition || "bottom",
+            labels: {
+              usePointStyle: true,
+              boxWidth: 10,
+              generateLabels() {
+                if (Array.isArray(opts.legendItems)) {
+                  return opts.legendItems.map((item) => ({
+                    text: item.label,
+                    fillStyle: item.color,
+                    strokeStyle: item.color,
+                    pointStyle: "rect",
+                    hidden: false,
+                  }));
+                }
+                return Chart.defaults.plugins.legend.labels.generateLabels.apply(this, arguments);
+              },
+            },
+            onClick() {},
+          },
+          title: { display: !!opts.title, text: opts.title || "" },
+          tooltip: {
+            callbacks: {
+              label(context) {
+                if (typeof opts.tooltipLabel === "function") return opts.tooltipLabel(context);
+                const dataset = context.dataset || {};
+                const meta = Array.isArray(dataset.meta) ? dataset.meta[context.dataIndex] : null;
+                const value = Number(context.parsed && context.parsed.x);
+                const percent = Number.isFinite(value) ? value.toFixed(1) : "-";
+                const count = meta && Number.isFinite(meta.count) ? meta.count : "-";
+                const total = meta && Number.isFinite(meta.total) ? meta.total : "-";
+                return `${dataset.label || ""}: ${percent}% (${count}/${total})`;
+              },
+            },
+          },
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            stacked: true,
+            min: 0,
+            max: 100,
+            title: { display: !!opts.xTitle, text: opts.xTitle || "" },
+            ticks: {
+              callback(value) { return `${value}%`; },
+            },
+          },
+          y: {
+            stacked: true,
+            grid: { display: false },
+            ticks: {
+              autoSkip: false,
+              callback(value) {
+                const index = Number(value);
+                return Array.isArray(opts.yTickLabels) ? opts.yTickLabels[index] : this.getLabelForValue(value);
+              },
+            },
+          },
         },
       },
     });
@@ -146,8 +295,16 @@
           },
         },
         scales: {
-          x: { title: { display: !!opts.xTitle, text: opts.xTitle || "" } },
-          y: { title: { display: !!opts.yTitle, text: opts.yTitle || "" } },
+          x: {
+            min: Number.isFinite(opts.xMin) ? opts.xMin : undefined,
+            max: Number.isFinite(opts.xMax) ? opts.xMax : undefined,
+            title: { display: !!opts.xTitle, text: opts.xTitle || "" },
+          },
+          y: {
+            min: Number.isFinite(opts.yMin) ? opts.yMin : undefined,
+            max: Number.isFinite(opts.yMax) ? opts.yMax : undefined,
+            title: { display: !!opts.yTitle, text: opts.yTitle || "" },
+          },
         },
       },
     });
@@ -439,5 +596,5 @@
     });
   }
 
-  global.AdminCharts = { groupedBar, line, horizontalBar, scatter, boxplotWithPoints };
+  global.AdminCharts = { groupedBar, line, horizontalBar, stackedHorizontalPercentBar, scatter, boxplotWithPoints };
 })(window);

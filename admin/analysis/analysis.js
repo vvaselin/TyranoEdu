@@ -108,6 +108,10 @@
     if (!Number.isFinite(value)) return "-";
     return value < 0.001 ? "&lt; .001" : value.toFixed(3);
   }
+  function setHTML(id, html) {
+    const element = $(id);
+    if (element) element.innerHTML = html;
+  }
   function n(values) { return finite(values).length; }
   function number(value) {
     const cleaned = clean(value).replace(/[^0-9.-]/g, "");
@@ -269,7 +273,10 @@
       row.preAttitudeAverage = hasCompleteAttitudePair ? mean(attitudePreValues) : NaN;
       row.postAttitudeAverage = hasCompleteAttitudePair ? mean(attitudePostValues) : NaN;
       row.attitudeAverageGain = hasCompleteAttitudePair ? row.postAttitudeAverage - row.preAttitudeAverage : NaN;
-      ILS_AXES.forEach((axis) => { row[axis.key] = ilsScore(ilsRow, axis); });
+      ILS_AXES.forEach((axis) => {
+        row[axis.key] = ilsScore(ilsRow, axis);
+        row[`${axis.key}Signed`] = row[axis.key].signed;
+      });
       return row;
     });
   }
@@ -305,7 +312,7 @@
       ["意識尺度対応あり", surveyPairs, "事前・事後とも回答"],
       ["ILS結合あり", ilsCount, "学習スタイル回答"],
     ];
-    $("summary-cards").innerHTML = cards.map(([label, value, detail]) => `<div class="summary-card"><div class="label">${escapeHtml(label)}</div><div class="value">${escapeHtml(value)}</div><div class="detail">${escapeHtml(detail)}</div></div>`).join("");
+    setHTML("summary-cards", cards.map(([label, value, detail]) => `<div class="summary-card"><div class="label">${escapeHtml(label)}</div><div class="value">${escapeHtml(value)}</div><div class="detail">${escapeHtml(detail)}</div></div>`).join(""));
   }
 
   function comparisonRows(rows, metrics) {
@@ -408,13 +415,37 @@
     };
   }
 
+  function roleMean(rows, role, key) {
+    return mean(rows.filter((row) => row.role === role).map((row) => row[key]));
+  }
+
   function renderTests(rows) {
     const metrics = [
       { key: "preScore", label: "事前テスト" },
       { key: "postScore", label: "事後テスト" },
       { key: "testGain", label: "変化量（事後－事前）" },
     ];
-    $("test-table").innerHTML = '<colgroup><col class="test-metric-col"><col class="test-stat-col" span="21"></colgroup>' + comparisonHeader() + `<tbody>${comparisonRows(rows, metrics)}</tbody>`;
+    setHTML("test-table", '<colgroup><col class="test-metric-col"><col class="test-stat-col" span="21"></colgroup>' + comparisonHeader() + `<tbody>${comparisonRows(rows, metrics)}</tbody>`);
+    if ($("test-chart-mode") && $("test-chart-mode").value === "mean-line") {
+      charts.line("test-chart", ["事前", "事後"], [
+        {
+          label: "実験群",
+          borderColor: COLORS.experimental,
+          backgroundColor: COLORS.experimental,
+          data: [roleMean(rows, "experimental", "preScore"), roleMean(rows, "experimental", "postScore")],
+        },
+        {
+          label: "統制群",
+          borderColor: COLORS.control,
+          backgroundColor: COLORS.control,
+          data: [roleMean(rows, "control", "preScore"), roleMean(rows, "control", "postScore")],
+        },
+      ], {
+        yTitle: "テスト平均点",
+        beginAtZero: false,
+      });
+      return;
+    }
     charts.boxplotWithPoints("test-chart", [
       changeGroup(rows, "experimental", "実験群", "実験群", COLORS.experimental, "事前・事後テスト", "preScore", "postScore", "testGain"),
       changeGroup(rows, "control", "統制群", "統制群", COLORS.control, "事前・事後テスト", "preScore", "postScore", "testGain"),
@@ -443,29 +474,46 @@
         : "";
       return `<tr class="${categoryIndex === 0 ? "group-start" : ""}">${questionCell}<td class="attribute-name dimension-divider">${escapeHtml(category)}</td>${comparisonCells(categoryRows(category), item.gainKey, { showQuartiles: false })}</tr>`;
     })).join("");
-    $("attitude-table").innerHTML = `<thead><tr><th class="metric-name">質問項目</th><th class="attribute-name dimension-divider">属性区分</th>${comparisonColumnHeaders(false)}</tr></thead><tbody>${itemRows || '<tr><td colspan="19" class="na">対象データなし</td></tr>'}</tbody>`;
+    setHTML("attitude-table", `<thead><tr><th class="metric-name">質問項目</th><th class="attribute-name dimension-divider">属性区分</th>${comparisonColumnHeaders(false)}</tr></thead><tbody>${itemRows || '<tr><td colspan="19" class="na">対象データなし</td></tr>'}</tbody>`);
 
     const itemEntries = ATTITUDE_ITEMS.flatMap((item) => categories.map((category) => ({ item, category })));
-    const itemLabels = itemEntries.map(({ item, category }) => attribute === "all"
-      ? [item.label]
-      : [item.label, `属性: ${category}`]);
-    const itemGroups = itemEntries.flatMap(({ item, category }, itemIndex) => {
-      const selectedRows = categoryRows(category);
-      const experimental = changeGroup(selectedRows, "experimental", `${item.label}・${category}・実験群`, item.label, COLORS.experimental, item.label, item.preKey, item.postKey, item.gainKey);
-      const control = changeGroup(selectedRows, "control", `${item.label}・${category}・統制群`, item.label, COLORS.control, item.label, item.preKey, item.postKey, item.gainKey);
-      experimental.position = itemIndex - 0.17;
-      control.position = itemIndex + 0.17;
-      return [experimental, control];
+    const labels = itemEntries.flatMap(({ item, category }) => {
+      return ["事前", "事後"];
     });
-    $("attitude-chart").parentElement.style.height = `${Math.max(520, itemEntries.length * 90 + 130)}px`;
-    charts.boxplotWithPoints("attitude-chart", itemGroups, {
-      orientation: "horizontal",
-      min: -4,
-      max: 4,
-      xTitle: "5件法回答の変化量（事後－事前）",
-      yTitle: "質問項目",
-      itemLabels,
-      legendItems,
+    const pairLabels = itemEntries.map(({ item, category }) => attribute === "all" ? item.short : `${item.short} / ${category}`);
+    const meanFor = (role, key, category) => mean(categoryRows(category).filter((row) => row.role === role).map((row) => row[key]));
+    $("attitude-chart").parentElement.style.height = `${Math.max(520, itemEntries.length * 72 + 180)}px`;
+    const attitudePalette = {
+      experimental: ["#0b686a", "#0f8b8d", "#21a0a2", "#4fb6b8", "#79cacc", "#2d9497", "#62adaf"],
+      control: ["#a65305", "#c7630d", "#ea7a12", "#f18d20", "#f6aa37", "#d97706", "#ffaf4a"],
+    };
+    const attitudeDatasets = itemEntries.flatMap(({ item, category }, itemIndex) => ["experimental", "control"].map((role) => {
+      const data = Array(labels.length).fill(null);
+      data[itemIndex * 2] = meanFor(role, item.preKey, category);
+      data[itemIndex * 2 + 1] = meanFor(role, item.postKey, category);
+      const color = attitudePalette[role][itemIndex % attitudePalette[role].length];
+      const itemLabel = attribute === "all" ? item.short : `${item.short} / ${category}`;
+      return {
+        label: `${ROLE_LABEL[role] || role} / ${itemLabel}`,
+        borderColor: color,
+        backgroundColor: color,
+        data,
+        spanGaps: false,
+      };
+    }));
+    charts.line("attitude-chart", labels, attitudeDatasets, {
+      min: 1,
+      max: 5,
+      yTitle: "5件法回答の平均",
+      beginAtZero: false,
+      autoSkipX: false,
+      maxRotation: 45,
+      minRotation: 45,
+      showLegend: false,
+      layout: { padding: { bottom: 48 } },
+      pairLabels,
+      pairLabelOffset: 28,
+      pairLabelMaxWidth: 110,
     });
   }
 
@@ -489,12 +537,47 @@
       const cell = (count, total) => `${count}<small>${total ? fmt(count / total * 100, 1) + "%" : "-"}</small>`;
       return `<tr><td class="metric-name">${escapeHtml(axis.left)} ↔ ${escapeHtml(axis.right)}</td><td>${e.total}</td><td>${cell(e.left, e.total)}</td><td>${cell(e.balanced, e.total)}</td><td>${cell(e.right, e.total)}</td><td>${fmt(e.signedMean)}</td><td>${c.total}</td><td>${cell(c.left, c.total)}</td><td>${cell(c.balanced, c.total)}</td><td>${cell(c.right, c.total)}</td><td>${fmt(c.signedMean)}</td></tr>`;
     }).join("");
-    $("ils-table").innerHTML = '<colgroup><col class="ils-axis-col"><col class="ils-stat-col" span="10"></colgroup>'
-      + `<thead><tr><th class="metric-name">軸</th><th>実験 n</th><th>左側</th><th>均衡</th><th>右側</th><th>実験 符号平均</th><th>統制 n</th><th>左側</th><th>均衡</th><th>右側</th><th>統制 符号平均</th></tr></thead><tbody>${tableRows}</tbody>`;
-    charts.groupedBar("ils-chart", ILS_AXES.map((a) => a.short), [
-      { label: "実験群（左側を＋）", backgroundColor: COLORS.experimental, data: ILS_AXES.map((axis) => ilsCounts(rows, "experimental", axis).signedMean) },
-      { label: "統制群（左側を＋）", backgroundColor: COLORS.control, data: ILS_AXES.map((axis) => ilsCounts(rows, "control", axis).signedMean) },
-    ], { beginAtZero: false, min: -11, max: 11, yTitle: "A回答数－B回答数" });
+    setHTML("ils-table", '<colgroup><col class="ils-axis-col"><col class="ils-stat-col" span="10"></colgroup>'
+      + `<thead><tr><th class="metric-name">軸</th><th>実験 n</th><th>左側</th><th>均衡</th><th>右側</th><th>実験 符号平均</th><th>統制 n</th><th>左側</th><th>均衡</th><th>右側</th><th>統制 符号平均</th></tr></thead><tbody>${tableRows}</tbody>`);
+    const groups = ILS_AXES.flatMap((axis) => ["experimental", "control"].map((role, roleIndex) => {
+      const points = rows
+        .filter((row) => row.role === role && row[axis.key] && Number.isFinite(row[axis.key].signed))
+        .map((row) => ({
+          participantId: row.participantId,
+          roleLabel: ROLE_LABEL[row.role] || row.role,
+          value: row[axis.key].signed,
+          episodeCount: row.episodeCount,
+          metricLabel: `${axis.left} ↔ ${axis.right}`,
+          valueKind: "postOnly",
+        }));
+      return {
+        label: `${axis.short} ${ROLE_LABEL[role] || role}`,
+        tickLabel: [axis.short, ROLE_LABEL[role] || role],
+        color: role === "experimental" ? COLORS.experimental : COLORS.control,
+        position: ILS_AXES.indexOf(axis) * 2 + roleIndex,
+        points,
+        summary: summarize(points.map((point) => point.value)),
+      };
+    }));
+    charts.boxplotWithPoints("ils-chart", groups, {
+      min: -11,
+      max: 11,
+      xTitle: "学習スタイル軸・群",
+      yTitle: "A回答数－B回答数（左側が＋）",
+      widthPerGroup: 74,
+      legendItems: [
+        { label: "実験群", color: COLORS.experimental },
+        { label: "統制群", color: COLORS.control },
+      ],
+      tooltipFormatter(point) {
+        return [
+          `参加者ID: ${point.participantId || "-"}`,
+          `群: ${point.roleLabel || "-"}`,
+          `軸: ${point.metricLabel || "-"}`,
+          `符号付きスコア: ${Number.isFinite(point.value) ? point.value.toFixed(2) : "-"}`,
+        ];
+      },
+    });
   }
 
   function balanceMetrics(target) {
@@ -536,8 +619,8 @@
       const pct = (value) => Number.isFinite(value) ? `${fmt(value)}%` : "-";
       return `<tr><td class="metric-name">${escapeHtml(label)}</td><td>${escapeHtml(category)}</td><td>${exp}</td><td>${pct(expPct)}</td><td>${ctrl}</td><td>${pct(ctrlPct)}</td><td>${Number.isFinite(diff) ? `${fmt(diff)} pp` : "-"}</td><td class="na">参考値</td></tr>`;
     }).join("");
-    $("ils-table").innerHTML = '<colgroup><col class="balance-item-col"><col class="balance-category-col"><col class="balance-category-stat-col" span="6"></colgroup>'
-      + `<thead><tr><th class="metric-name">項目名</th><th>カテゴリ</th><th>実験群 n</th><th>実験群 %</th><th>統制群 n</th><th>統制群 %</th><th>差分 percentage point</th><th>備考</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="8" class="na">対象データなし</td></tr>'}</tbody>`;
+    setHTML("ils-table", '<colgroup><col class="balance-item-col"><col class="balance-category-col"><col class="balance-category-stat-col" span="6"></colgroup>'
+      + `<thead><tr><th class="metric-name">項目名</th><th>カテゴリ</th><th>実験群 n</th><th>実験群 %</th><th>統制群 n</th><th>統制群 %</th><th>差分 percentage point</th><th>備考</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="8" class="na">対象データなし</td></tr>'}</tbody>`);
     charts.groupedBar("ils-chart", ["実験群", "統制群"], categories.map((category, index) => ({
       label: category,
       backgroundColor: index % 2 ? COLORS.controlPre : COLORS.experimentalPre,
@@ -579,8 +662,8 @@
         { label: "統制群", color: COLORS.control },
       ],
     });
-    $("ils-table").innerHTML = '<colgroup><col class="balance-metric-col"><col class="balance-stat-col" span="21"></colgroup>'
-      + comparisonHeader() + `<tbody>${comparisonRows(rows, metrics)}</tbody>`;
+    setHTML("ils-table", '<colgroup><col class="balance-metric-col"><col class="balance-stat-col" span="21"></colgroup>'
+      + comparisonHeader() + `<tbody>${comparisonRows(rows, metrics)}</tbody>`);
     const comparisons = metrics.map((metric) => ({ metric, comparison: compareGroups(byRole(rows, "experimental", metric.key), byRole(rows, "control", metric.key)) }));
     const comparable = comparisons.filter(({ comparison }) => comparison.groupA_summary.n && comparison.groupB_summary.n);
     const notable = comparisons.find(({ comparison }) => Number.isFinite(comparison.cliffsDelta) && Math.abs(comparison.cliffsDelta) >= 0.33);
@@ -646,31 +729,83 @@
         : "";
       return `<tr class="${categoryIndex === 0 ? "group-start" : ""}">${metricCell}<td class="attribute-name dimension-divider">${escapeHtml(category)}</td>${comparisonCells(rowsForCategory(category), metric.key)}</tr>`;
     }).join("");
-    $("attribute-table").innerHTML = `<thead><tr><th class="metric-name">評価指標</th><th class="attribute-name dimension-divider">属性区分</th>${comparisonColumnHeaders()}</tr></thead><tbody>${table || '<tr><td colspan="23" class="na">対象データなし</td></tr>'}</tbody>`;
+    setHTML("attribute-table", `<thead><tr><th class="metric-name">評価指標</th><th class="attribute-name dimension-divider">属性区分</th>${comparisonColumnHeaders()}</tr></thead><tbody>${table || '<tr><td colspan="23" class="na">対象データなし</td></tr>'}</tbody>`);
 
-    const chartBox = $("attribute-chart").parentElement;
-    chartBox.style.height = `${Math.max(520, entries.length * 90 + 130)}px`;
-    const itemLabels = entries.map(({ metric, category }) => attribute === "all"
-      ? [metric.label]
-      : [metric.label, `属性: ${category}`]);
-    const chartGroups = entries.flatMap(({ metric, category }, itemIndex) => {
-      const selectedRows = rowsForCategory(category);
-      return [
-        valueGroup(selectedRows, "experimental", `${metric.label}・${category}・実験群`, COLORS.experimental, metric, itemIndex - 0.17),
-        valueGroup(selectedRows, "control", `${metric.label}・${category}・統制群`, COLORS.control, metric, itemIndex + 0.17),
-      ];
+    const separatorIndexes = [];
+    const chartRows = entries.flatMap(({ metric, category }, entryIndex) => {
+      const groupRows = ["experimental", "control"].map((role) => {
+        const selectedRows = rowsForCategory(category).filter((row) => row.role === role);
+        const values = selectedRows.map((row) => Number(row[metric.key])).filter((value) => Number.isFinite(value) && value >= 1 && value <= 5);
+        const total = values.length;
+        const counts = [1, 2, 3, 4, 5].map((score) => values.filter((value) => value === score).length);
+        return { metric, category, role, total, counts };
+      });
+      if (entryIndex < entries.length - 1) {
+        separatorIndexes.push(entryIndex * 3 + 2);
+        groupRows.push({ isSeparator: true, metric, category, role: "", total: 0, counts: [0, 0, 0, 0, 0] });
+      }
+      return groupRows;
     });
-    charts.boxplotWithPoints("attribute-chart", chartGroups, {
-      orientation: "horizontal",
-      min: 1,
-      max: 5,
-      xTitle: "5件法回答",
-      yTitle: "事後評価項目",
-      itemLabels,
-      legendItems: [
-        { label: "実験群", color: COLORS.experimental },
-        { label: "統制群", color: COLORS.control },
-      ],
+    const chartBox = $("attribute-chart").parentElement;
+    chartBox.style.height = `${Math.max(420, chartRows.length * 34 + 150)}px`;
+    const yTickLabels = chartRows.map((row, index) => {
+      if (row.isSeparator) return "";
+      return ROLE_LABEL[row.role] || row.role;
+    });
+    const groupedYLabels = entries.map(({ metric, category }) => {
+      const metricLabel = metric.short || metric.label;
+      return attribute === "all" ? metricLabel : `${metricLabel} / ${category}`;
+    });
+    const responseColors = {
+      experimental: ["#d8f4f4", "#9cdadb", "#5bbdc0", "#2d9ea1", COLORS.experimental],
+      control: ["#ffe2bf", "#ffc46d", "#f6aa37", "#f18d20", COLORS.control],
+    };
+    const datasets = [1, 2, 3, 4, 5].map((score, scoreIndex) => ({
+      label: `${score}`,
+      backgroundColor: chartRows.map((row) => row.isSeparator ? "rgba(0,0,0,0)" : (responseColors[row.role] || responseColors.experimental)[scoreIndex]),
+      borderColor: "#ffffff",
+      borderWidth: 1,
+      barPercentage: 0.92,
+      categoryPercentage: 0.92,
+      data: chartRows.map((row) => row.total ? row.counts[scoreIndex] / row.total * 100 : 0),
+      meta: chartRows.map((row) => ({
+        count: row.counts[scoreIndex],
+        total: row.total,
+        score,
+        metric: row.metric.label,
+        category: row.category,
+        role: ROLE_LABEL[row.role] || row.role,
+        separator: !!row.isSeparator,
+      })),
+    }));
+    charts.stackedHorizontalPercentBar("attribute-chart", yTickLabels, datasets, {
+      xTitle: "回答割合（%）",
+      legendPosition: "bottom",
+      yTickLabels,
+      groupedYLabels,
+      layout: { padding: { left: 130 } },
+      groupedYLabelLeft: 145,
+      groupedYLabelOffsetY: 0,
+      groupedYLabelMaxWidth: 130,
+      separatorIndexes,
+      legendItems: ["experimental", "control"].flatMap((role) => [1, 2, 3, 4, 5].map((score, index) => ({
+        label: index === 0 ? `${ROLE_LABEL[role] || role} ${score}` : `${score}`,
+        color: responseColors[role][index],
+      }))),
+      tooltipLabel(context) {
+        const dataset = context.dataset || {};
+        const meta = Array.isArray(dataset.meta) ? dataset.meta[context.dataIndex] : {};
+        if (meta.separator) return "";
+        const value = Number(context.parsed && context.parsed.x);
+        return [
+          `回答: ${meta.score || dataset.label}`,
+          `割合: ${Number.isFinite(value) ? value.toFixed(1) : "-"}%`,
+          `人数: ${Number.isFinite(meta.count) ? meta.count : "-"} / ${Number.isFinite(meta.total) ? meta.total : "-"}`,
+          `群: ${meta.role || "-"}`,
+          `評価指標: ${meta.metric || "-"}`,
+          `属性区分: ${meta.category || "-"}`,
+        ];
+      },
     });
   }
 
@@ -696,32 +831,65 @@
         + `<td>${fmt(summary.q1)}</td><td>${fmt(summary.q3)}</td><td>${fmt(summary.iqr)}</td><td>${fmt(summary.min)}</td><td>${fmt(summary.max)}</td>`
         + '<td class="na">実験群のみの項目のため、群間比較なし</td></tr>';
     }).join("");
-    $("intimacy-table").innerHTML = '<colgroup><col class="intimacy-metric-col"><col class="intimacy-attribute-col"><col class="intimacy-stat-col" span="9"><col class="intimacy-comparison-col"></colgroup>'
-      + `<thead><tr><th class="metric-name">評価項目</th><th class="attribute-name dimension-divider">属性区分</th><th>n</th><th>平均</th><th>SD</th><th>中央値</th><th>Q1</th><th>Q3</th><th>IQR</th><th>min</th><th>max</th><th>群間比較</th></tr></thead><tbody>${attributeRows || '<tr><td colspan="12" class="na">対象データなし</td></tr>'}</tbody>`;
+    setHTML("intimacy-table", '<colgroup><col class="intimacy-metric-col"><col class="intimacy-attribute-col"><col class="intimacy-stat-col" span="9"><col class="intimacy-comparison-col"></colgroup>'
+      + `<thead><tr><th class="metric-name">評価項目</th><th class="attribute-name dimension-divider">属性区分</th><th>n</th><th>平均</th><th>SD</th><th>中央値</th><th>Q1</th><th>Q3</th><th>IQR</th><th>min</th><th>max</th><th>群間比較</th></tr></thead><tbody>${attributeRows || '<tr><td colspan="12" class="na">対象データなし</td></tr>'}</tbody>`);
 
+    const chartRows = entries.map(({ metric, category }) => {
+      const values = valuesFor(metric.key, category).map(Number).filter((value) => Number.isFinite(value) && value >= 1 && value <= 5);
+      const total = values.length;
+      const counts = [1, 2, 3, 4, 5].map((score) => values.filter((value) => value === score).length);
+      return { metric, category, total, counts };
+    });
     const chartBox = $("intimacy-chart").parentElement;
-    chartBox.style.height = `${Math.max(440, entries.length * 90 + 130)}px`;
-    const itemLabels = entries.map(({ metric, category }) => attribute === "all"
-      ? [metric.label]
-      : [metric.label, `属性: ${category}`]);
-    const chartGroups = entries.map(({ metric, category }, itemIndex) =>
-      valueGroup(
-        experimentalRows.filter((row) => attributeValue(row, attribute) === category),
-        "experimental",
-        `${metric.label}・${category}・実験群`,
-        COLORS.experimental,
-        metric,
-        itemIndex
-      )
-    );
-    charts.boxplotWithPoints("intimacy-chart", chartGroups, {
-      orientation: "horizontal",
-      min: 1,
-      max: 5,
-      xTitle: "5件法回答",
-      yTitle: "親密度システム評価項目",
-      itemLabels,
-      legendItems: [{ label: "実験群", color: COLORS.experimental }],
+    chartBox.style.height = `${Math.max(360, chartRows.length * 42 + 150)}px`;
+    const yTickLabels = chartRows.map(() => "実験群");
+    const groupedYLabels = entries.map(({ metric, category }) => {
+      const metricLabel = metric.short || metric.label;
+      return attribute === "all" ? metricLabel : `${metricLabel} / ${category}`;
+    });
+    const responseColors = ["#d8f4f4", "#9cdadb", "#5bbdc0", "#2d9ea1", COLORS.experimental];
+    const datasets = [1, 2, 3, 4, 5].map((score, scoreIndex) => ({
+      label: `${score}`,
+      backgroundColor: responseColors[scoreIndex],
+      borderColor: "#ffffff",
+      borderWidth: 1,
+      barPercentage: 0.92,
+      categoryPercentage: 0.92,
+      data: chartRows.map((row) => row.total ? row.counts[scoreIndex] / row.total * 100 : 0),
+      meta: chartRows.map((row) => ({
+        count: row.counts[scoreIndex],
+        total: row.total,
+        score,
+        metric: row.metric.label,
+        category: row.category,
+        role: "実験群",
+      })),
+    }));
+    charts.stackedHorizontalPercentBar("intimacy-chart", yTickLabels, datasets, {
+      xTitle: "回答割合（%）",
+      legendPosition: "bottom",
+      yTickLabels,
+      groupedYLabels,
+      layout: { padding: { left: 130 } },
+      groupedYLabelLeft: 145,
+      groupedYLabelMaxWidth: 130,
+      legendItems: [1, 2, 3, 4, 5].map((score, index) => ({
+        label: index === 0 ? `実験群 ${score}` : `${score}`,
+        color: responseColors[index],
+      })),
+      tooltipLabel(context) {
+        const dataset = context.dataset || {};
+        const meta = Array.isArray(dataset.meta) ? dataset.meta[context.dataIndex] : {};
+        const value = Number(context.parsed && context.parsed.x);
+        return [
+          `回答: ${meta.score || dataset.label}`,
+          `割合: ${Number.isFinite(value) ? value.toFixed(1) : "-"}%`,
+          `人数: ${Number.isFinite(meta.count) ? meta.count : "-"} / ${Number.isFinite(meta.total) ? meta.total : "-"}`,
+          `群: ${meta.role || "-"}`,
+          `評価項目: ${meta.metric || "-"}`,
+          `属性区分: ${meta.category || "-"}`,
+        ];
+      },
     });
   }
 
@@ -753,7 +921,7 @@
       ];
       return `<tr>${cells.map((cell) => `<td>${cell}</td>`).join("")}</tr>`;
     }).join("");
-    $("participant-table").innerHTML = `<thead><tr>${headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("")}</tr></thead><tbody>${body}</tbody>`;
+    setHTML("participant-table", `<thead><tr>${headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("")}</tr></thead><tbody>${body}</tbody>`);
   }
 
   const LOG_METRICS = [
@@ -780,6 +948,43 @@
     { log_key: "optional_task_count", survey_key: "postContinue", label: "任意課題数 × 学習継続意識" },
     { log_key: "story_or_episode_view_count", survey_key: "episodeMotivation", label: "ストーリー・エピソード閲覧数 × エピソード進行の動機づけ評価" },
   ];
+
+  function uniqueMetrics(metrics) {
+    const seen = new Set();
+    return metrics.filter((metric) => {
+      if (!metric || !metric.key || seen.has(metric.key)) return false;
+      seen.add(metric.key);
+      return true;
+    });
+  }
+
+  function correlationLogMetrics() {
+    return uniqueMetrics([
+      ...LOG_METRICS,
+      { key: "story_or_episode_view_count", label: "ストーリー・エピソード閲覧数" },
+    ]);
+  }
+
+  function correlationSurveyMetrics() {
+    return uniqueMetrics([
+      { key: "programmingExperience", label: "属性: プログラミング経験" },
+      { key: "cppExperience", label: "属性: C++経験" },
+      { key: "novelPreferenceValue", label: "属性: ノベルゲーム嗜好" },
+      { key: "storyEmpathyValue", label: "属性: 物語・キャラクターへの感情移入" },
+      ...ILS_AXES.map((axis) => ({ key: `${axis.key}Signed`, label: `属性: ${axis.left}－${axis.right} 符号付きスコア` })),
+      { key: "preScore", label: "事前テスト得点" },
+      { key: "postScore", label: "事後テスト得点" },
+      { key: "testGain", label: "テスト得点の変化量" },
+      { key: "preAttitudeAverage", label: "学習意識平均（事前）" },
+      { key: "postAttitudeAverage", label: "学習意識平均（事後）" },
+      { key: "attitudeAverageGain", label: "学習意識平均の変化量" },
+      ...ATTITUDE_ITEMS.flatMap((item) => [
+        { key: item.preKey, label: `${item.short || item.label}（事前）` },
+        { key: item.postKey, label: `${item.short || item.label}（事後）` },
+        { key: item.gainKey, label: `${item.short || item.label}（変化量）` },
+      ]),
+    ]);
+  }
 
   const COLUMN_LABELS = {
     participant_id: "参加者ID",
@@ -989,9 +1194,8 @@
     const { profiles, events, rawEvents } = currentLogInputs(rows);
     state.participantBehaviorSummary = logAnalysis.buildParticipantBehaviorSummary(profiles, events, rawEvents, state.tasks, metadata, state.taskProgress);
     state.taskAttemptSummary = logAnalysis.buildTaskAttemptSummary(profiles, events, state.tasks, metadata, state.taskProgress);
-    state.loveTransitionBehaviorSummary = logAnalysis.buildLoveTransitionBehaviorSummary(profiles, events, metadata);
     const mergedRows = rowsWithLogMetrics(rows, state.participantBehaviorSummary);
-    state.surveyLogCorrelationStats = logAnalysis.buildCorrelationStats(mergedRows, CORRELATION_DEFINITIONS, metadata);
+    state.surveyLogCorrelationStats = logAnalysis.buildCorrelationStats(mergedRows, [selectedCorrelationDefinition()], metadata);
     state.groupAttributeLogSummary = logAnalysis.buildGroupAttributeLogSummary(mergedRows, LOG_METRICS, logAttributeDefinitions(), metadata);
     return mergedRows;
   }
@@ -1020,7 +1224,53 @@
   }
 
   function formatColumnLabel(key) {
-    return COLUMN_LABELS[key] || LOG_METRICS.find((metric) => metric.key === key)?.label || key;
+    return COLUMN_LABELS[key]
+      || LOG_METRICS.find((metric) => metric.key === key)?.label
+      || correlationSurveyMetrics().find((metric) => metric.key === key)?.label
+      || key;
+  }
+
+  function metricLabel(metrics, key) {
+    return (metrics || []).find((metric) => metric.key === key)?.label || formatColumnLabel(key);
+  }
+
+  function populateMetricSelect(select, metrics, defaultValue) {
+    if (!select) return "";
+    if (!select.options.length) {
+      select.innerHTML = metrics.map((metric) => `<option value="${escapeHtml(metric.key)}">${escapeHtml(metric.label)}</option>`).join("");
+      select.value = metrics.some((metric) => metric.key === defaultValue) ? defaultValue : (metrics[0] && metrics[0].key) || "";
+    }
+    if (!metrics.some((metric) => metric.key === select.value)) {
+      select.innerHTML = metrics.map((metric) => `<option value="${escapeHtml(metric.key)}">${escapeHtml(metric.label)}</option>`).join("");
+      select.value = metrics.some((metric) => metric.key === defaultValue) ? defaultValue : (metrics[0] && metrics[0].key) || "";
+    }
+    return select.value || defaultValue;
+  }
+
+  function selectedCorrelationDefinition() {
+    const logMetrics = correlationLogMetrics();
+    const surveyMetrics = correlationSurveyMetrics();
+    const logSelect = $("correlation-log-select");
+    const surveySelect = $("correlation-survey-select");
+    const logKey = populateMetricSelect(logSelect, logMetrics, "user_chat_count") || "user_chat_count";
+    const surveyKey = populateMetricSelect(surveySelect, surveyMetrics, "preScore") || "preScore";
+    const logLabel = metricLabel(logMetrics, logKey);
+    const surveyLabel = metricLabel(surveyMetrics, surveyKey);
+    return { log_key: logKey, survey_key: surveyKey, label: `${logLabel} × ${surveyLabel}` };
+  }
+
+  function correlationSurveyAxisRange(key) {
+    if (key === "preScore" || key === "postScore") return { min: 0, max: 5 };
+    const fivePointKeys = new Set([
+      "programmingExperience",
+      "cppExperience",
+      "novelPreferenceValue",
+      "storyEmpathyValue",
+      "preAttitudeAverage",
+      "postAttitudeAverage",
+      ...ATTITUDE_ITEMS.flatMap((item) => [item.preKey, item.postKey]),
+    ]);
+    return fivePointKeys.has(key) ? { min: 1, max: 5 } : {};
   }
 
   function formatGroupName(group) {
@@ -1046,7 +1296,7 @@
   function renderPlainTable(tableId, headers, rows, limit) {
     const visibleRows = rows.slice(0, limit || rows.length);
     const body = visibleRows.map((row) => `<tr>${headers.map((header) => `<td>${escapeHtml(formatDisplayValue(header, row[header]))}</td>`).join("")}</tr>`).join("");
-    $(tableId).innerHTML = `<thead><tr>${headers.map((header) => `<th>${escapeHtml(formatColumnLabel(header))}</th>`).join("")}</tr></thead><tbody>${body || `<tr><td colspan="${headers.length}" class="na">表示できるデータがありません</td></tr>`}</tbody>`;
+    setHTML(tableId, `<thead><tr>${headers.map((header) => `<th>${escapeHtml(formatColumnLabel(header))}</th>`).join("")}</tr></thead><tbody>${body || `<tr><td colspan="${headers.length}" class="na">表示できるデータがありません</td></tr>`}</tbody>`);
   }
 
   function renderLogSummaryChart(rows) {
@@ -1090,39 +1340,23 @@
   }
 
   function renderCorrelationScatter(rows) {
-    const select = $("correlation-select");
-    if (!select || !charts.scatter) return;
-    if (!select.options.length) {
-      select.innerHTML = CORRELATION_DEFINITIONS.map((definition, index) => `<option value="${index}">${escapeHtml(definition.label)}</option>`).join("");
-    }
-    const definition = CORRELATION_DEFINITIONS[Number(select.value) || 0] || CORRELATION_DEFINITIONS[0];
+    if (!charts.scatter) return;
+    const definition = selectedCorrelationDefinition();
     const points = rows.map((row) => ({
-      x: Number(row[definition.log_key]),
-      y: Number(row[definition.survey_key]),
+      x: Number(row[definition.survey_key]),
+      y: Number(row[definition.log_key]),
       participantId: row.participantId,
       group: row.role,
     })).filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y));
+    const xRange = correlationSurveyAxisRange(definition.survey_key);
     charts.scatter("correlation-chart", points, {
-      xTitle: formatColumnLabel(definition.log_key),
-      yTitle: formatColumnLabel(definition.survey_key),
+      xTitle: metricLabel(correlationSurveyMetrics(), definition.survey_key),
+      yTitle: metricLabel(correlationLogMetrics(), definition.log_key),
+      xMin: xRange.min,
+      xMax: xRange.max,
       colors: COLORS,
       groupLabels: { experimental: formatGroupName("experimental"), control: formatGroupName("control") },
     });
-  }
-
-  function renderLoveTransitionTimeline(rows) {
-    const tableRows = state.loveTransitionBehaviorSummary.slice(0, 80);
-    renderPlainTable("love-transition-table", [
-      "participant_id", "group", "event_time", "love_before", "love_after", "love_delta", "love_source",
-      "related_task_id", "previous_action_type", "next_action_type", "next_action_within_3min",
-      "next_task_continued", "next_chat_sent", "next_execute_done", "next_grade_done", "next_story_or_episode_viewed",
-    ], tableRows);
-    if (!charts.line) return;
-    const labels = tableRows.map((row) => `${row.participant_id} ${row.event_time || ""}`.trim());
-    charts.line("love-transition-chart", labels, [
-      { label: "親密度変化量", borderColor: COLORS.experimental, backgroundColor: COLORS.experimental, data: tableRows.map((row) => row.love_delta || 0) },
-      { label: "課題継続", borderColor: COLORS.control, backgroundColor: COLORS.control, data: tableRows.map((row) => row.next_task_continued ? 1 : 0) },
-    ], { yTitle: "親密度変化量 / 課題継続" });
   }
 
   function renderLogAnalysis(rows) {
@@ -1149,7 +1383,6 @@
       "time_until_first_grade_sec", "time_until_clear_sec", "retried_after_error",
       "retried_after_low_score", "used_chat_before_clear", "used_chat_after_error", "used_chat_after_low_score",
     ], state.taskAttemptSummary, 300);
-    renderLoveTransitionTimeline(mergedRows);
     renderPlainTable("correlation-table", [
       "label", "log_metric", "survey_metric", "group", "n", "pearson_r", "pearson_p_value_approx", "spearman_rho", "spearman_p_value_approx",
     ], state.surveyLogCorrelationStats);
@@ -1164,7 +1397,7 @@
     renderSummary(rows); renderTests(rows); renderAttitude(rows); renderBalance(rows); renderAttributes(rows); renderParticipants(rows); renderIntimacy(rows); renderLogAnalysis(rows);
     $("download-analysis-csv").disabled = rows.length === 0;
     $("download-stats-csv").disabled = rows.length === 0;
-    ["download-participant-behavior-csv", "download-task-attempt-csv", "download-love-transition-csv", "download-survey-log-correlation-csv", "download-group-attribute-log-csv"].forEach((id) => {
+    ["download-participant-behavior-csv", "download-task-attempt-csv", "download-survey-log-correlation-csv", "download-group-attribute-log-csv"].forEach((id) => {
       const button = $(id);
       if (button) button.disabled = rows.length === 0;
     });
@@ -1438,14 +1671,13 @@
   [
     ["download-participant-behavior-csv", "participant_behavior_summary.csv", () => state.participantBehaviorSummary],
     ["download-task-attempt-csv", "task_attempt_summary.csv", () => state.taskAttemptSummary],
-    ["download-love-transition-csv", "love_transition_behavior_summary.csv", () => state.loveTransitionBehaviorSummary],
     ["download-survey-log-correlation-csv", "survey_log_correlation_stats.csv", () => state.surveyLogCorrelationStats],
     ["download-group-attribute-log-csv", "group_attribute_log_summary.csv", () => state.groupAttributeLogSummary],
   ].forEach(([id, filename, rows]) => {
     const button = $(id);
     if (button) button.addEventListener("click", () => downloadLogCsv(filename, rows()));
   });
-  ["role-filter", "include-25nm467r", "episode-filter", "attitude-attribute-select", "balance-target-select", "attribute-select", "evaluation-select", "intimacy-attribute-select", "log-metric-select", "correlation-select"].forEach((id) => {
+  ["role-filter", "include-25nm467r", "episode-filter", "attitude-attribute-select", "balance-target-select", "attribute-select", "evaluation-select", "intimacy-attribute-select", "log-metric-select", "correlation-log-select", "correlation-survey-select", "test-chart-mode"].forEach((id) => {
     const element = $(id);
     if (element) element.addEventListener("change", renderAll);
   });
